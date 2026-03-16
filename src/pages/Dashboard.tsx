@@ -31,17 +31,18 @@ const Dashboard = () => {
 
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
-    const overdueToday = MOCK_INVOICES.filter((inv) => inv.dueDate === today && inv.status !== 'paid');
+    const overdueToday = invoices.filter((inv) => inv.dueDate === today && inv.status !== 'paid');
     overdueToday.forEach((inv) => {
       const entity = MOCK_ENTITIES.find((e) => e.id === inv.entityId);
       if (entity) {
         toast.error(`Atenção: Nota de ${entity.name} está Atrasada!`, { duration: 5000 });
       }
     });
-    const overdue = MOCK_INVOICES.filter((inv) => inv.status === 'overdue');
+    const overdue = invoices.filter((inv) => inv.status === 'overdue');
     if (overdue.length > 0) {
       toast.warning(`${overdue.length} título(s) em atraso detectado(s).`, { duration: 5000 });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

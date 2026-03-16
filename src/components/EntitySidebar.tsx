@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, AlertCircle, BarChart3 } from 'lucide-react';
+import { Settings, AlertCircle, BarChart3, Clock } from 'lucide-react';
 import EntityAvatar from './EntityAvatar';
 import SettingsModal from './SettingsModal';
 import type { Entity, Invoice } from '@/types/finance';

@@ -3,11 +3,13 @@ import EntitySidebar from '@/components/EntitySidebar';
 import EntityHeader from '@/components/EntityHeader';
 import KanbanBoard from '@/components/KanbanBoard';
 import ClientsTable from '@/components/ClientsTable';
+import SuppliersTable from '@/components/SuppliersTable';
 import NewInvoiceDialog from '@/components/NewInvoiceDialog';
 import { MOCK_ENTITIES, MOCK_INVOICES } from '@/types/finance';
 import type { Invoice } from '@/types/finance';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const MIN_SIDEBAR = 260;
 const MAX_SIDEBAR = 450;
@@ -147,10 +149,21 @@ const Dashboard = () => {
       <Sheet open={resumoOpen} onOpenChange={setResumoOpen}>
         <SheetContent side="left" className="w-[600px] sm:w-[700px] sm:max-w-none overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>Resumo de Clientes</SheetTitle>
+            <SheetTitle>Resumo Financeiro</SheetTitle>
           </SheetHeader>
           <div className="mt-4">
-            <ClientsTable entities={MOCK_ENTITIES} invoices={invoices} />
+            <Tabs defaultValue="clients">
+              <TabsList className="w-full">
+                <TabsTrigger value="clients" className="flex-1">Clientes</TabsTrigger>
+                <TabsTrigger value="suppliers" className="flex-1">Fornecedores</TabsTrigger>
+              </TabsList>
+              <TabsContent value="clients" className="mt-4">
+                <ClientsTable entities={MOCK_ENTITIES} invoices={invoices} />
+              </TabsContent>
+              <TabsContent value="suppliers" className="mt-4">
+                <SuppliersTable entities={MOCK_ENTITIES} invoices={invoices} />
+              </TabsContent>
+            </Tabs>
           </div>
         </SheetContent>
       </Sheet>

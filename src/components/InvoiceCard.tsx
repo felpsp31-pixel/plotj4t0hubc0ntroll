@@ -1,10 +1,22 @@
-import { Paperclip, Calendar, Hash, CheckCircle2 } from 'lucide-react';
+import { Paperclip, Calendar, Hash, CheckCircle2, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Invoice } from '@/types/finance';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface InvoiceCardProps {
   invoice: Invoice;
   onMarkPaid?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 const statusStyles: Record<string, string> = {
@@ -13,7 +25,7 @@ const statusStyles: Record<string, string> = {
   overdue: 'border-l-destructive',
 };
 
-const InvoiceCard = ({ invoice, onMarkPaid }: InvoiceCardProps) => {
+const InvoiceCard = ({ invoice, onMarkPaid, onDelete }: InvoiceCardProps) => {
   const formatted = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
@@ -50,15 +62,44 @@ const InvoiceCard = ({ invoice, onMarkPaid }: InvoiceCardProps) => {
           </span>
         </div>
 
-        {(invoice.status === 'open' || invoice.status === 'overdue') && onMarkPaid && (
-          <button
-            onClick={() => onMarkPaid(invoice.id)}
-            className="flex items-center gap-1 text-xs font-medium text-success hover:text-success/80 transition-colors"
-          >
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            Pagar
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {(invoice.status === 'open' || invoice.status === 'overdue') && onMarkPaid && (
+            <button
+              onClick={() => onMarkPaid(invoice.id)}
+              className="flex items-center gap-1 text-xs font-medium text-success hover:text-success/80 transition-colors"
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Pagar
+            </button>
+          )}
+
+          {onDelete && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button className="flex items-center gap-1 text-xs font-medium text-destructive hover:text-destructive/80 transition-colors">
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Apagar lançamento</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tem certeza que deseja apagar "{invoice.description}"? Esta ação não pode ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => onDelete(invoice.id)}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Apagar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
       </div>
     </motion.div>
   );

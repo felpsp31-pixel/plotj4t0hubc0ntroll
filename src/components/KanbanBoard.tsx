@@ -5,6 +5,7 @@ interface KanbanBoardProps {
   invoices: Invoice[];
   onMarkPaid?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onUpdate?: (id: string, data: Partial<Invoice>) => void;
 }
 
 const columns: { status: InvoiceStatus; label: string }[] = [

@@ -3,7 +3,9 @@ import EntitySidebar from '@/components/EntitySidebar';
 import EntityHeader from '@/components/EntityHeader';
 import KanbanBoard from '@/components/KanbanBoard';
 import ClientsTable from '@/components/ClientsTable';
+import NewInvoiceDialog from '@/components/NewInvoiceDialog';
 import { MOCK_ENTITIES, MOCK_INVOICES } from '@/types/finance';
+import type { Invoice } from '@/types/finance';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
@@ -48,6 +50,18 @@ const Dashboard = () => {
   const handleDelete = (invoiceId: string) => {
     setInvoices((prev) => prev.filter((inv) => inv.id !== invoiceId));
     toast.success('Lançamento apagado.');
+  };
+
+  const handleUpdate = (invoiceId: string, data: Partial<Invoice>) => {
+    setInvoices((prev) =>
+      prev.map((inv) => inv.id === invoiceId ? { ...inv, ...data } : inv)
+    );
+    toast.success('Lançamento atualizado com dados do PDF.');
+  };
+
+  const handleAdd = (invoice: Invoice) => {
+    setInvoices((prev) => [...prev, invoice]);
+    toast.success('Lançamento adicionado.');
   };
 
   useEffect(() => {
@@ -115,8 +129,11 @@ const Dashboard = () => {
         {selectedEntity ? (
           <>
             <EntityHeader entity={selectedEntity} />
+            <div className="flex justify-end mb-4">
+              <NewInvoiceDialog entityId={selectedEntity.id} onAdd={handleAdd} />
+            </div>
             <div className="flex-1 min-h-0">
-              <KanbanBoard invoices={entityInvoices} onMarkPaid={handleMarkPaid} onDelete={handleDelete} />
+              <KanbanBoard invoices={entityInvoices} onMarkPaid={handleMarkPaid} onDelete={handleDelete} onUpdate={handleUpdate} />
             </div>
           </>
         ) : (

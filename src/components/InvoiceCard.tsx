@@ -1,6 +1,7 @@
 import { Paperclip, Calendar, Hash, CheckCircle2, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Invoice } from '@/types/finance';
+import PdfUploadButton, { type ExtractedData } from './PdfUploadButton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +18,7 @@ interface InvoiceCardProps {
   invoice: Invoice;
   onMarkPaid?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onUpdate?: (id: string, data: Partial<Invoice>) => void;
 }
 
 const statusStyles: Record<string, string> = {
@@ -25,7 +27,7 @@ const statusStyles: Record<string, string> = {
   overdue: 'border-l-destructive',
 };
 
-const InvoiceCard = ({ invoice, onMarkPaid, onDelete }: InvoiceCardProps) => {
+const InvoiceCard = ({ invoice, onMarkPaid, onDelete, onUpdate }: InvoiceCardProps) => {
   const formatted = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
@@ -62,7 +64,19 @@ const InvoiceCard = ({ invoice, onMarkPaid, onDelete }: InvoiceCardProps) => {
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {onUpdate && (
+            <PdfUploadButton
+              variant="icon"
+              onExtracted={(data) => {
+                const updates: Partial<Invoice> = {};
+                if (data.value != null) updates.value = data.value;
+                if (data.dueDate) updates.dueDate = data.dueDate;
+                if (data.description) updates.description = data.description;
+                onUpdate(invoice.id, updates);
+              }}
+            />
+          )}
           {(invoice.status === 'open' || invoice.status === 'overdue') && onMarkPaid && (
             <button
               onClick={() => onMarkPaid(invoice.id)}

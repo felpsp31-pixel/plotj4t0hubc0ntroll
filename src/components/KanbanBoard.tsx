@@ -5,6 +5,7 @@ interface KanbanBoardProps {
   invoices: Invoice[];
   onMarkPaid?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onUpdate?: (id: string, data: Partial<Invoice>) => void;
 }
 
 const columns: { status: InvoiceStatus; label: string }[] = [
@@ -25,7 +26,7 @@ const dotColors: Record<InvoiceStatus, string> = {
   overdue: 'bg-destructive',
 };
 
-const KanbanBoard = ({ invoices, onMarkPaid, onDelete }: KanbanBoardProps) => {
+const KanbanBoard = ({ invoices, onMarkPaid, onDelete, onUpdate }: KanbanBoardProps) => {
   return (
     <div className="grid grid-cols-3 gap-5 h-full">
       {columns.map((col) => {
@@ -48,7 +49,7 @@ const KanbanBoard = ({ invoices, onMarkPaid, onDelete }: KanbanBoardProps) => {
                 </p>
               )}
               {items.map((inv) => (
-                <InvoiceCard key={inv.id} invoice={inv} onMarkPaid={onMarkPaid} onDelete={onDelete} />
+                <InvoiceCard key={inv.id} invoice={inv} onMarkPaid={onMarkPaid} onDelete={onDelete} onUpdate={onUpdate} />
               ))}
             </div>
           </div>

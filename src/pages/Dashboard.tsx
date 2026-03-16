@@ -45,6 +45,11 @@ const Dashboard = () => {
     });
   };
 
+  const handleDelete = (invoiceId: string) => {
+    setInvoices((prev) => prev.filter((inv) => inv.id !== invoiceId));
+    toast.success('Lançamento apagado.');
+  };
+
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
     const overdueToday = invoices.filter((inv) => inv.dueDate === today && inv.status !== 'paid');
@@ -111,7 +116,7 @@ const Dashboard = () => {
           <>
             <EntityHeader entity={selectedEntity} />
             <div className="flex-1 min-h-0">
-              <KanbanBoard invoices={entityInvoices} onMarkPaid={handleMarkPaid} />
+              <KanbanBoard invoices={entityInvoices} onMarkPaid={handleMarkPaid} onDelete={handleDelete} />
             </div>
           </>
         ) : (

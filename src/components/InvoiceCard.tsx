@@ -46,9 +46,13 @@ const InvoiceCard = ({ invoice, onMarkPaid, onDelete, onUpdate }: InvoiceCardPro
     >
       <div className="flex items-start justify-between mb-3">
         <p className="text-2xl font-semibold text-foreground">{formatted}</p>
-        {invoice.hasAttachment && (
+        {invoice.attachmentUrl ? (
+          <a href={invoice.attachmentUrl} target="_blank" rel="noopener noreferrer">
+            <Paperclip className="h-4 w-4 text-primary shrink-0 mt-1" />
+          </a>
+        ) : invoice.hasAttachment ? (
           <Paperclip className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
-        )}
+        ) : null}
       </div>
 
       <p className="text-sm text-muted-foreground mb-2 truncate">{invoice.description}</p>

@@ -64,7 +64,19 @@ const InvoiceCard = ({ invoice, onMarkPaid, onDelete, onUpdate }: InvoiceCardPro
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {onUpdate && (
+            <PdfUploadButton
+              variant="icon"
+              onExtracted={(data) => {
+                const updates: Partial<Invoice> = {};
+                if (data.value != null) updates.value = data.value;
+                if (data.dueDate) updates.dueDate = data.dueDate;
+                if (data.description) updates.description = data.description;
+                onUpdate(invoice.id, updates);
+              }}
+            />
+          )}
           {(invoice.status === 'open' || invoice.status === 'overdue') && onMarkPaid && (
             <button
               onClick={() => onMarkPaid(invoice.id)}

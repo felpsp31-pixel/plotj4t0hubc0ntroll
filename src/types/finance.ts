@@ -41,7 +41,7 @@ export const MOCK_INVOICES: Invoice[] = [
   { id: 'inv5', entityId: '3', description: 'NF 7891 - Medição', value: 45000.00, dueDate: '2026-03-05', referenceMonth: 'Mar/2026', status: 'overdue', hasAttachment: false },
   { id: 'inv6', entityId: '4', description: 'Boleto 4455', value: 1200.00, dueDate: '2026-03-18', referenceMonth: 'Mar/2026', status: 'open', hasAttachment: false },
   { id: 'inv7', entityId: '5', description: 'NF 300 - Material', value: 3400.00, dueDate: '2026-02-28', referenceMonth: 'Fev/2026', status: 'paid', hasAttachment: true },
-  { id: 'inv8', entityId: '6', description: 'NF 901 - Internet', value: 890.00, dueDate: '2026-03-10', referenceMonth: 'Mar/2026', status: 'overdue', hasAttachment: false },
+  { id: 'inv8', entityId: '6', description: 'NF 901 - Internet', value: 890.00, dueDate: '2026-03-17', referenceMonth: 'Mar/2026', status: 'open', hasAttachment: false },
   { id: 'inv9', entityId: '7', description: 'NF 112 - Monitoramento', value: 2100.00, dueDate: '2026-03-22', referenceMonth: 'Mar/2026', status: 'open', hasAttachment: false },
   { id: 'inv10', entityId: '2', description: 'NF 5002 - Manutenção', value: 8750.00, dueDate: '2026-01-20', referenceMonth: 'Jan/2026', status: 'paid', hasAttachment: true },
 ];

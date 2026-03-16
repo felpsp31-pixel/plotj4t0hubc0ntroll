@@ -116,7 +116,7 @@ const Dashboard = () => {
           <>
             <EntityHeader entity={selectedEntity} />
             <div className="flex-1 min-h-0">
-              <KanbanBoard invoices={entityInvoices} onMarkPaid={handleMarkPaid} />
+              <KanbanBoard invoices={entityInvoices} onMarkPaid={handleMarkPaid} onDelete={handleDelete} />
             </div>
           </>
         ) : (

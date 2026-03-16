@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, AlertCircle } from 'lucide-react';
+import { Settings, AlertCircle, BarChart3 } from 'lucide-react';
 import EntityAvatar from './EntityAvatar';
 import SettingsModal from './SettingsModal';
 import type { Entity, Invoice } from '@/types/finance';
@@ -9,11 +9,12 @@ interface EntitySidebarProps {
   invoices: Invoice[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  onOpenResumo: () => void;
 }
 
 type TabType = 'clients' | 'suppliers';
 
-const EntitySidebar = ({ entities, invoices, selectedId, onSelect }: EntitySidebarProps) => {
+const EntitySidebar = ({ entities, invoices, selectedId, onSelect, onOpenResumo }: EntitySidebarProps) => {
   const [tab, setTab] = useState<TabType>('clients');
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -77,11 +78,18 @@ const EntitySidebar = ({ entities, invoices, selectedId, onSelect }: EntitySideb
         })}
       </div>
 
-      {/* Settings Footer */}
-      <div className="p-3 border-t border-border">
+      {/* Footer */}
+      <div className="p-3 border-t border-border space-y-1">
+        <button
+          onClick={onOpenResumo}
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-150 px-2 py-1.5 w-full"
+        >
+          <BarChart3 className="h-4 w-4" />
+          Resumo
+        </button>
         <button
           onClick={() => setSettingsOpen(true)}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-150 px-2 py-1.5"
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-150 px-2 py-1.5 w-full"
         >
           <Settings className="h-4 w-4" />
           Configurações

@@ -3,6 +3,7 @@ import type { Invoice, InvoiceStatus } from '@/types/finance';
 
 interface KanbanBoardProps {
   invoices: Invoice[];
+  onMarkPaid?: (id: string) => void;
 }
 
 const columns: { status: InvoiceStatus; label: string }[] = [

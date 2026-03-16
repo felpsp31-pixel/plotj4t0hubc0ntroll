@@ -71,6 +71,15 @@ const InvoiceCard = ({ invoice, onMarkPaid, onDelete, onUpdate }: InvoiceCardPro
 
         <div className="flex items-center gap-2">
           {onUpdate && (
+            <PdfAttachButton
+              invoiceId={invoice.id}
+              attachmentUrl={invoice.attachmentUrl}
+              attachmentName={invoice.attachmentName}
+              onAttached={(url, name) => onUpdate(invoice.id, { attachmentUrl: url, attachmentName: name, hasAttachment: true })}
+              onRemoved={() => onUpdate(invoice.id, { attachmentUrl: undefined, attachmentName: undefined, hasAttachment: false })}
+            />
+          )}
+          {onUpdate && (
             <PdfUploadButton
               variant="icon"
               onExtracted={(data) => {

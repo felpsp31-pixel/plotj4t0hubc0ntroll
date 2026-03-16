@@ -27,7 +27,7 @@ const statusStyles: Record<string, string> = {
   overdue: 'border-l-destructive',
 };
 
-const InvoiceCard = ({ invoice, onMarkPaid, onDelete }: InvoiceCardProps) => {
+const InvoiceCard = ({ invoice, onMarkPaid, onDelete, onUpdate }: InvoiceCardProps) => {
   const formatted = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',

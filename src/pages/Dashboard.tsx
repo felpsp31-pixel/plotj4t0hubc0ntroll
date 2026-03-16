@@ -23,10 +23,26 @@ const Dashboard = () => {
     : [];
 
   const handleMarkPaid = (invoiceId: string) => {
+    const previous = invoices.find((inv) => inv.id === invoiceId);
+    if (!previous) return;
+    const previousStatus = previous.status;
+
     setInvoices((prev) =>
       prev.map((inv) => inv.id === invoiceId ? { ...inv, status: 'paid' as const } : inv)
     );
-    toast.success('Título marcado como pago!');
+
+    toast.success('Título marcado como pago!', {
+      action: {
+        label: 'Desfazer',
+        onClick: () => {
+          setInvoices((prev) =>
+            prev.map((inv) => inv.id === invoiceId ? { ...inv, status: previousStatus } : inv)
+          );
+          toast.info('Ação desfeita.');
+        },
+      },
+      duration: 6000,
+    });
   };
 
   useEffect(() => {

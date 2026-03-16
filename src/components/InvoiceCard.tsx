@@ -1,6 +1,7 @@
 import { Paperclip, Calendar, Hash, CheckCircle2, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Invoice } from '@/types/finance';
+import PdfUploadButton, { type ExtractedData } from './PdfUploadButton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +18,7 @@ interface InvoiceCardProps {
   invoice: Invoice;
   onMarkPaid?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onUpdate?: (id: string, data: Partial<Invoice>) => void;
 }
 
 const statusStyles: Record<string, string> = {

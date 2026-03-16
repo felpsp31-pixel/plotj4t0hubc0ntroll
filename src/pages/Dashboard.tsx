@@ -4,6 +4,7 @@ import EntityHeader from '@/components/EntityHeader';
 import KanbanBoard from '@/components/KanbanBoard';
 import ClientsTable from '@/components/ClientsTable';
 import SuppliersTable from '@/components/SuppliersTable';
+import ExportResumoButton from '@/components/ExportResumoButton';
 import NewInvoiceDialog from '@/components/NewInvoiceDialog';
 import { MOCK_ENTITIES, MOCK_INVOICES } from '@/types/finance';
 import type { Invoice } from '@/types/finance';

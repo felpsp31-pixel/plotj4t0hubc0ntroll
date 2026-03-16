@@ -68,18 +68,42 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    const today = new Date().toISOString().slice(0, 10);
-    const overdueToday = invoices.filter((inv) => inv.dueDate === today && inv.status !== 'paid');
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+
+    // Alertas gerais de vencimento hoje
+    const overdueToday = invoices.filter((inv) => inv.dueDate === todayStr && inv.status !== 'paid');
     overdueToday.forEach((inv) => {
       const entity = MOCK_ENTITIES.find((e) => e.id === inv.entityId);
       if (entity) {
         toast.error(`Atenção: Nota de ${entity.name} está Atrasada!`, { duration: 5000 });
       }
     });
+
     const overdue = invoices.filter((inv) => inv.status === 'overdue');
     if (overdue.length > 0) {
       toast.warning(`${overdue.length} título(s) em atraso detectado(s).`, { duration: 5000 });
     }
+
+    // Alerta de fornecedores com vencimento amanhã (1 dia antes)
+    const supplierEntities = MOCK_ENTITIES.filter((e) => e.type === 'supplier');
+    const supplierIds = new Set(supplierEntities.map((e) => e.id));
+    const dueTomorrow = invoices.filter(
+      (inv) => inv.dueDate === tomorrowStr && inv.status !== 'paid' && supplierIds.has(inv.entityId)
+    );
+    dueTomorrow.forEach((inv) => {
+      const entity = supplierEntities.find((e) => e.id === inv.entityId);
+      if (entity) {
+        const formatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(inv.value);
+        toast.warning(
+          `Fornecedor "${entity.name}" tem título de ${formatted} vencendo amanhã!`,
+          { duration: 8000 }
+        );
+      }
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

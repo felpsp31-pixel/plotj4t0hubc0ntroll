@@ -3,11 +3,13 @@ import EntitySidebar from '@/components/EntitySidebar';
 import EntityHeader from '@/components/EntityHeader';
 import KanbanBoard from '@/components/KanbanBoard';
 import ClientsTable from '@/components/ClientsTable';
+import SuppliersTable from '@/components/SuppliersTable';
 import NewInvoiceDialog from '@/components/NewInvoiceDialog';
 import { MOCK_ENTITIES, MOCK_INVOICES } from '@/types/finance';
 import type { Invoice } from '@/types/finance';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const MIN_SIDEBAR = 260;
 const MAX_SIDEBAR = 450;

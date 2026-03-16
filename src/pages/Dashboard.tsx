@@ -112,7 +112,7 @@ const Dashboard = () => {
             <SheetTitle>Resumo de Clientes</SheetTitle>
           </SheetHeader>
           <div className="mt-4">
-            <ClientsTable entities={MOCK_ENTITIES} invoices={MOCK_INVOICES} />
+            <ClientsTable entities={MOCK_ENTITIES} invoices={invoices} />
           </div>
         </SheetContent>
       </Sheet>

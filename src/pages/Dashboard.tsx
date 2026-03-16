@@ -12,14 +12,22 @@ const MAX_SIDEBAR = 450;
 
 const Dashboard = () => {
   const [selectedId, setSelectedId] = useState<string | null>(MOCK_ENTITIES[0]?.id ?? null);
+  const [invoices, setInvoices] = useState(MOCK_INVOICES);
   const [sidebarWidth, setSidebarWidth] = useState(300);
   const [resumoOpen, setResumoOpen] = useState(false);
   const dragging = useRef(false);
 
   const selectedEntity = MOCK_ENTITIES.find((e) => e.id === selectedId) ?? null;
   const entityInvoices = selectedId
-    ? MOCK_INVOICES.filter((inv) => inv.entityId === selectedId)
+    ? invoices.filter((inv) => inv.entityId === selectedId)
     : [];
+
+  const handleMarkPaid = (invoiceId: string) => {
+    setInvoices((prev) =>
+      prev.map((inv) => inv.id === invoiceId ? { ...inv, status: 'paid' as const } : inv)
+    );
+    toast.success('Título marcado como pago!');
+  };
 
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);

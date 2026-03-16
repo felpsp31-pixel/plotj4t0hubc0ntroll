@@ -25,6 +25,15 @@ const EntitySidebar = ({ entities, invoices, selectedId, onSelect, onOpenResumo 
   const hasOverdue = (entityId: string) =>
     invoices.some((inv) => inv.entityId === entityId && inv.status === 'overdue');
 
+  const hasDueTomorrow = (entityId: string) => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().slice(0, 10);
+    return invoices.some(
+      (inv) => inv.entityId === entityId && inv.dueDate === tomorrowStr && inv.status !== 'paid'
+    );
+  };
+
   return (
     <div className="flex flex-col h-full bg-card border-r border-border">
       {/* Segmented Control */}

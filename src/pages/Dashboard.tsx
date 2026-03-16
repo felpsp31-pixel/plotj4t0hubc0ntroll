@@ -84,18 +84,31 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 p-6 overflow-hidden">
-        {selectedEntity ? (
-          <>
-            <EntityHeader entity={selectedEntity} />
-            <div className="flex-1 min-h-0">
-              <KanbanBoard invoices={entityInvoices} />
-            </div>
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground">
-            Selecione um cliente ou fornecedor
-          </div>
-        )}
+        <Tabs defaultValue="kanban" className="flex flex-col flex-1 min-h-0">
+          <TabsList className="self-start mb-4">
+            <TabsTrigger value="kanban">Kanban</TabsTrigger>
+            <TabsTrigger value="clients">Clientes</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="kanban" className="flex-1 min-h-0 flex flex-col">
+            {selectedEntity ? (
+              <>
+                <EntityHeader entity={selectedEntity} />
+                <div className="flex-1 min-h-0">
+                  <KanbanBoard invoices={entityInvoices} />
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                Selecione um cliente ou fornecedor
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="clients" className="flex-1 min-h-0 overflow-y-auto">
+            <ClientsTable entities={MOCK_ENTITIES} invoices={MOCK_INVOICES} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

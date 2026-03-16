@@ -52,6 +52,18 @@ const Dashboard = () => {
     toast.success('Lançamento apagado.');
   };
 
+  const handleUpdate = (invoiceId: string, data: Partial<Invoice>) => {
+    setInvoices((prev) =>
+      prev.map((inv) => inv.id === invoiceId ? { ...inv, ...data } : inv)
+    );
+    toast.success('Lançamento atualizado com dados do PDF.');
+  };
+
+  const handleAdd = (invoice: Invoice) => {
+    setInvoices((prev) => [...prev, invoice]);
+    toast.success('Lançamento adicionado.');
+  };
+
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
     const overdueToday = invoices.filter((inv) => inv.dueDate === today && inv.status !== 'paid');

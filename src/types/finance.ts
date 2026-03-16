@@ -9,6 +9,8 @@ export interface Invoice {
   referenceMonth: string;
   status: InvoiceStatus;
   hasAttachment: boolean;
+  attachmentUrl?: string;
+  attachmentName?: string;
 }
 
 export interface Entity {

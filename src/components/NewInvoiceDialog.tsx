@@ -55,7 +55,9 @@ const NewInvoiceDialog = ({ entityId, onAdd }: NewInvoiceDialogProps) => {
       dueDate,
       referenceMonth: referenceMonth || '',
       status: 'open',
-      hasAttachment: false,
+      hasAttachment: !!attachmentUrl,
+      attachmentUrl,
+      attachmentName,
     };
 
     onAdd(invoice);

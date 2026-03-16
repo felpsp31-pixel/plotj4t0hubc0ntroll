@@ -133,6 +133,18 @@ const NewInvoiceDialog = ({ entityId, onAdd }: NewInvoiceDialogProps) => {
             />
           </div>
 
+          <div className="space-y-2">
+            <Label>Anexo (PDF)</Label>
+            <PdfAttachButton
+              invoiceId={tempId}
+              attachmentUrl={attachmentUrl}
+              attachmentName={attachmentName}
+              onAttached={(url, name) => { setAttachmentUrl(url); setAttachmentName(name); }}
+              onRemoved={() => { setAttachmentUrl(undefined); setAttachmentName(undefined); }}
+              variant="full"
+            />
+          </div>
+
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
             <Button type="submit">Adicionar</Button>

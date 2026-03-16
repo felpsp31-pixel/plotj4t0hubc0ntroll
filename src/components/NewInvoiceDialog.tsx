@@ -19,12 +19,17 @@ const NewInvoiceDialog = ({ entityId, onAdd }: NewInvoiceDialogProps) => {
   const [value, setValue] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [referenceMonth, setReferenceMonth] = useState('');
+  const [attachmentUrl, setAttachmentUrl] = useState<string>();
+  const [attachmentName, setAttachmentName] = useState<string>();
+  const tempId = useState(() => `new-${Date.now()}`)[0];
 
   const resetForm = () => {
     setDescription('');
     setValue('');
     setDueDate('');
     setReferenceMonth('');
+    setAttachmentUrl(undefined);
+    setAttachmentName(undefined);
   };
 
   const handleExtracted = (data: ExtractedData) => {

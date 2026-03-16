@@ -3,9 +3,9 @@ import EntitySidebar from '@/components/EntitySidebar';
 import EntityHeader from '@/components/EntityHeader';
 import KanbanBoard from '@/components/KanbanBoard';
 import ClientsTable from '@/components/ClientsTable';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { MOCK_ENTITIES, MOCK_INVOICES } from '@/types/finance';
 import { toast } from 'sonner';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 
 const MIN_SIDEBAR = 260;
 const MAX_SIDEBAR = 450;
@@ -13,6 +13,7 @@ const MAX_SIDEBAR = 450;
 const Dashboard = () => {
   const [selectedId, setSelectedId] = useState<string | null>(MOCK_ENTITIES[0]?.id ?? null);
   const [sidebarWidth, setSidebarWidth] = useState(300);
+  const [resumoOpen, setResumoOpen] = useState(false);
   const dragging = useRef(false);
 
   const selectedEntity = MOCK_ENTITIES.find((e) => e.id === selectedId) ?? null;
@@ -20,7 +21,6 @@ const Dashboard = () => {
     ? MOCK_INVOICES.filter((inv) => inv.entityId === selectedId)
     : [];
 
-  // Toast for overdue invoices on mount
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
     const overdueToday = MOCK_INVOICES.filter((inv) => inv.dueDate === today && inv.status !== 'paid');
@@ -30,15 +30,12 @@ const Dashboard = () => {
         toast.error(`Atenção: Nota de ${entity.name} está Atrasada!`, { duration: 5000 });
       }
     });
-
-    // Also notify general overdue
     const overdue = MOCK_INVOICES.filter((inv) => inv.status === 'overdue');
     if (overdue.length > 0) {
       toast.warning(`${overdue.length} título(s) em atraso detectado(s).`, { duration: 5000 });
     }
   }, []);
 
-  // Resize handler
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!dragging.current) return;
@@ -73,6 +70,7 @@ const Dashboard = () => {
           invoices={MOCK_INVOICES}
           selectedId={selectedId}
           onSelect={setSelectedId}
+          onOpenResumo={() => setResumoOpen(true)}
         />
       </div>
 
@@ -84,32 +82,31 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 p-6 overflow-hidden">
-        <Tabs defaultValue="kanban" className="flex flex-col flex-1 min-h-0">
-          <TabsList className="self-start mb-4">
-            <TabsTrigger value="kanban">Kanban</TabsTrigger>
-            <TabsTrigger value="clients">Clientes</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="kanban" className="flex-1 min-h-0 flex flex-col">
-            {selectedEntity ? (
-              <>
-                <EntityHeader entity={selectedEntity} />
-                <div className="flex-1 min-h-0">
-                  <KanbanBoard invoices={entityInvoices} />
-                </div>
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                Selecione um cliente ou fornecedor
-              </div>
-            )}
-          </TabsContent>
-
-          <TabsContent value="clients" className="flex-1 min-h-0 overflow-y-auto">
-            <ClientsTable entities={MOCK_ENTITIES} invoices={MOCK_INVOICES} />
-          </TabsContent>
-        </Tabs>
+        {selectedEntity ? (
+          <>
+            <EntityHeader entity={selectedEntity} />
+            <div className="flex-1 min-h-0">
+              <KanbanBoard invoices={entityInvoices} />
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-muted-foreground">
+            Selecione um cliente ou fornecedor
+          </div>
+        )}
       </div>
+
+      {/* Resumo Sheet */}
+      <Sheet open={resumoOpen} onOpenChange={setResumoOpen}>
+        <SheetContent side="left" className="w-[600px] sm:w-[700px] sm:max-w-none overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Resumo de Clientes</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4">
+            <ClientsTable entities={MOCK_ENTITIES} invoices={MOCK_INVOICES} />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };

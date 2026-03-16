@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import PdfUploadButton, { type ExtractedData } from './PdfUploadButton';
+import PdfAttachButton from './PdfAttachButton';
 import type { Invoice } from '@/types/finance';
 
 interface NewInvoiceDialogProps {
@@ -18,12 +19,17 @@ const NewInvoiceDialog = ({ entityId, onAdd }: NewInvoiceDialogProps) => {
   const [value, setValue] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [referenceMonth, setReferenceMonth] = useState('');
+  const [attachmentUrl, setAttachmentUrl] = useState<string>();
+  const [attachmentName, setAttachmentName] = useState<string>();
+  const tempId = useState(() => `new-${Date.now()}`)[0];
 
   const resetForm = () => {
     setDescription('');
     setValue('');
     setDueDate('');
     setReferenceMonth('');
+    setAttachmentUrl(undefined);
+    setAttachmentName(undefined);
   };
 
   const handleExtracted = (data: ExtractedData) => {
@@ -49,7 +55,9 @@ const NewInvoiceDialog = ({ entityId, onAdd }: NewInvoiceDialogProps) => {
       dueDate,
       referenceMonth: referenceMonth || '',
       status: 'open',
-      hasAttachment: false,
+      hasAttachment: !!attachmentUrl,
+      attachmentUrl,
+      attachmentName,
     };
 
     onAdd(invoice);
@@ -122,6 +130,18 @@ const NewInvoiceDialog = ({ entityId, onAdd }: NewInvoiceDialogProps) => {
               value={referenceMonth}
               onChange={(e) => setReferenceMonth(e.target.value)}
               placeholder="Ex: Mar/2026"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Anexo (PDF)</Label>
+            <PdfAttachButton
+              invoiceId={tempId}
+              attachmentUrl={attachmentUrl}
+              attachmentName={attachmentName}
+              onAttached={(url, name) => { setAttachmentUrl(url); setAttachmentName(name); }}
+              onRemoved={() => { setAttachmentUrl(undefined); setAttachmentName(undefined); }}
+              variant="full"
             />
           </div>
 

@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import EntitySidebar from '@/components/EntitySidebar';
 import EntityHeader from '@/components/EntityHeader';
 import KanbanBoard from '@/components/KanbanBoard';
+import ClientsTable from '@/components/ClientsTable';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { MOCK_ENTITIES, MOCK_INVOICES } from '@/types/finance';
 import { toast } from 'sonner';
 

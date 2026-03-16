@@ -3,6 +3,7 @@ import type { Invoice, InvoiceStatus } from '@/types/finance';
 
 interface KanbanBoardProps {
   invoices: Invoice[];
+  onMarkPaid?: (id: string) => void;
 }
 
 const columns: { status: InvoiceStatus; label: string }[] = [
@@ -23,7 +24,7 @@ const dotColors: Record<InvoiceStatus, string> = {
   overdue: 'bg-destructive',
 };
 
-const KanbanBoard = ({ invoices }: KanbanBoardProps) => {
+const KanbanBoard = ({ invoices, onMarkPaid }: KanbanBoardProps) => {
   return (
     <div className="grid grid-cols-3 gap-5 h-full">
       {columns.map((col) => {
@@ -46,7 +47,7 @@ const KanbanBoard = ({ invoices }: KanbanBoardProps) => {
                 </p>
               )}
               {items.map((inv) => (
-                <InvoiceCard key={inv.id} invoice={inv} />
+                <InvoiceCard key={inv.id} invoice={inv} onMarkPaid={onMarkPaid} />
               ))}
             </div>
           </div>

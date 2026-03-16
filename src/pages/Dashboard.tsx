@@ -12,28 +12,37 @@ const MAX_SIDEBAR = 450;
 
 const Dashboard = () => {
   const [selectedId, setSelectedId] = useState<string | null>(MOCK_ENTITIES[0]?.id ?? null);
+  const [invoices, setInvoices] = useState(MOCK_INVOICES);
   const [sidebarWidth, setSidebarWidth] = useState(300);
   const [resumoOpen, setResumoOpen] = useState(false);
   const dragging = useRef(false);
 
   const selectedEntity = MOCK_ENTITIES.find((e) => e.id === selectedId) ?? null;
   const entityInvoices = selectedId
-    ? MOCK_INVOICES.filter((inv) => inv.entityId === selectedId)
+    ? invoices.filter((inv) => inv.entityId === selectedId)
     : [];
+
+  const handleMarkPaid = (invoiceId: string) => {
+    setInvoices((prev) =>
+      prev.map((inv) => inv.id === invoiceId ? { ...inv, status: 'paid' as const } : inv)
+    );
+    toast.success('Título marcado como pago!');
+  };
 
   useEffect(() => {
     const today = new Date().toISOString().slice(0, 10);
-    const overdueToday = MOCK_INVOICES.filter((inv) => inv.dueDate === today && inv.status !== 'paid');
+    const overdueToday = invoices.filter((inv) => inv.dueDate === today && inv.status !== 'paid');
     overdueToday.forEach((inv) => {
       const entity = MOCK_ENTITIES.find((e) => e.id === inv.entityId);
       if (entity) {
         toast.error(`Atenção: Nota de ${entity.name} está Atrasada!`, { duration: 5000 });
       }
     });
-    const overdue = MOCK_INVOICES.filter((inv) => inv.status === 'overdue');
+    const overdue = invoices.filter((inv) => inv.status === 'overdue');
     if (overdue.length > 0) {
       toast.warning(`${overdue.length} título(s) em atraso detectado(s).`, { duration: 5000 });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -67,7 +76,7 @@ const Dashboard = () => {
       <div style={{ width: sidebarWidth, minWidth: MIN_SIDEBAR, maxWidth: MAX_SIDEBAR }} className="shrink-0">
         <EntitySidebar
           entities={MOCK_ENTITIES}
-          invoices={MOCK_INVOICES}
+          invoices={invoices}
           selectedId={selectedId}
           onSelect={setSelectedId}
           onOpenResumo={() => setResumoOpen(true)}
@@ -86,7 +95,7 @@ const Dashboard = () => {
           <>
             <EntityHeader entity={selectedEntity} />
             <div className="flex-1 min-h-0">
-              <KanbanBoard invoices={entityInvoices} />
+              <KanbanBoard invoices={entityInvoices} onMarkPaid={handleMarkPaid} />
             </div>
           </>
         ) : (
@@ -103,7 +112,7 @@ const Dashboard = () => {
             <SheetTitle>Resumo de Clientes</SheetTitle>
           </SheetHeader>
           <div className="mt-4">
-            <ClientsTable entities={MOCK_ENTITIES} invoices={MOCK_INVOICES} />
+            <ClientsTable entities={MOCK_ENTITIES} invoices={invoices} />
           </div>
         </SheetContent>
       </Sheet>

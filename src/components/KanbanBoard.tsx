@@ -25,7 +25,7 @@ const dotColors: Record<InvoiceStatus, string> = {
   overdue: 'bg-destructive',
 };
 
-const KanbanBoard = ({ invoices, onMarkPaid }: KanbanBoardProps) => {
+const KanbanBoard = ({ invoices, onMarkPaid, onDelete }: KanbanBoardProps) => {
   return (
     <div className="grid grid-cols-3 gap-5 h-full">
       {columns.map((col) => {

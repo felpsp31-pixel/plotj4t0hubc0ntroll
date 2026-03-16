@@ -4,6 +4,7 @@ import EntityHeader from '@/components/EntityHeader';
 import KanbanBoard from '@/components/KanbanBoard';
 import ClientsTable from '@/components/ClientsTable';
 import SuppliersTable from '@/components/SuppliersTable';
+import ExportResumoButton from '@/components/ExportResumoButton';
 import NewInvoiceDialog from '@/components/NewInvoiceDialog';
 import { MOCK_ENTITIES, MOCK_INVOICES } from '@/types/finance';
 import type { Invoice } from '@/types/finance';
@@ -148,8 +149,9 @@ const Dashboard = () => {
       {/* Resumo Sheet */}
       <Sheet open={resumoOpen} onOpenChange={setResumoOpen}>
         <SheetContent side="left" className="w-[600px] sm:w-[700px] sm:max-w-none overflow-y-auto">
-          <SheetHeader>
+          <SheetHeader className="flex flex-row items-center justify-between pr-8">
             <SheetTitle>Resumo Financeiro</SheetTitle>
+            <ExportResumoButton entities={MOCK_ENTITIES} invoices={invoices} />
           </SheetHeader>
           <div className="mt-4">
             <Tabs defaultValue="clients">

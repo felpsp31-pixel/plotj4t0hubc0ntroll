@@ -76,7 +76,7 @@ const Dashboard = () => {
       <div style={{ width: sidebarWidth, minWidth: MIN_SIDEBAR, maxWidth: MAX_SIDEBAR }} className="shrink-0">
         <EntitySidebar
           entities={MOCK_ENTITIES}
-          invoices={MOCK_INVOICES}
+          invoices={invoices}
           selectedId={selectedId}
           onSelect={setSelectedId}
           onOpenResumo={() => setResumoOpen(true)}

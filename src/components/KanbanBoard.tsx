@@ -48,7 +48,7 @@ const KanbanBoard = ({ invoices, onMarkPaid, onDelete }: KanbanBoardProps) => {
                 </p>
               )}
               {items.map((inv) => (
-                <InvoiceCard key={inv.id} invoice={inv} onMarkPaid={onMarkPaid} />
+                <InvoiceCard key={inv.id} invoice={inv} onMarkPaid={onMarkPaid} onDelete={onDelete} />
               ))}
             </div>
           </div>

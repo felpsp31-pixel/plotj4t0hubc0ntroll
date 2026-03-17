@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarIcon, Download } from 'lucide-react';
+import { CalendarIcon, Download, FileSpreadsheet } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -12,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { Entity, Invoice, InvoiceStatus } from '@/types/finance';
 
 type ExportScope = 'all' | 'clients' | 'suppliers';
+type ExportFormat = 'pdf' | 'excel';
 
 interface ExportResumoButtonProps {
   entities: Entity[];
@@ -26,6 +28,11 @@ const STATUS_LABELS: Record<InvoiceStatus, string> = {
 
 const fmt = (v: number) =>
   v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+const fmtDate = (dateStr: string) => {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('pt-BR');
+};
 
 const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => {
   const [scope, setScope] = useState<ExportScope>('all');
@@ -46,7 +53,6 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
     const doc = new jsPDF();
     let yPos = 20;
 
-    // Title
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
     const titleMap: Record<ExportScope, string> = {
@@ -57,7 +63,6 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
     doc.text(titleMap[scope], 14, yPos);
     yPos += 8;
 
-    // Period subtitle
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     const periodText = startDate && endDate
@@ -75,13 +80,11 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
       const ents = entities.filter((e) => e.type === type);
       const invs = filterInvoices(invoices.filter((inv) => ents.some((e) => e.id === inv.entityId)));
 
-      // Section header
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
       doc.text(label, 14, yPos);
       yPos += 6;
 
-      // Status summary
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
       const total = invs.reduce((s, i) => s + i.value, 0);
@@ -94,7 +97,6 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
       doc.text(`Total: ${fmt(total)}`, 14, yPos);
       yPos += 8;
 
-      // Table
       const rows = ents.map((ent) => {
         const entInvs = invs.filter((i) => i.entityId === ent.id);
         const entTotal = entInvs.reduce((s, i) => s + i.value, 0);
@@ -117,23 +119,53 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
       });
 
       yPos = (doc as any).lastAutoTable.finalY + 15;
-
-      // Check page break
       if (yPos > 250) {
         doc.addPage();
         yPos = 20;
       }
     };
 
-    if (scope === 'all' || scope === 'clients') {
-      addSection('client', 'Clientes');
-    }
-    if (scope === 'all' || scope === 'suppliers') {
-      addSection('supplier', 'Fornecedores');
-    }
+    if (scope === 'all' || scope === 'clients') addSection('client', 'Clientes');
+    if (scope === 'all' || scope === 'suppliers') addSection('supplier', 'Fornecedores');
 
     doc.save(`resumo-financeiro-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
     setOpen(false);
+  };
+
+  const generateExcel = () => {
+    const wb = XLSX.utils.book_new();
+
+    const addSheet = (type: 'client' | 'supplier', sheetName: string) => {
+      const ents = entities.filter((e) => e.type === type);
+      const invs = filterInvoices(invoices.filter((inv) => ents.some((e) => e.id === inv.entityId)));
+
+      const rows = invs.map((inv) => {
+        const ent = ents.find((e) => e.id === inv.entityId);
+        return {
+          'Nome': ent?.name ?? '',
+          'CNPJ': ent?.document ?? '—',
+          'Descrição': inv.description,
+          'Valor (R$)': inv.value,
+          'Vencimento': fmtDate(inv.dueDate),
+          'Mês Ref.': inv.referenceMonth,
+          'Status': STATUS_LABELS[inv.status],
+        };
+      });
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+      XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    };
+
+    if (scope === 'all' || scope === 'clients') addSheet('client', 'Clientes');
+    if (scope === 'all' || scope === 'suppliers') addSheet('supplier', 'Fornecedores');
+
+    XLSX.writeFile(wb, `resumo-financeiro-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+    setOpen(false);
+  };
+
+  const handleExport = (exportFormat: ExportFormat) => {
+    if (exportFormat === 'pdf') generatePdf();
+    else generateExcel();
   };
 
   return (
@@ -141,20 +173,17 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <Download className="h-4 w-4" />
-          Exportar PDF
+          Exportar
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 pointer-events-auto" align="end">
         <div className="space-y-4">
           <h4 className="font-semibold text-sm text-foreground">Exportar Resumo</h4>
 
-          {/* Scope */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Escopo</label>
             <Select value={scope} onValueChange={(v) => setScope(v as ExportScope)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Resumo Completo</SelectItem>
                 <SelectItem value="clients">Somente Clientes</SelectItem>
@@ -163,74 +192,49 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
             </Select>
           </div>
 
-          {/* Start Date */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Data Início</label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn('w-full justify-start text-left font-normal', !startDate && 'text-muted-foreground')}
-                >
+                <Button variant="outline" className={cn('w-full justify-start text-left font-normal', !startDate && 'text-muted-foreground')}>
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {startDate ? format(startDate, 'dd/MM/yyyy') : 'Selecionar'}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={setStartDate}
-                  initialFocus
-                  locale={ptBR}
-                  className={cn('p-3 pointer-events-auto')}
-                />
+                <Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus locale={ptBR} className="p-3 pointer-events-auto" />
               </PopoverContent>
             </Popover>
           </div>
 
-          {/* End Date */}
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Data Fim</label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn('w-full justify-start text-left font-normal', !endDate && 'text-muted-foreground')}
-                >
+                <Button variant="outline" className={cn('w-full justify-start text-left font-normal', !endDate && 'text-muted-foreground')}>
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {endDate ? format(endDate, 'dd/MM/yyyy') : 'Selecionar'}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={endDate}
-                  onSelect={setEndDate}
-                  initialFocus
-                  locale={ptBR}
-                  className={cn('p-3 pointer-events-auto')}
-                />
+                <Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus locale={ptBR} className="p-3 pointer-events-auto" />
               </PopoverContent>
             </Popover>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex-1"
-              onClick={() => {
-                setStartDate(undefined);
-                setEndDate(undefined);
-              }}
-            >
+            <Button variant="ghost" size="sm" className="flex-1" onClick={() => { setStartDate(undefined); setEndDate(undefined); }}>
               Limpar filtros
             </Button>
-            <Button size="sm" className="flex-1 gap-2" onClick={generatePdf}>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" className="flex-1 gap-2" onClick={() => handleExport('pdf')}>
               <Download className="h-4 w-4" />
-              Gerar PDF
+              PDF
+            </Button>
+            <Button size="sm" variant="outline" className="flex-1 gap-2" onClick={() => handleExport('excel')}>
+              <FileSpreadsheet className="h-4 w-4" />
+              Excel
             </Button>
           </div>
         </div>

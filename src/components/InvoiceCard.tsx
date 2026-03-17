@@ -1,8 +1,10 @@
-import { Paperclip, Calendar, Hash, CheckCircle2, Trash2 } from 'lucide-react';
+import { Paperclip, Calendar, Hash, CheckCircle2, Trash2, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
-import type { Invoice } from '@/types/finance';
+import type { Invoice, Attachment } from '@/types/finance';
 import PdfUploadButton, { type ExtractedData } from './PdfUploadButton';
 import PdfAttachButton from './PdfAttachButton';
+import FilePreviewModal from './FilePreviewModal';
+import { useState } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,12 +31,23 @@ const statusStyles: Record<string, string> = {
 };
 
 const InvoiceCard = ({ invoice, onMarkPaid, onDelete, onUpdate }: InvoiceCardProps) => {
+  const [previewOpen, setPreviewOpen] = useState(false);
+
   const formatted = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
   }).format(invoice.value);
 
   const dueFormatted = new Date(invoice.dueDate + 'T00:00:00').toLocaleDateString('pt-BR');
+
+  const hasAttachments = invoice.attachments.length > 0;
+
+  const handleRemoveAttachment = (index: number) => {
+    if (!onUpdate) return;
+    const updated = [...invoice.attachments];
+    updated.splice(index, 1);
+    onUpdate(invoice.id, { attachments: updated });
+  };
 
   return (
     <motion.div
@@ -46,13 +59,12 @@ const InvoiceCard = ({ invoice, onMarkPaid, onDelete, onUpdate }: InvoiceCardPro
     >
       <div className="flex items-start justify-between mb-3">
         <p className="text-2xl font-semibold text-foreground">{formatted}</p>
-        {invoice.attachmentUrl ? (
-          <a href={invoice.attachmentUrl} target="_blank" rel="noopener noreferrer">
-            <Paperclip className="h-4 w-4 text-primary shrink-0 mt-1" />
-          </a>
-        ) : invoice.hasAttachment ? (
-          <Paperclip className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
-        ) : null}
+        {hasAttachments && (
+          <button onClick={() => setPreviewOpen(true)} className="flex items-center gap-1 text-primary hover:text-primary/80 transition-colors">
+            <Paperclip className="h-4 w-4 shrink-0" />
+            <span className="text-xs font-medium">{invoice.attachments.length}</span>
+          </button>
+        )}
       </div>
 
       <p className="text-sm text-muted-foreground mb-2 truncate">{invoice.description}</p>
@@ -70,13 +82,23 @@ const InvoiceCard = ({ invoice, onMarkPaid, onDelete, onUpdate }: InvoiceCardPro
         </div>
 
         <div className="flex items-center gap-2">
+          {hasAttachments && (
+            <button
+              onClick={() => setPreviewOpen(true)}
+              className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              <Eye className="h-3.5 w-3.5" />
+            </button>
+          )}
           {onUpdate && (
             <PdfAttachButton
               invoiceId={invoice.id}
-              attachmentUrl={invoice.attachmentUrl}
-              attachmentName={invoice.attachmentName}
-              onAttached={(url, name) => onUpdate(invoice.id, { attachmentUrl: url, attachmentName: name, hasAttachment: true })}
-              onRemoved={() => onUpdate(invoice.id, { attachmentUrl: undefined, attachmentName: undefined, hasAttachment: false })}
+              attachments={invoice.attachments}
+              onAttached={(url, name) =>
+                onUpdate(invoice.id, {
+                  attachments: [...invoice.attachments, { url, name, date: new Date().toISOString() }],
+                })
+              }
             />
           )}
           {onUpdate && (
@@ -129,6 +151,15 @@ const InvoiceCard = ({ invoice, onMarkPaid, onDelete, onUpdate }: InvoiceCardPro
           )}
         </div>
       </div>
+
+      {hasAttachments && (
+        <FilePreviewModal
+          open={previewOpen}
+          onOpenChange={setPreviewOpen}
+          attachments={invoice.attachments}
+          onRemove={onUpdate ? handleRemoveAttachment : undefined}
+        />
+      )}
     </motion.div>
   );
 };

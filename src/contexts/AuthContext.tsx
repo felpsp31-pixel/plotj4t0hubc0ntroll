@@ -1,47 +1,70 @@
 import { createContext, useContext, useEffect, useState, useRef, useCallback, type ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import type { Session, User } from '@supabase/supabase-js';
 
-const INACTIVITY_TIMEOUT = 60 * 60 * 1000; // 1 hour
+const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours
+const SESSION_KEY = 'app_session';
 
 interface AuthContextType {
-  session: Session | null;
-  user: User | null;
+  authenticated: boolean;
   loading: boolean;
-  signOut: () => Promise<void>;
+  login: (password: string) => Promise<boolean>;
+  signOut: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
-  session: null,
-  user: null,
+  authenticated: false,
   loading: true,
-  signOut: async () => {},
+  login: async () => false,
+  signOut: () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
 
+const getSession = () => {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const { expiresAt } = JSON.parse(raw);
+    if (Date.now() > expiresAt) {
+      localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+    return { expiresAt };
+  } catch {
+    localStorage.removeItem(SESSION_KEY);
+    return null;
+  }
+};
+
+const setSession = () => {
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ expiresAt: Date.now() + SESSION_TIMEOUT }));
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [session, setSession] = useState<Session | null>(null);
+  const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
-    setSession(null);
+  const signOut = useCallback(() => {
+    localStorage.removeItem(SESSION_KEY);
+    setAuthenticated(false);
   }, []);
 
-  // Auto-lock: reset timer on user activity
   const resetTimer = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    if (session) {
-      timeoutRef.current = setTimeout(() => {
-        signOut();
-      }, INACTIVITY_TIMEOUT);
+    if (authenticated) {
+      setSession(); // refresh expiry
+      timeoutRef.current = setTimeout(signOut, SESSION_TIMEOUT);
     }
-  }, [session, signOut]);
+  }, [authenticated, signOut]);
 
   useEffect(() => {
-    if (!session) return;
+    const session = getSession();
+    setAuthenticated(!!session);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (!authenticated) return;
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
     events.forEach((e) => window.addEventListener(e, resetTimer));
     resetTimer();
@@ -49,24 +72,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       events.forEach((e) => window.removeEventListener(e, resetTimer));
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [session, resetTimer]);
+  }, [authenticated, resetTimer]);
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setLoading(false);
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+  const login = useCallback(async (password: string): Promise<boolean> => {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data, error } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'access_password')
+        .single();
+      if (error || !data) return false;
+      if (data.value === password) {
+        setSession();
+        setAuthenticated(true);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
   }, []);
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, signOut }}>
+    <AuthContext.Provider value={{ authenticated, loading, login, signOut }}>
       {children}
     </AuthContext.Provider>
   );

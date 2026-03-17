@@ -36,15 +36,23 @@ const fmtDate = (dateStr: string) => {
 
 const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => {
   const [scope, setScope] = useState<ExportScope>('all');
+  const [selectedEntityId, setSelectedEntityId] = useState<string>('all');
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [open, setOpen] = useState(false);
+
+  const scopeEntities = entities.filter((e) => {
+    if (scope === 'clients') return e.type === 'client';
+    if (scope === 'suppliers') return e.type === 'supplier';
+    return true;
+  });
 
   const filterInvoices = (invs: Invoice[]) => {
     return invs.filter((inv) => {
       const due = new Date(inv.dueDate);
       if (startDate && due < startDate) return false;
       if (endDate && due > endDate) return false;
+      if (selectedEntityId !== 'all' && inv.entityId !== selectedEntityId) return false;
       return true;
     });
   };
@@ -76,9 +84,21 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
     doc.text(`Gerado em: ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")}`, 120, yPos);
     yPos += 10;
 
+    if (selectedEntityId !== 'all') {
+      const ent = entities.find((e) => e.id === selectedEntityId);
+      if (ent) {
+        doc.text(`Filtro: ${ent.name}`, 14, yPos);
+        yPos += 8;
+      }
+    }
+
     const addSection = (type: 'client' | 'supplier', label: string) => {
-      const ents = entities.filter((e) => e.type === type);
+      const ents = selectedEntityId !== 'all'
+        ? entities.filter((e) => e.id === selectedEntityId && e.type === type)
+        : entities.filter((e) => e.type === type);
       const invs = filterInvoices(invoices.filter((inv) => ents.some((e) => e.id === inv.entityId)));
+
+      if (ents.length === 0) return;
 
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
@@ -136,8 +156,12 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
     const wb = XLSX.utils.book_new();
 
     const addSheet = (type: 'client' | 'supplier', sheetName: string) => {
-      const ents = entities.filter((e) => e.type === type);
+      const ents = selectedEntityId !== 'all'
+        ? entities.filter((e) => e.id === selectedEntityId && e.type === type)
+        : entities.filter((e) => e.type === type);
       const invs = filterInvoices(invoices.filter((inv) => ents.some((e) => e.id === inv.entityId)));
+
+      if (ents.length === 0) return;
 
       const rows = invs.map((inv) => {
         const ent = ents.find((e) => e.id === inv.entityId);
@@ -182,12 +206,27 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
 
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-muted-foreground">Escopo</label>
-            <Select value={scope} onValueChange={(v) => setScope(v as ExportScope)}>
+            <Select value={scope} onValueChange={(v) => { setScope(v as ExportScope); setSelectedEntityId('all'); }}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Resumo Completo</SelectItem>
                 <SelectItem value="clients">Somente Clientes</SelectItem>
                 <SelectItem value="suppliers">Somente Fornecedores</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">
+              {scope === 'suppliers' ? 'Fornecedor' : scope === 'clients' ? 'Cliente' : 'Cliente / Fornecedor'}
+            </label>
+            <Select value={selectedEntityId} onValueChange={setSelectedEntityId}>
+              <SelectTrigger><SelectValue placeholder="Todos" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {scopeEntities.map((e) => (
+                  <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -223,7 +262,7 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
           </div>
 
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" className="flex-1" onClick={() => { setStartDate(undefined); setEndDate(undefined); }}>
+            <Button variant="ghost" size="sm" className="flex-1" onClick={() => { setStartDate(undefined); setEndDate(undefined); setSelectedEntityId('all'); }}>
               Limpar filtros
             </Button>
           </div>

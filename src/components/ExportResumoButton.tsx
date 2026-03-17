@@ -34,17 +34,12 @@ const fmtDate = (dateStr: string) => {
 };
 
 const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => {
-  const [scope, setScope] = useState<ExportScope>('all');
   const [selectedEntityId, setSelectedEntityId] = useState<string>('all');
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [open, setOpen] = useState(false);
 
-  const scopeEntities = entities.filter((e) => {
-    if (scope === 'clients') return e.type === 'client';
-    if (scope === 'suppliers') return e.type === 'supplier';
-    return true;
-  });
+  const scopeEntities = entities.filter((e) => e.type === 'client');
 
   const filterInvoices = (invs: Invoice[]) => {
     return invs.filter((inv) => {

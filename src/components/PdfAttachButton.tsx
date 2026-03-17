@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
-import { Paperclip, Loader2, FileDown, X } from 'lucide-react';
+import { Paperclip, Loader2, FileDown, X, Eye, Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import FilePreviewModal from './FilePreviewModal';
 import {
   Tooltip,
   TooltipContent,
@@ -21,6 +22,7 @@ interface PdfAttachButtonProps {
 }
 
 const BUCKET = 'invoice-attachments';
+const ACCEPTED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
 const PdfAttachButton = ({
   invoiceId,
@@ -32,11 +34,13 @@ const PdfAttachButton = ({
   className = '',
 }: PdfAttachButtonProps) => {
   const [loading, setLoading] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
-    if (file.type !== 'application/pdf') {
-      toast.error('Apenas arquivos PDF são aceitos.');
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      toast.error('Apenas PDF e imagens (JPG, PNG, GIF, WebP) são aceitos.');
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
@@ -73,6 +77,23 @@ const PdfAttachButton = ({
     if (file) handleFile(file);
   };
 
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFile(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+  };
+
   const handleRemove = () => {
     onRemoved();
     toast.success('Anexo removido.');
@@ -84,21 +105,28 @@ const PdfAttachButton = ({
         <input
           ref={inputRef}
           type="file"
-          accept=".pdf"
+          accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
           className="hidden"
           onChange={handleChange}
         />
         {attachmentUrl ? (
           <div className="flex items-center gap-2">
-            <a
-              href={attachmentUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-sm text-primary hover:underline truncate flex-1"
+            <button
+              onClick={() => setPreviewOpen(true)}
+              className="flex items-center gap-1.5 text-sm text-primary hover:underline truncate flex-1 text-left"
             >
               <Paperclip className="h-4 w-4 shrink-0" />
-              {attachmentName || 'Anexo.pdf'}
-            </a>
+              {attachmentName || 'Anexo'}
+            </button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setPreviewOpen(true)}
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
             <Button
               type="button"
               variant="ghost"
@@ -110,20 +138,42 @@ const PdfAttachButton = ({
             </Button>
           </div>
         ) : (
-          <Button
-            type="button"
-            variant="outline"
+          <div
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
             onClick={() => inputRef.current?.click()}
-            disabled={loading}
-            className="w-full"
+            className={`w-full border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
+              dragging
+                ? 'border-primary bg-primary/5'
+                : 'border-border hover:border-primary/50'
+            }`}
           >
             {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Anexando...
+              </div>
             ) : (
-              <Paperclip className="h-4 w-4 mr-2" />
+              <div className="flex flex-col items-center gap-1">
+                <Upload className="h-5 w-5 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  Arraste ou clique para anexar
+                </span>
+                <span className="text-xs text-muted-foreground/60">
+                  PDF, JPG, PNG (máx. 10MB)
+                </span>
+              </div>
             )}
-            {loading ? 'Anexando...' : 'Anexar PDF'}
-          </Button>
+          </div>
+        )}
+        {attachmentUrl && (
+          <FilePreviewModal
+            open={previewOpen}
+            onOpenChange={setPreviewOpen}
+            url={attachmentUrl}
+            name={attachmentName || 'Anexo'}
+          />
         )}
       </div>
     );
@@ -135,7 +185,7 @@ const PdfAttachButton = ({
       <input
         ref={inputRef}
         type="file"
-        accept=".pdf"
+        accept=".pdf,.jpg,.jpeg,.png,.gif,.webp"
         className="hidden"
         onChange={handleChange}
       />
@@ -143,17 +193,29 @@ const PdfAttachButton = ({
         <div className="flex items-center gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
+              <button
+                onClick={() => setPreviewOpen(true)}
+                className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                <Eye className="h-3.5 w-3.5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Visualizar {attachmentName || 'anexo'}</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
               <a
                 href={attachmentUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                download={attachmentName}
                 className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
               >
                 <FileDown className="h-3.5 w-3.5" />
               </a>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{attachmentName || 'Baixar anexo'}</p>
+              <p>Baixar {attachmentName || 'anexo'}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -169,6 +231,12 @@ const PdfAttachButton = ({
               <p>Remover anexo</p>
             </TooltipContent>
           </Tooltip>
+          <FilePreviewModal
+            open={previewOpen}
+            onOpenChange={setPreviewOpen}
+            url={attachmentUrl}
+            name={attachmentName || 'Anexo'}
+          />
         </div>
       ) : (
         <Tooltip>
@@ -186,7 +254,7 @@ const PdfAttachButton = ({
             </button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Anexar PDF</p>
+            <p>Anexar arquivo</p>
           </TooltipContent>
         </Tooltip>
       )}

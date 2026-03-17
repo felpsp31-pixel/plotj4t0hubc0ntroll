@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { LogOut } from 'lucide-react';
+import ImportNotaFiscalDialog from '@/components/ImportNotaFiscalDialog';
 import { useAuth } from '@/contexts/AuthContext';
 import EntitySidebar from '@/components/EntitySidebar';
 import EntityHeader from '@/components/EntityHeader';

@@ -57,12 +57,7 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
 
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    const titleMap: Record<ExportScope, string> = {
-      all: 'Resumo Financeiro Completo',
-      clients: 'Resumo de Clientes',
-      suppliers: 'Resumo de Fornecedores',
-    };
-    doc.text(titleMap[scope], 14, yPos);
+    doc.text('Resumo de Clientes', 14, yPos);
     yPos += 8;
 
     doc.setFontSize(10);

@@ -134,8 +134,7 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
       }
     };
 
-    if (scope === 'all' || scope === 'clients') addSection('client', 'Clientes');
-    if (scope === 'all' || scope === 'suppliers') addSection('supplier', 'Fornecedores');
+    addSection('client', 'Clientes');
 
     doc.save(`resumo-financeiro-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
     setOpen(false);

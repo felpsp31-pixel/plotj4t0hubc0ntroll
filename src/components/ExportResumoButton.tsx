@@ -12,7 +12,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Entity, Invoice, InvoiceStatus } from '@/types/finance';
 
-type ExportScope = 'all' | 'clients' | 'suppliers';
 type ExportFormat = 'pdf' | 'excel';
 
 interface ExportResumoButtonProps {

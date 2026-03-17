@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface SettingsModalProps {
@@ -16,16 +17,26 @@ interface SettingsModalProps {
 }
 
 const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
-  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSave = () => {
-    if (!currentPassword || !newPassword) {
-      toast.error('Preencha todos os campos.');
+  const handleSave = async () => {
+    if (!newPassword) {
+      toast.error('Digite a nova senha.');
       return;
     }
-    toast.success('Senha atualizada com sucesso!');
-    setCurrentPassword('');
+    setLoading(true);
+    const { error } = await supabase
+      .from('app_settings')
+      .update({ value: newPassword })
+      .eq('key', 'access_password');
+    setLoading(false);
+
+    if (error) {
+      toast.error('Erro ao atualizar senha.');
+      return;
+    }
+    toast.success('Senha de acesso atualizada com sucesso!');
     setNewPassword('');
     onOpenChange(false);
   };
@@ -38,25 +49,20 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div className="space-y-2">
-            <Label htmlFor="current-pw">Senha atual</Label>
-            <Input
-              id="current-pw"
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="new-pw">Nova senha</Label>
+            <Label htmlFor="new-pw">Senha de acesso geral</Label>
             <Input
               id="new-pw"
               type="password"
+              placeholder="Nova senha"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
+            <p className="text-xs text-muted-foreground">
+              Esta senha será usada por todos que acessam o sistema.
+            </p>
           </div>
-          <Button onClick={handleSave} className="w-full">
-            Salvar
+          <Button onClick={handleSave} className="w-full" disabled={loading}>
+            {loading ? 'Salvando...' : 'Salvar'}
           </Button>
         </div>
       </DialogContent>

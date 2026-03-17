@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import PdfUploadButton, { type ExtractedData } from './PdfUploadButton';
 import PdfAttachButton from './PdfAttachButton';
-import type { Invoice } from '@/types/finance';
+import type { Invoice, Attachment } from '@/types/finance';
 
 interface NewInvoiceDialogProps {
   entityId: string;
@@ -19,8 +19,7 @@ const NewInvoiceDialog = ({ entityId, onAdd }: NewInvoiceDialogProps) => {
   const [value, setValue] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [referenceMonth, setReferenceMonth] = useState('');
-  const [attachmentUrl, setAttachmentUrl] = useState<string>();
-  const [attachmentName, setAttachmentName] = useState<string>();
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const tempId = useState(() => `new-${Date.now()}`)[0];
 
   const resetForm = () => {
@@ -28,8 +27,7 @@ const NewInvoiceDialog = ({ entityId, onAdd }: NewInvoiceDialogProps) => {
     setValue('');
     setDueDate('');
     setReferenceMonth('');
-    setAttachmentUrl(undefined);
-    setAttachmentName(undefined);
+    setAttachments([]);
   };
 
   const handleExtracted = (data: ExtractedData) => {
@@ -55,9 +53,7 @@ const NewInvoiceDialog = ({ entityId, onAdd }: NewInvoiceDialogProps) => {
       dueDate,
       referenceMonth: referenceMonth || '',
       status: 'open',
-      hasAttachment: !!attachmentUrl,
-      attachmentUrl,
-      attachmentName,
+      attachments,
     };
 
     onAdd(invoice);
@@ -134,15 +130,16 @@ const NewInvoiceDialog = ({ entityId, onAdd }: NewInvoiceDialogProps) => {
           </div>
 
           <div className="space-y-2">
-            <Label>Anexo (PDF)</Label>
+            <Label>Anexos (PDF, imagens)</Label>
             <PdfAttachButton
               invoiceId={tempId}
-              attachmentUrl={attachmentUrl}
-              attachmentName={attachmentName}
-              onAttached={(url, name) => { setAttachmentUrl(url); setAttachmentName(name); }}
-              onRemoved={() => { setAttachmentUrl(undefined); setAttachmentName(undefined); }}
+              attachments={attachments}
+              onAttached={(url, name) => setAttachments((prev) => [...prev, { url, name, date: new Date().toISOString() }])}
               variant="full"
             />
+            {attachments.length > 0 && (
+              <p className="text-xs text-muted-foreground">{attachments.length} arquivo(s) anexado(s)</p>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 pt-2">

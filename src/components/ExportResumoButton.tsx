@@ -168,8 +168,7 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
       XLSX.utils.book_append_sheet(wb, ws, sheetName);
     };
 
-    if (scope === 'all' || scope === 'clients') addSheet('client', 'Clientes');
-    if (scope === 'all' || scope === 'suppliers') addSheet('supplier', 'Fornecedores');
+    addSheet('client', 'Clientes');
 
     XLSX.writeFile(wb, `resumo-financeiro-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
     setOpen(false);

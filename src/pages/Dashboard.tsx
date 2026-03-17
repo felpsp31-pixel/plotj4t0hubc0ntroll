@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { LogOut } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import EntitySidebar from '@/components/EntitySidebar';
 import EntityHeader from '@/components/EntityHeader';
 import KanbanBoard from '@/components/KanbanBoard';
+import StatusSummaryCards from '@/components/StatusSummaryCards';
 import ClientsTable from '@/components/ClientsTable';
 import SuppliersTable from '@/components/SuppliersTable';
 import ExportResumoButton from '@/components/ExportResumoButton';
@@ -9,6 +12,7 @@ import NewInvoiceDialog from '@/components/NewInvoiceDialog';
 import { MOCK_ENTITIES, MOCK_INVOICES } from '@/types/finance';
 import type { Invoice } from '@/types/finance';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -16,6 +20,7 @@ const MIN_SIDEBAR = 260;
 const MAX_SIDEBAR = 450;
 
 const Dashboard = () => {
+  const { signOut } = useAuth();
   const [selectedId, setSelectedId] = useState<string | null>(MOCK_ENTITIES[0]?.id ?? null);
   const [invoices, setInvoices] = useState(MOCK_INVOICES);
   const [sidebarWidth, setSidebarWidth] = useState(300);
@@ -59,7 +64,7 @@ const Dashboard = () => {
     setInvoices((prev) =>
       prev.map((inv) => inv.id === invoiceId ? { ...inv, ...data } : inv)
     );
-    toast.success('Lançamento atualizado com dados do PDF.');
+    toast.success('Lançamento atualizado.');
   };
 
   const handleAdd = (invoice: Invoice) => {
@@ -74,7 +79,6 @@ const Dashboard = () => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = tomorrow.toISOString().slice(0, 10);
 
-    // Alertas gerais de vencimento hoje
     const overdueToday = invoices.filter((inv) => inv.dueDate === todayStr && inv.status !== 'paid');
     overdueToday.forEach((inv) => {
       const entity = MOCK_ENTITIES.find((e) => e.id === inv.entityId);
@@ -88,7 +92,6 @@ const Dashboard = () => {
       toast.warning(`${overdue.length} título(s) em atraso detectado(s).`, { duration: 5000 });
     }
 
-    // Alerta de fornecedores com vencimento amanhã (1 dia antes)
     const supplierEntities = MOCK_ENTITIES.filter((e) => e.type === 'supplier');
     const supplierIds = new Set(supplierEntities.map((e) => e.id));
     const dueTomorrow = invoices.filter(
@@ -134,7 +137,6 @@ const Dashboard = () => {
 
   return (
     <div className="h-screen flex overflow-hidden bg-background">
-      {/* Sidebar */}
       <div style={{ width: sidebarWidth, minWidth: MIN_SIDEBAR, maxWidth: MAX_SIDEBAR }} className="shrink-0">
         <EntitySidebar
           entities={MOCK_ENTITIES}
@@ -145,20 +147,24 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Resize Handle */}
       <div
         onMouseDown={startDrag}
         className="w-1 hover:w-1.5 bg-border hover:bg-primary/30 cursor-col-resize transition-all duration-150 shrink-0"
       />
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 p-6 overflow-hidden">
         {selectedEntity ? (
           <>
-            <EntityHeader entity={selectedEntity} />
-            <div className="flex justify-end mb-4">
-              <NewInvoiceDialog entityId={selectedEntity.id} onAdd={handleAdd} />
+            <div className="flex items-center justify-between mb-2">
+              <EntityHeader entity={selectedEntity} />
+              <div className="flex items-center gap-2">
+                <NewInvoiceDialog entityId={selectedEntity.id} onAdd={handleAdd} />
+                <Button variant="ghost" size="icon" onClick={signOut} title="Sair">
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
+            <StatusSummaryCards invoices={entityInvoices} />
             <div className="flex-1 min-h-0">
               <KanbanBoard invoices={entityInvoices} onMarkPaid={handleMarkPaid} onDelete={handleDelete} onUpdate={handleUpdate} />
             </div>
@@ -170,7 +176,6 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* Resumo Sheet */}
       <Sheet open={resumoOpen} onOpenChange={setResumoOpen}>
         <SheetContent side="left" className="w-[600px] sm:w-[700px] sm:max-w-none overflow-y-auto">
           <SheetHeader className="flex flex-row items-center justify-between pr-8">

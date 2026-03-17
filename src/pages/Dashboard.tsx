@@ -159,6 +159,7 @@ const Dashboard = () => {
             <div className="flex items-center justify-between mb-2">
               <EntityHeader entity={selectedEntity} />
               <div className="flex items-center gap-2">
+                <ImportNotaFiscalDialog />
                 <NewInvoiceDialog entityId={selectedEntity.id} onAdd={handleAdd} />
                 <Button variant="ghost" size="icon" onClick={signOut} title="Sair">
                   <LogOut className="h-4 w-4" />

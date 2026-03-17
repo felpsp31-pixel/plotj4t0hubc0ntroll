@@ -185,18 +185,7 @@ const Dashboard = () => {
             <ExportResumoButton entities={MOCK_ENTITIES} invoices={invoices} />
           </SheetHeader>
           <div className="mt-4">
-            <Tabs defaultValue="clients">
-              <TabsList className="w-full">
-                <TabsTrigger value="clients" className="flex-1">Clientes</TabsTrigger>
-                <TabsTrigger value="suppliers" className="flex-1">Fornecedores</TabsTrigger>
-              </TabsList>
-              <TabsContent value="clients" className="mt-4">
-                <ClientsTable entities={MOCK_ENTITIES} invoices={invoices} />
-              </TabsContent>
-              <TabsContent value="suppliers" className="mt-4">
-                <SuppliersTable entities={MOCK_ENTITIES} invoices={invoices} />
-              </TabsContent>
-            </Tabs>
+            <ClientsTable entities={MOCK_ENTITIES} invoices={invoices} />
           </div>
         </SheetContent>
       </Sheet>

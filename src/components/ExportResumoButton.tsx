@@ -192,21 +192,7 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
           <h4 className="font-semibold text-sm text-foreground">Exportar Resumo</h4>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Escopo</label>
-            <Select value={scope} onValueChange={(v) => { setScope(v as ExportScope); setSelectedEntityId('all'); }}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Resumo Completo</SelectItem>
-                <SelectItem value="clients">Somente Clientes</SelectItem>
-                <SelectItem value="suppliers">Somente Fornecedores</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
-              {scope === 'suppliers' ? 'Fornecedor' : scope === 'clients' ? 'Cliente' : 'Cliente / Fornecedor'}
-            </label>
+            <label className="text-xs font-medium text-muted-foreground">Cliente</label>
             <Select value={selectedEntityId} onValueChange={setSelectedEntityId}>
               <SelectTrigger><SelectValue placeholder="Todos" /></SelectTrigger>
               <SelectContent>

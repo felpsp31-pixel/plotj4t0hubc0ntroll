@@ -12,7 +12,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Entity, Invoice, InvoiceStatus } from '@/types/finance';
 
-type ExportScope = 'all' | 'clients' | 'suppliers';
 type ExportFormat = 'pdf' | 'excel';
 
 interface ExportResumoButtonProps {
@@ -35,17 +34,12 @@ const fmtDate = (dateStr: string) => {
 };
 
 const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => {
-  const [scope, setScope] = useState<ExportScope>('all');
   const [selectedEntityId, setSelectedEntityId] = useState<string>('all');
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [open, setOpen] = useState(false);
 
-  const scopeEntities = entities.filter((e) => {
-    if (scope === 'clients') return e.type === 'client';
-    if (scope === 'suppliers') return e.type === 'supplier';
-    return true;
-  });
+  const scopeEntities = entities.filter((e) => e.type === 'client');
 
   const filterInvoices = (invs: Invoice[]) => {
     return invs.filter((inv) => {
@@ -63,12 +57,7 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
 
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    const titleMap: Record<ExportScope, string> = {
-      all: 'Resumo Financeiro Completo',
-      clients: 'Resumo de Clientes',
-      suppliers: 'Resumo de Fornecedores',
-    };
-    doc.text(titleMap[scope], 14, yPos);
+    doc.text('Resumo de Clientes', 14, yPos);
     yPos += 8;
 
     doc.setFontSize(10);
@@ -145,8 +134,7 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
       }
     };
 
-    if (scope === 'all' || scope === 'clients') addSection('client', 'Clientes');
-    if (scope === 'all' || scope === 'suppliers') addSection('supplier', 'Fornecedores');
+    addSection('client', 'Clientes');
 
     doc.save(`resumo-financeiro-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
     setOpen(false);
@@ -180,8 +168,7 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
       XLSX.utils.book_append_sheet(wb, ws, sheetName);
     };
 
-    if (scope === 'all' || scope === 'clients') addSheet('client', 'Clientes');
-    if (scope === 'all' || scope === 'suppliers') addSheet('supplier', 'Fornecedores');
+    addSheet('client', 'Clientes');
 
     XLSX.writeFile(wb, `resumo-financeiro-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
     setOpen(false);
@@ -205,21 +192,7 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
           <h4 className="font-semibold text-sm text-foreground">Exportar Resumo</h4>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">Escopo</label>
-            <Select value={scope} onValueChange={(v) => { setScope(v as ExportScope); setSelectedEntityId('all'); }}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Resumo Completo</SelectItem>
-                <SelectItem value="clients">Somente Clientes</SelectItem>
-                <SelectItem value="suppliers">Somente Fornecedores</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground">
-              {scope === 'suppliers' ? 'Fornecedor' : scope === 'clients' ? 'Cliente' : 'Cliente / Fornecedor'}
-            </label>
+            <label className="text-xs font-medium text-muted-foreground">Cliente</label>
             <Select value={selectedEntityId} onValueChange={setSelectedEntityId}>
               <SelectTrigger><SelectValue placeholder="Todos" /></SelectTrigger>
               <SelectContent>

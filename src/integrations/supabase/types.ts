@@ -32,6 +32,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notas_fiscais: {
+        Row: {
+          created_at: string
+          id: string
+          issqn_retido: number | null
+          numero_nfse: string | null
+          pdf_url: string | null
+          tomador: string | null
+          valor_liquido: number | null
+          vencimento: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          issqn_retido?: number | null
+          numero_nfse?: string | null
+          pdf_url?: string | null
+          tomador?: string | null
+          valor_liquido?: number | null
+          vencimento?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          issqn_retido?: number | null
+          numero_nfse?: string | null
+          pdf_url?: string | null
+          tomador?: string | null
+          valor_liquido?: number | null
+          vencimento?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

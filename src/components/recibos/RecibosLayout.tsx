@@ -104,7 +104,7 @@ const RecibosLayout = () => {
               )
             ))}
           </nav>
-          <div className={cn('border-t border-border', expanded ? 'p-2' : 'p-1')}>
+          <div className={cn('border-t border-border', expanded ? 'p-2' : 'p-1.5')}>
             {expanded ? (
               <Button variant="ghost" className="w-full justify-start" onClick={() => { setForm(empresaInfo); setSettingsOpen(true); }}>
                 <Settings className="h-4 w-4 mr-2" /> Configurações

@@ -57,7 +57,7 @@ const EmissaoReciboPage = () => {
     });
     setLastRecibo(recibo);
     setSaved(true);
-    toast.success(`Recibo ${recibo.number} salvo!`);
+    toast.success(`Recibo Nº ${recibo.number} emitido com sucesso!`);
   };
 
   const handleNew = () => {

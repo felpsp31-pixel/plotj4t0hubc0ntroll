@@ -63,7 +63,7 @@ const RecibosLayout = () => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button onClick={() => navigate('/')} className="p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors">
-                    <ArrowLeft className="h-4 w-4" />
+                    <ArrowLeft className="h-5 w-5" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="right">Início</TooltipContent>

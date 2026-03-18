@@ -223,8 +223,8 @@ const Dashboard = () => {
               <div className="flex items-center gap-2 flex-wrap">
                 <ImportNotaFiscalDialog />
                 <NewInvoiceDialog entityId={selectedEntity.id} onAdd={handleAdd} />
-                {/* Botão de cadastro de fornecedor */}
-                <Dialog open={supplierDialogOpen} onOpenChange={setSupplierDialogOpen}>
+                {/* Botão de cadastro de fornecedor — só visível na aba fornecedores */}
+                {sidebarTab === 'suppliers' && <Dialog open={supplierDialogOpen} onOpenChange={setSupplierDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="outline" size="sm">+ Fornecedor</Button>
                   </DialogTrigger>

@@ -49,8 +49,9 @@ const Dashboard = () => {
     return merged;
   })();
 
+  const { invoices, handleMarkPaid, handleDelete, handleUpdate, handleAdd } = useFinancialInvoices();
+
   const [selectedId, setSelectedId] = useState<string | null>(MOCK_ENTITIES[0]?.id ?? null);
-  const [invoices, setInvoices] = useState(MOCK_INVOICES);
   const [sidebarWidth, setSidebarWidth] = useState(300);
   const [resumoOpen, setResumoOpen] = useState(false);
   const dragging = useRef(false);

@@ -54,15 +54,14 @@ const RecibosLayout = () => {
             expanded ? 'w-56' : 'w-14'
           )}
         >
-          <div className="px-3 py-4">
-            <button onClick={() => navigate('/')} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <div className="px-2 py-4">
+            <button onClick={() => navigate('/')} className="flex items-center gap-2 px-2 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-md">
               <ArrowLeft className="h-5 w-5 shrink-0" />
               {expanded && <span className="whitespace-nowrap">Início</span>}
             </button>
           </div>
           <nav className="flex-1 space-y-1 px-2">
             {links.map(l => {
-              const icon = <l.icon className="h-5 w-5 shrink-0" />;
               const link = (
                 <NavLink
                   key={l.to}
@@ -73,7 +72,7 @@ const RecibosLayout = () => {
                     isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
                   )}
                 >
-                  {icon}
+                  <l.icon className="h-5 w-5 shrink-0" />
                   {expanded && l.label}
                 </NavLink>
               );
@@ -85,7 +84,7 @@ const RecibosLayout = () => {
               );
             })}
           </nav>
-          <div className="border-t border-border p-2">
+          <div className="border-t border-border px-2 py-2">
             {expanded ? (
               <Button variant="ghost" className="w-full justify-start gap-2 px-2" onClick={() => { setForm(empresaInfo); setSettingsOpen(true); }}>
                 <Settings className="h-5 w-5 shrink-0" /> Configurações

@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .eq('key', 'access_password')
         .single();
       if (error || !data) return false;
-      if (data.value === password) {
+      if (await bcrypt.compare(password, data.value)) {
         setSession();
         setAuthenticated(true);
         return true;

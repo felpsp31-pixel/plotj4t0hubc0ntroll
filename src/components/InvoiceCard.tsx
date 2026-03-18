@@ -80,8 +80,8 @@ const InvoiceCard = ({ invoice, onMarkPaid, onDelete, onUpdate }: InvoiceCardPro
           <button
             onClick={() => setPreviewOpen(true)}
             className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors">
-            
               <Eye className="h-3.5 w-3.5" />
+              <span>{invoice.attachments.length}</span>
             </button>
           }
           {onUpdate &&

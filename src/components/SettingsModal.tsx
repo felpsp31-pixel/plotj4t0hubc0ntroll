@@ -27,9 +27,10 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
       return;
     }
     setLoading(true);
+    const hashed = await bcrypt.hash(newPassword, 10);
     const { error } = await supabase
       .from('app_settings')
-      .update({ value: newPassword })
+      .update({ value: hashed })
       .eq('key', 'access_password');
     setLoading(false);
 

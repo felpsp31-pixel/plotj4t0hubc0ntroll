@@ -128,22 +128,36 @@ const Dashboard = () => {
 
   return (
     <div className="h-screen flex overflow-hidden bg-background">
-      <div style={{ width: sidebarWidth, minWidth: MIN_SIDEBAR, maxWidth: MAX_SIDEBAR }} className="shrink-0">
-        <EntitySidebar
-          entities={allEntities}
-          invoices={invoices}
-          selectedId={selectedId}
-          onSelect={setSelectedId}
-          onOpenResumo={() => setResumoOpen(true)}
-        />
-      </div>
+      {!sidebarCollapsed && (
+        <>
+          <div style={{ width: sidebarWidth, minWidth: MIN_SIDEBAR, maxWidth: MAX_SIDEBAR }} className="shrink-0">
+            <EntitySidebar
+              entities={allEntities}
+              invoices={invoices}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              onOpenResumo={() => setResumoOpen(true)}
+            />
+          </div>
+          <div
+            onMouseDown={startDrag}
+            className="w-1 hover:w-1.5 bg-border hover:bg-primary/30 cursor-col-resize transition-all duration-150 shrink-0"
+          />
+        </>
+      )}
 
-      <div
-        onMouseDown={startDrag}
-        className="w-1 hover:w-1.5 bg-border hover:bg-primary/30 cursor-col-resize transition-all duration-150 shrink-0"
-      />
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div className="flex items-center gap-2 px-6 pt-4">
+          <button
+            onClick={() => setSidebarCollapsed(c => !c)}
+            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            title={sidebarCollapsed ? 'Mostrar painel' : 'Ocultar painel'}
+          >
+            {sidebarCollapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
+          </button>
+        </div>
 
-      <div className="flex-1 flex flex-col min-w-0 p-6 overflow-hidden">
+        <div className="flex-1 flex flex-col min-w-0 p-6 pt-2 overflow-hidden">
         {selectedEntity ? (
           <>
             <div className="flex items-center justify-between mb-2 gap-4">

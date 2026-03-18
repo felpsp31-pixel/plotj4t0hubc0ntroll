@@ -12,6 +12,8 @@ import SuppliersTable from '@/components/SuppliersTable';
 import ExportResumoButton from '@/components/ExportResumoButton';
 import NewInvoiceDialog from '@/components/NewInvoiceDialog';
 import { MOCK_ENTITIES, MOCK_INVOICES } from '@/types/finance';
+import type { Entity } from '@/types/finance';
+import { useClientesFinanceiro } from '@/hooks/useClientesFinanceiro';
 import type { Invoice } from '@/types/finance';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';

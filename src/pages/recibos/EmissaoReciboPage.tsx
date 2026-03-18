@@ -133,85 +133,54 @@ const EmissaoReciboPage = () => {
   const servicoOptions = servicos.map(s => ({ value: s.code, label: `${s.code} - ${s.description}` }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2 h-full flex flex-col">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-foreground">Emissão de Recibo</h1>
-        <span className="text-lg font-semibold text-primary">
-          Recibo Nº {saved && lastRecibo ? lastRecibo.number : nextNumber}
+        <h1 className="text-lg font-bold text-foreground">Emissão de Recibo</h1>
+        <span className="text-sm font-semibold text-primary">
+          Nº {saved && lastRecibo ? lastRecibo.number : nextNumber}
         </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-3">
         <div>
-          <label className="text-sm font-medium text-foreground">Cliente</label>
-          <Combobox
-            options={clientes.map(c => ({ value: c.id, label: c.name }))}
-            value={clienteId}
-            onValueChange={v => { setClienteId(v); setSolicitanteId(''); setObraId(''); }}
-            placeholder="Selecione o cliente"
-            disabled={saved}
-          />
+          <label className="text-xs font-medium text-foreground">Cliente</label>
+          <Combobox options={clientes.map(c => ({ value: c.id, label: c.name }))} value={clienteId} onValueChange={v => { setClienteId(v); setSolicitanteId(''); setObraId(''); }} placeholder="Selecione" disabled={saved} />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground">Solicitante</label>
-          <Combobox
-            options={filteredSolicitantes.map(s => ({ value: s.id, label: s.name }))}
-            value={solicitanteId}
-            onValueChange={setSolicitanteId}
-            placeholder="Selecione o solicitante"
-            disabled={saved || !clienteId}
-          />
+          <label className="text-xs font-medium text-foreground">Solicitante</label>
+          <Combobox options={filteredSolicitantes.map(s => ({ value: s.id, label: s.name }))} value={solicitanteId} onValueChange={setSolicitanteId} placeholder="Selecione" disabled={saved || !clienteId} />
         </div>
         <div>
-          <label className="text-sm font-medium text-foreground">Obra</label>
-          <Combobox
-            options={filteredObras.map(o => ({ value: o.id, label: o.name }))}
-            value={obraId}
-            onValueChange={setObraId}
-            placeholder="Selecione a obra"
-            disabled={saved || !clienteId}
-          />
+          <label className="text-xs font-medium text-foreground">Obra</label>
+          <Combobox options={filteredObras.map(o => ({ value: o.id, label: o.name }))} value={obraId} onValueChange={setObraId} placeholder="Selecione" disabled={saved || !clienteId} />
         </div>
       </div>
 
-      <div className="border rounded-lg overflow-auto">
+      <div className="border rounded-md overflow-hidden flex-1 min-h-0">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="w-[200px]">Serviço</TableHead>
-              <TableHead>Descrição</TableHead>
-              <TableHead className="w-[100px]">Qtd</TableHead>
-              <TableHead className="w-[130px]">Unitário</TableHead>
-              <TableHead className="w-[130px]">Total</TableHead>
+            <TableRow className="h-8">
+              <TableHead className="py-1 text-xs w-[180px]">Serviço</TableHead>
+              <TableHead className="py-1 text-xs">Descrição</TableHead>
+              <TableHead className="py-1 text-xs w-[70px]">Qtd</TableHead>
+              <TableHead className="py-1 text-xs w-[100px]">Unitário</TableHead>
+              <TableHead className="py-1 text-xs w-[100px]">Total</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {lines.map((line, idx) => (
-              <TableRow key={idx}>
-                <TableCell>
-                  <Combobox
-                    options={servicoOptions}
-                    value={line.serviceCode}
-                    onValueChange={v => updateLine(idx, 'serviceCode', v)}
-                    placeholder="Código"
-                    disabled={saved}
-                  />
+              <TableRow key={idx} className="h-8">
+                <TableCell className="py-0.5 px-2">
+                  <Combobox options={servicoOptions} value={line.serviceCode} onValueChange={v => updateLine(idx, 'serviceCode', v)} placeholder="Código" disabled={saved} />
                 </TableCell>
-                <TableCell className="text-foreground">{line.description}</TableCell>
-                <TableCell>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={line.quantity || ''}
-                    onChange={e => updateLine(idx, 'quantity', e.target.value)}
-                    disabled={saved}
-                    className="w-20"
-                  />
+                <TableCell className="py-0.5 px-2 text-xs text-foreground">{line.description}</TableCell>
+                <TableCell className="py-0.5 px-2">
+                  <Input type="number" min={0} value={line.quantity || ''} onChange={e => updateLine(idx, 'quantity', e.target.value)} disabled={saved} className="h-7 w-16 text-xs" />
                 </TableCell>
-                <TableCell className="text-foreground">
+                <TableCell className="py-0.5 px-2 text-xs text-foreground">
                   {line.unitPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </TableCell>
-                <TableCell className="font-medium text-foreground">
+                <TableCell className="py-0.5 px-2 text-xs font-medium text-foreground">
                   {line.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </TableCell>
               </TableRow>
@@ -220,15 +189,15 @@ const EmissaoReciboPage = () => {
         </Table>
       </div>
 
-      <div className="flex items-center justify-between">
-        <p className="text-lg font-bold text-foreground">
+      <div className="flex items-center justify-between pt-1">
+        <p className="text-sm font-bold text-foreground">
           Total: {total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
         </p>
         <div className="flex gap-2">
-          <Button onClick={handleSave} disabled={saved}>Salvar Recibo</Button>
-          <Button variant="outline" onClick={handleNew}>Novo Recibo</Button>
-          {saved && <Button variant="secondary" onClick={handleExportPdf}>Exportar PDF</Button>}
-          {saved && <Button variant="secondary" onClick={handlePrint}>Imprimir</Button>}
+          <Button size="sm" onClick={handleSave} disabled={saved}>Salvar Recibo</Button>
+          <Button size="sm" variant="outline" onClick={handleNew}>Novo Recibo</Button>
+          {saved && <Button size="sm" variant="secondary" onClick={handleExportPdf}>Exportar PDF</Button>}
+          {saved && <Button size="sm" variant="secondary" onClick={handlePrint}>Imprimir</Button>}
         </div>
       </div>
     </div>

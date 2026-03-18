@@ -24,12 +24,12 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 sm:p-6">
       <div className="flex flex-col items-center mb-10">
         <img
           src="/logo.png"
           alt="Logo da empresa"
-          className="h-24 w-auto object-contain"
+          className="h-16 sm:h-24 w-auto object-contain"
         />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl w-full">
@@ -40,7 +40,7 @@ const HomePage = () => {
             <CardDescription>Emissão de recibos, clientes e serviços</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button className="w-full" onClick={() => navigate('/recibos')}>Acessar</Button>
+            <Button className="w-full min-h-[44px]" onClick={() => navigate('/recibos')}>Acessar</Button>
           </CardContent>
         </Card>
 
@@ -51,7 +51,7 @@ const HomePage = () => {
             <CardDescription>Faturamento geral, notas fiscais e relatórios financeiros</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button className="w-full" onClick={() => setModalOpen(true)}>Acessar</Button>
+            <Button className="w-full min-h-[44px]" onClick={() => setModalOpen(true)}>Acessar</Button>
           </CardContent>
         </Card>
       </div>
@@ -65,11 +65,12 @@ const HomePage = () => {
             <Input
               type="password"
               placeholder="Senha"
+              className="text-base"
               value={password}
               onChange={e => { setPassword(e.target.value); setError(false); }}
             />
             {error && <p className="text-sm text-destructive">Senha incorreta</p>}
-            <Button type="submit" className="w-full">Entrar</Button>
+            <Button type="submit" className="w-full min-h-[44px]">Entrar</Button>
           </form>
         </DialogContent>
       </Dialog>

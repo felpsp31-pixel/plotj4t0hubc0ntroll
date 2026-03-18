@@ -21,18 +21,19 @@ const RecibosAuthGuard = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 text-center">
+    <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 text-center mx-auto">
         <Lock className="mx-auto h-12 w-12 text-muted-foreground" />
         <h2 className="text-xl font-semibold text-foreground">Acesso Restrito</h2>
         <Input
           type="password"
           placeholder="Senha"
+          className="text-base"
           value={password}
           onChange={e => { setPassword(e.target.value); setError(false); }}
         />
         {error && <p className="text-sm text-destructive">Senha incorreta</p>}
-        <Button type="submit" className="w-full">Acessar</Button>
+        <Button type="submit" className="w-full min-h-[44px]">Acessar</Button>
       </form>
     </div>
   );

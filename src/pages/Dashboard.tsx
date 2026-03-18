@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { LogOut, Receipt, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import ImportNotaFiscalDialog from '@/components/ImportNotaFiscalDialog';
 import { useMontantes } from '@/hooks/useMontantes';
@@ -15,6 +15,7 @@ import { MOCK_ENTITIES } from '@/types/finance';
 import type { Entity } from '@/types/finance';
 import { useClientesFinanceiro } from '@/hooks/useClientesFinanceiro';
 import { useFinancialInvoices } from '@/hooks/useFinancialInvoices';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -27,10 +28,10 @@ const Dashboard = () => {
   const { signOut } = useAuth();
   const montantes = useMontantes();
   const clientesRecibos = useClientesFinanceiro();
+  const isMobile = useIsMobile();
   const totalOperacional = montantes.reduce((s, m) => s + m.total, 0);
 
-  // Merge recibos clients into entities list
-  const allEntities: Entity[] = (() => {
+  const allEntities = useMemo<Entity[]>(() => {
     const merged = [...MOCK_ENTITIES];
     const existingDocs = new Set(MOCK_ENTITIES.map(e => e.document).filter(Boolean));
     for (const c of clientesRecibos) {
@@ -47,21 +48,25 @@ const Dashboard = () => {
       }
     }
     return merged;
-  })();
+  }, [clientesRecibos]);
 
   const { invoices, handleMarkPaid, handleDelete, handleUpdate, handleAdd } = useFinancialInvoices();
 
   const [selectedId, setSelectedId] = useState<string | null>(MOCK_ENTITIES[0]?.id ?? null);
   const [sidebarWidth, setSidebarWidth] = useState(300);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => isMobile);
   const [resumoOpen, setResumoOpen] = useState(false);
   const dragging = useRef(false);
+
+  // Collapse sidebar on mobile by default
+  useEffect(() => {
+    if (isMobile) setSidebarCollapsed(true);
+  }, [isMobile]);
 
   const selectedEntity = allEntities.find((e) => e.id === selectedId) ?? null;
   const entityInvoices = selectedId
     ? invoices.filter((inv) => inv.entityId === selectedId)
     : [];
-
 
   useEffect(() => {
     const today = new Date();
@@ -128,7 +133,7 @@ const Dashboard = () => {
 
   return (
     <div className="h-screen flex overflow-hidden bg-background">
-      {!sidebarCollapsed && (
+      {!sidebarCollapsed && !isMobile && (
         <>
           <div style={{ width: sidebarWidth, minWidth: MIN_SIDEBAR, maxWidth: MAX_SIDEBAR }} className="shrink-0">
             <EntitySidebar
@@ -146,26 +151,41 @@ const Dashboard = () => {
         </>
       )}
 
+      {/* Mobile entity sidebar as sheet */}
+      {isMobile && !sidebarCollapsed && (
+        <Sheet open={!sidebarCollapsed} onOpenChange={(open) => setSidebarCollapsed(!open)}>
+          <SheetContent side="left" className="w-full max-w-[300px] p-0">
+            <EntitySidebar
+              entities={allEntities}
+              invoices={invoices}
+              selectedId={selectedId}
+              onSelect={(id) => { setSelectedId(id); setSidebarCollapsed(true); }}
+              onOpenResumo={() => setResumoOpen(true)}
+            />
+          </SheetContent>
+        </Sheet>
+      )}
+
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <div className="flex items-center gap-2 px-6 pt-4">
+        <div className="flex items-center gap-2 px-4 sm:px-6 pt-4">
           <button
             onClick={() => setSidebarCollapsed(c => !c)}
-            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="p-3 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
             title={sidebarCollapsed ? 'Mostrar painel' : 'Ocultar painel'}
           >
             {sidebarCollapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
           </button>
         </div>
 
-        <div className="flex-1 flex flex-col min-w-0 p-6 pt-2 overflow-hidden">
+        <div className="flex-1 flex flex-col min-w-0 p-4 sm:p-6 pt-2 overflow-hidden">
         {selectedEntity ? (
           <>
-            <div className="flex items-center justify-between mb-2 gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 gap-2 sm:gap-4">
               <EntityHeader entity={selectedEntity} />
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <ImportNotaFiscalDialog />
                 <NewInvoiceDialog entityId={selectedEntity.id} onAdd={handleAdd} />
-                <Button variant="ghost" size="icon" onClick={signOut} title="Sair">
+                <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={signOut} title="Sair">
                   <LogOut className="h-4 w-4" />
                 </Button>
               </div>
@@ -191,7 +211,7 @@ const Dashboard = () => {
       </div>
 
       <Sheet open={resumoOpen} onOpenChange={setResumoOpen}>
-        <SheetContent side="left" className="w-[600px] sm:w-[700px] sm:max-w-none overflow-y-auto">
+        <SheetContent side="left" className="w-full sm:w-[600px] sm:max-w-none overflow-y-auto">
           <SheetHeader className="flex flex-row items-center justify-between pr-8">
             <SheetTitle>Resumo Financeiro</SheetTitle>
             <ExportResumoButton entities={allEntities} invoices={invoices} />

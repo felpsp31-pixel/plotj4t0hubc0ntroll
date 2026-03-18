@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useRef, useCallback, type ReactNode } from 'react';
+import bcrypt from 'bcryptjs';
 
 const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours
 const SESSION_KEY = 'app_session';

@@ -89,6 +89,7 @@ const Dashboard = () => {
   const [sidebarWidth, setSidebarWidth] = useState(300);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => isMobile);
   const [resumoOpen, setResumoOpen] = useState(false);
+  const [sidebarTab, setSidebarTab] = useState<SidebarTab>('clients');
   const dragging = useRef(false);
 
   // Collapse sidebar on mobile by default

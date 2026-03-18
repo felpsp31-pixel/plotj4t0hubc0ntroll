@@ -26,7 +26,7 @@ const RecibosLayout = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { empresaInfo, setEmpresaInfo } = useRecibos();
-  useSyncReciboSummaries();
+  
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);

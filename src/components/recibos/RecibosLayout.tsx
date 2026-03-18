@@ -113,7 +113,7 @@ const RecibosLayout = () => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="ghost" className="w-full justify-center px-2" onClick={() => { setForm(empresaInfo); setSettingsOpen(true); }}>
-                    <Settings className="h-4 w-4" />
+                    <Settings className="h-5 w-5" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="right">Configurações</TooltipContent>

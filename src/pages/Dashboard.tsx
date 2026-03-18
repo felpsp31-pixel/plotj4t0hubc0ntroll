@@ -277,58 +277,6 @@ const Dashboard = () => {
               <div className="flex items-center gap-2 flex-wrap">
                 <ImportNotaFiscalDialog />
                 <NewInvoiceDialog entityId={selectedEntity.id} onAdd={handleAdd} />
-                {/* Botão de cadastro de fornecedor — só visível na aba fornecedores */}
-                {sidebarTab === 'suppliers' && <Dialog open={supplierDialogOpen} onOpenChange={setSupplierDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">+ Fornecedor</Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Cadastrar Fornecedor</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 py-2">
-                      <div>
-                        <Label>Nome / Razão Social *</Label>
-                        <Input
-                          placeholder="Nome do fornecedor"
-                          value={supplierForm.name}
-                          onChange={e => setSupplierForm(p => ({ ...p, name: e.target.value }))}
-                          className="text-base mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label>CNPJ</Label>
-                        <Input
-                          placeholder="00.000.000/0000-00"
-                          value={supplierForm.document}
-                          onChange={e => setSupplierForm(p => ({ ...p, document: e.target.value }))}
-                          className="text-base mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label>Telefone</Label>
-                        <Input
-                          placeholder="(00) 00000-0000"
-                          value={supplierForm.phone}
-                          onChange={e => setSupplierForm(p => ({ ...p, phone: e.target.value }))}
-                          className="text-base mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label>E-mail</Label>
-                        <Input
-                          placeholder="email@fornecedor.com"
-                          value={supplierForm.email}
-                          onChange={e => setSupplierForm(p => ({ ...p, email: e.target.value }))}
-                          className="text-base mt-1"
-                        />
-                      </div>
-                      <Button className="w-full min-h-[44px]" onClick={handleAddSupplier}>
-                        Cadastrar Fornecedor
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>}
                 <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={signOut} title="Sair">
                   <LogOut className="h-4 w-4" />
                 </Button>

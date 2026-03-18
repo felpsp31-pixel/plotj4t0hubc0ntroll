@@ -30,7 +30,6 @@ export function useFinancialInvoices() {
       attachments: (row.attachments as unknown as Attachment[]) || [],
     }));
 
-    // Merge: mock invoices + db invoices (db invoices won't have mock ids)
     const mockIds = new Set(MOCK_INVOICES.map((m) => m.id));
     const combined = [...MOCK_INVOICES, ...dbInvoices.filter((d) => !mockIds.has(d.id))];
     setInvoices(combined);
@@ -50,7 +49,6 @@ export function useFinancialInvoices() {
       prev.map((inv) => inv.id === invoiceId ? { ...inv, status: 'paid' as const } : inv)
     );
 
-    // If it's a DB invoice (UUID format), update in DB
     if (invoiceId.includes('-')) {
       await supabase.from('financial_invoices').update({ status: 'paid' }).eq('id', invoiceId);
     }
@@ -101,10 +99,18 @@ export function useFinancialInvoices() {
 
   const handleAdd = useCallback(async (invoice: Invoice) => {
     setInvoices((prev) => [...prev, invoice]);
-    // Also persist to DB
+
+    // Look up entity_name from existing records
+    const { data: entityData } = await supabase
+      .from('financial_invoices')
+      .select('entity_name')
+      .eq('entity_id', invoice.entityId)
+      .limit(1)
+      .maybeSingle();
+
     await supabase.from('financial_invoices').insert([{
       entity_id: invoice.entityId,
-      entity_name: '',
+      entity_name: entityData?.entity_name ?? '',
       description: invoice.description,
       value: invoice.value,
       due_date: invoice.dueDate,

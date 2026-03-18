@@ -141,7 +141,7 @@ const EmissaoReciboPage = () => {
         </span>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label className="text-xs font-medium text-foreground">Cliente</label>
           <Combobox options={clientes.map(c => ({ value: c.id, label: c.name }))} value={clienteId} onValueChange={v => { setClienteId(v); setSolicitanteId(''); setObraId(''); }} placeholder="Selecione" disabled={saved} />
@@ -156,7 +156,7 @@ const EmissaoReciboPage = () => {
         </div>
       </div>
 
-      <div className="border rounded-md overflow-hidden flex-1 min-h-0">
+      <div className="border rounded-md overflow-x-auto flex-1 min-h-0">
         <Table>
           <TableHeader>
             <TableRow className="h-8">
@@ -175,7 +175,7 @@ const EmissaoReciboPage = () => {
                 </TableCell>
                 <TableCell className="py-0.5 px-2 text-xs text-foreground">{line.description}</TableCell>
                 <TableCell className="py-0.5 px-2">
-                  <Input type="number" min={0} value={line.quantity || ''} onChange={e => updateLine(idx, 'quantity', e.target.value)} disabled={saved} className="h-7 w-16 text-xs" />
+                  <Input type="number" min={0} value={line.quantity || ''} onChange={e => updateLine(idx, 'quantity', e.target.value)} disabled={saved} className="h-7 w-16 text-base" />
                 </TableCell>
                 <TableCell className="py-0.5 px-2 text-xs text-foreground">
                   {line.unitPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
@@ -189,15 +189,15 @@ const EmissaoReciboPage = () => {
         </Table>
       </div>
 
-      <div className="flex items-center justify-between pt-1">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-1 gap-2">
         <p className="text-sm font-bold text-foreground">
           Total: {total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
         </p>
-        <div className="flex gap-2">
-          <Button size="sm" onClick={handleSave} disabled={saved}>Salvar Recibo</Button>
-          <Button size="sm" variant="outline" onClick={handleNew}>Novo Recibo</Button>
-          {saved && <Button size="sm" variant="secondary" onClick={handleExportPdf}>Exportar PDF</Button>}
-          {saved && <Button size="sm" variant="secondary" onClick={handlePrint}>Imprimir</Button>}
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" className="min-h-[44px] sm:min-h-0" onClick={handleSave} disabled={saved}>Salvar Recibo</Button>
+          <Button size="sm" variant="outline" className="min-h-[44px] sm:min-h-0" onClick={handleNew}>Novo Recibo</Button>
+          {saved && <Button size="sm" variant="secondary" className="min-h-[44px] sm:min-h-0" onClick={handleExportPdf}>Exportar PDF</Button>}
+          {saved && <Button size="sm" variant="secondary" className="min-h-[44px] sm:min-h-0" onClick={handlePrint}>Imprimir</Button>}
         </div>
       </div>
     </div>

@@ -14,10 +14,12 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!password) return;
+    const normalizedPassword = password.trim();
+    if (!normalizedPassword) return;
+
     setLoading(true);
     try {
-      const ok = await login(password);
+      const ok = await login(normalizedPassword);
       if (ok) {
         sessionStorage.setItem('system_auth', 'true');
         navigate('/');

@@ -156,7 +156,7 @@ const Dashboard = () => {
       <div className="flex-1 flex flex-col min-w-0 p-6 overflow-hidden">
         {selectedEntity ? (
           <>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2 gap-4">
               <EntityHeader entity={selectedEntity} />
               <div className="flex items-center gap-2">
                 <ImportNotaFiscalDialog />

@@ -120,7 +120,7 @@ const Dashboard = () => {
       toast.warning(`${overdue.length} título(s) em atraso detectado(s).`, { duration: 5000 });
     }
 
-    const supplierEntities = MOCK_ENTITIES.filter((e) => e.type === 'supplier');
+    const supplierEntities = allEntities.filter((e) => e.type === 'supplier');
     const supplierIds = new Set(supplierEntities.map((e) => e.id));
     const dueTomorrow = invoices.filter(
       (inv) => inv.dueDate === tomorrowStr && inv.status !== 'paid' && supplierIds.has(inv.entityId)

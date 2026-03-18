@@ -1,4 +1,4 @@
-import { Paperclip, Calendar, Hash, CheckCircle2, Trash2, Eye } from 'lucide-react';
+import { Calendar, Hash, CheckCircle2, Trash2, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { Invoice, Attachment } from '@/types/finance';
 import PdfUploadButton, { type ExtractedData } from './PdfUploadButton';

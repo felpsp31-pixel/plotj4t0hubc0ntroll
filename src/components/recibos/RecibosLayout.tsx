@@ -44,80 +44,49 @@ const RecibosLayout = () => {
   return (
     <TooltipProvider delayDuration={0}>
       <div className="h-screen flex overflow-hidden bg-background">
-        <aside className={cn(
-          'shrink-0 flex flex-col border-r border-border bg-sidebar-background transition-all duration-200',
-          collapsed ? 'w-14' : 'w-56'
-        )}>
-          <div className={cn('flex items-center', collapsed ? 'justify-center p-2' : 'justify-between p-4')}>
-            {!collapsed && (
+        {collapsed ? (
+          <button
+            onClick={() => setCollapsed(false)}
+            className="fixed top-4 left-4 z-50 p-1.5 rounded-md border border-border bg-background text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors shadow-sm"
+          >
+            <PanelLeftOpen className="h-4 w-4" />
+          </button>
+        ) : (
+          <aside className="w-56 shrink-0 flex flex-col border-r border-border bg-sidebar-background">
+            <div className="flex items-center justify-between p-4">
               <button onClick={() => navigate('/')} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
                 <ArrowLeft className="h-4 w-4" /> Início
               </button>
-            )}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => setCollapsed(c => !c)}
-                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors"
-                >
-                  {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">{collapsed ? 'Expandir menu' : 'Minimizar menu'}</TooltipContent>
-            </Tooltip>
-          </div>
-
-          {collapsed && (
-            <div className="flex justify-center pb-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button onClick={() => navigate('/')} className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors">
-                    <ArrowLeft className="h-4 w-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right">Início</TooltipContent>
-              </Tooltip>
+              <button
+                onClick={() => setCollapsed(true)}
+                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors"
+              >
+                <PanelLeftClose className="h-4 w-4" />
+              </button>
             </div>
-          )}
-
-          <nav className={cn('flex-1 space-y-1', collapsed ? 'px-1' : 'px-2')}>
-            {links.map(l => (
-              <Tooltip key={l.to}>
-                <TooltipTrigger asChild>
-                  <NavLink
-                    to={l.to}
-                    end={l.end}
-                    className={({ isActive }) => cn(
-                      'flex items-center rounded-md text-sm transition-colors',
-                      collapsed ? 'justify-center p-2' : 'gap-2 px-3 py-2',
-                      isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
-                    )}
-                  >
-                    <l.icon className="h-4 w-4 shrink-0" />
-                    {!collapsed && l.label}
-                  </NavLink>
-                </TooltipTrigger>
-                {collapsed && <TooltipContent side="right">{l.label}</TooltipContent>}
-              </Tooltip>
-            ))}
-          </nav>
-
-          <div className={cn('border-t border-border', collapsed ? 'p-1' : 'p-2')}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className={cn('w-full', collapsed ? 'justify-center px-2' : 'justify-start')}
-                  onClick={() => { setForm(empresaInfo); setSettingsOpen(true); }}
+            <nav className="flex-1 px-2 space-y-1">
+              {links.map(l => (
+                <NavLink
+                  key={l.to}
+                  to={l.to}
+                  end={l.end}
+                  className={({ isActive }) => cn(
+                    'flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors',
+                    isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+                  )}
                 >
-                  <Settings className="h-4 w-4 shrink-0" />
-                  {!collapsed && <span className="ml-2">Configurações</span>}
-                </Button>
-              </TooltipTrigger>
-              {collapsed && <TooltipContent side="right">Configurações</TooltipContent>}
-            </Tooltip>
-          </div>
-        </aside>
+                  <l.icon className="h-4 w-4" />
+                  {l.label}
+                </NavLink>
+              ))}
+            </nav>
+            <div className="p-2 border-t border-border">
+              <Button variant="ghost" className="w-full justify-start" onClick={() => { setForm(empresaInfo); setSettingsOpen(true); }}>
+                <Settings className="h-4 w-4 mr-2" /> Configurações
+              </Button>
+            </div>
+          </aside>
+        )}
 
         <main className="flex-1 overflow-hidden p-4 flex flex-col">
           <Outlet />

@@ -24,7 +24,7 @@ const RecibosLayout = () => {
   const { empresaInfo, setEmpresaInfo } = useRecibos();
   useSyncReciboSummaries();
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [hovered, setHovered] = useState(false);
   const [form, setForm] = useState(empresaInfo);
 
   const handleSave = () => {
@@ -41,52 +41,86 @@ const RecibosLayout = () => {
     reader.readAsDataURL(file);
   };
 
+  const expanded = hovered;
+
   return (
     <TooltipProvider delayDuration={0}>
       <div className="h-screen flex overflow-hidden bg-background">
-        {collapsed ? (
-          <button
-            onClick={() => setCollapsed(false)}
-            className="fixed top-4 left-4 z-50 p-1.5 rounded-md border border-border bg-background text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors shadow-sm"
-          >
-            <PanelLeftOpen className="h-4 w-4" />
-          </button>
-        ) : (
-          <aside className="w-56 shrink-0 flex flex-col border-r border-border bg-sidebar-background">
-            <div className="flex items-center justify-between p-4">
+        <aside
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          className={cn(
+            'shrink-0 flex flex-col border-r border-border bg-sidebar-background transition-all duration-200 overflow-hidden',
+            expanded ? 'w-56' : 'w-12'
+          )}
+        >
+          <div className={cn('p-4', expanded ? '' : 'flex justify-center px-0 py-4')}>
+            {expanded ? (
               <button onClick={() => navigate('/')} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
                 <ArrowLeft className="h-4 w-4" /> Início
               </button>
-              <button
-                onClick={() => setCollapsed(true)}
-                className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50 transition-colors"
-              >
-                <PanelLeftClose className="h-4 w-4" />
-              </button>
-            </div>
-            <nav className="flex-1 px-2 space-y-1">
-              {links.map(l => (
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button onClick={() => navigate('/')} className="p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors">
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Início</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+          <nav className={cn('flex-1 space-y-1', expanded ? 'px-2' : 'px-1')}>
+            {links.map(l => (
+              expanded ? (
                 <NavLink
                   key={l.to}
                   to={l.to}
                   end={l.end}
                   className={({ isActive }) => cn(
-                    'flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors',
+                    'flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors whitespace-nowrap',
                     isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
                   )}
                 >
-                  <l.icon className="h-4 w-4" />
+                  <l.icon className="h-4 w-4 shrink-0" />
                   {l.label}
                 </NavLink>
-              ))}
-            </nav>
-            <div className="p-2 border-t border-border">
+              ) : (
+                <Tooltip key={l.to}>
+                  <TooltipTrigger asChild>
+                    <NavLink
+                      to={l.to}
+                      end={l.end}
+                      className={({ isActive }) => cn(
+                        'flex items-center justify-center p-2 rounded-md text-sm transition-colors',
+                        isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+                      )}
+                    >
+                      <l.icon className="h-4 w-4" />
+                    </NavLink>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">{l.label}</TooltipContent>
+                </Tooltip>
+              )
+            ))}
+          </nav>
+          <div className={cn('border-t border-border', expanded ? 'p-2' : 'p-1')}>
+            {expanded ? (
               <Button variant="ghost" className="w-full justify-start" onClick={() => { setForm(empresaInfo); setSettingsOpen(true); }}>
                 <Settings className="h-4 w-4 mr-2" /> Configurações
               </Button>
-            </div>
-          </aside>
-        )}
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-center px-2" onClick={() => { setForm(empresaInfo); setSettingsOpen(true); }}>
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Configurações</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        </aside>
 
         <main className="flex-1 overflow-hidden p-4 flex flex-col">
           <Outlet />

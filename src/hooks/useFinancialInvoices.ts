@@ -35,7 +35,14 @@ export function useFinancialInvoices() {
 
     const mockIds = new Set(MOCK_INVOICES.map((m) => m.id));
     const combined = [...MOCK_INVOICES, ...dbInvoices.filter((d) => !mockIds.has(d.id))];
-    setInvoices(combined);
+
+    const today = new Date().toISOString().slice(0, 10);
+    const withOverdue = combined.map(inv =>
+      inv.status === 'open' && inv.dueDate < today
+        ? { ...inv, status: 'overdue' as const }
+        : inv
+    );
+    setInvoices(withOverdue);
     setLoading(false);
   }, []);
 
@@ -101,7 +108,11 @@ export function useFinancialInvoices() {
   }, []);
 
   const handleAdd = useCallback(async (invoice: Invoice) => {
-    setInvoices((prev) => [...prev, invoice]);
+    const today = new Date().toISOString().slice(0, 10);
+    const finalInvoice = invoice.status === 'open' && invoice.dueDate < today
+      ? { ...invoice, status: 'overdue' as const }
+      : invoice;
+    setInvoices((prev) => [...prev, finalInvoice]);
 
     const { data: entityData } = await supabase
       .from('financial_invoices')

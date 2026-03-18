@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Trash2 } from 'lucide-react';
 import { useRecibos } from '@/contexts/RecibosContext';
 import RecibosAuthGuard from '@/components/recibos/RecibosAuthGuard';
 import Combobox from '@/components/recibos/Combobox';
@@ -6,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -18,7 +20,7 @@ const formatDate = (date: string) => {
 };
 
 const RelatoriosReciboPage = () => {
-  const { recibos, clientes, empresaInfo } = useRecibos();
+  const { recibos, clientes, empresaInfo, deleteRecibo } = useRecibos();
   const [clienteFilter, setClienteFilter] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -119,7 +121,7 @@ const RelatoriosReciboPage = () => {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow><TableHead>Nº</TableHead><TableHead>Data</TableHead><TableHead>Cliente</TableHead><TableHead>Valor</TableHead></TableRow>
+              <TableRow><TableHead>Nº</TableHead><TableHead>Data</TableHead><TableHead>Cliente</TableHead><TableHead>Valor</TableHead><TableHead className="w-10"></TableHead></TableRow>
             </TableHeader>
             <TableBody>
               {sorted.map(r => (
@@ -128,10 +130,29 @@ const RelatoriosReciboPage = () => {
                   <TableCell className="text-foreground">{formatDate(r.date)}</TableCell>
                   <TableCell className="text-foreground">{clientes.find(c => c.id === r.clienteId)?.name ?? '—'}</TableCell>
                   <TableCell className="text-foreground">{r.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
+                  <TableCell>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir recibo?</AlertDialogTitle>
+                          <AlertDialogDescription>O recibo Nº {r.number} será removido permanentemente.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deleteRecibo(r.id)}>Confirmar</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </TableCell>
                 </TableRow>
               ))}
               {sorted.length === 0 && (
-                <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Nenhum recibo encontrado</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Nenhum recibo encontrado</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

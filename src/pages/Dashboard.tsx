@@ -8,7 +8,6 @@ import EntityHeader from '@/components/EntityHeader';
 import KanbanBoard from '@/components/KanbanBoard';
 import StatusSummaryCards from '@/components/StatusSummaryCards';
 import ClientsTable from '@/components/ClientsTable';
-
 import ExportResumoButton from '@/components/ExportResumoButton';
 import NewInvoiceDialog from '@/components/NewInvoiceDialog';
 import type { Entity } from '@/types/finance';

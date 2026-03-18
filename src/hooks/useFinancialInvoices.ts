@@ -108,7 +108,11 @@ export function useFinancialInvoices() {
   }, []);
 
   const handleAdd = useCallback(async (invoice: Invoice) => {
-    setInvoices((prev) => [...prev, invoice]);
+    const today = new Date().toISOString().slice(0, 10);
+    const finalInvoice = invoice.status === 'open' && invoice.dueDate < today
+      ? { ...invoice, status: 'overdue' as const }
+      : invoice;
+    setInvoices((prev) => [...prev, finalInvoice]);
 
     const { data: entityData } = await supabase
       .from('financial_invoices')

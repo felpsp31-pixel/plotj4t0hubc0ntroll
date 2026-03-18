@@ -67,6 +67,7 @@ function loadFinanceiroClientes(): any[] {
 
 function saveFinanceiroClientes(list: any[]) {
   localStorage.setItem('financeiro_clientes', JSON.stringify(list));
+  window.dispatchEvent(new CustomEvent('financeiro_clientes_updated'));
 }
 
 function syncAddCliente(cliente: Cliente) {
@@ -122,6 +123,7 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     localStorage.setItem('operacional_montantes', JSON.stringify(montantePorCliente));
+    window.dispatchEvent(new CustomEvent('operacional_montantes_updated'));
   }, [montantePorCliente]);
 
   const uid = () => crypto.randomUUID();

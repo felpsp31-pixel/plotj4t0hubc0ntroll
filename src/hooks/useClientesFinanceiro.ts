@@ -7,13 +7,19 @@ export function useClientesFinanceiro() {
   });
 
   useEffect(() => {
-    const handler = (e: StorageEvent) => {
-      if (e.key === 'financeiro_clientes') {
-        try { setData(JSON.parse(e.newValue ?? '[]')); } catch { setData([]); }
-      }
+    const refresh = () => {
+      try { setData(JSON.parse(localStorage.getItem('financeiro_clientes') ?? '[]')); }
+      catch { setData([]); }
     };
-    window.addEventListener('storage', handler);
-    return () => window.removeEventListener('storage', handler);
+    const storageHandler = (e: StorageEvent) => {
+      if (e.key === 'financeiro_clientes') refresh();
+    };
+    window.addEventListener('storage', storageHandler);
+    window.addEventListener('financeiro_clientes_updated', refresh);
+    return () => {
+      window.removeEventListener('storage', storageHandler);
+      window.removeEventListener('financeiro_clientes_updated', refresh);
+    };
   }, []);
 
   return data;

@@ -7,13 +7,19 @@ export function useMontantes() {
   });
 
   useEffect(() => {
-    const handler = (e: StorageEvent) => {
-      if (e.key === 'operacional_montantes') {
-        try { setData(JSON.parse(e.newValue ?? '[]')); } catch { setData([]); }
-      }
+    const refresh = () => {
+      try { setData(JSON.parse(localStorage.getItem('operacional_montantes') ?? '[]')); }
+      catch { setData([]); }
     };
-    window.addEventListener('storage', handler);
-    return () => window.removeEventListener('storage', handler);
+    const storageHandler = (e: StorageEvent) => {
+      if (e.key === 'operacional_montantes') refresh();
+    };
+    window.addEventListener('storage', storageHandler);
+    window.addEventListener('operacional_montantes_updated', refresh);
+    return () => {
+      window.removeEventListener('storage', storageHandler);
+      window.removeEventListener('operacional_montantes_updated', refresh);
+    };
   }, []);
 
   return data;

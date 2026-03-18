@@ -8,7 +8,7 @@ interface EntityHeaderProps {
 
 const EntityHeader = ({ entity }: EntityHeaderProps) => {
   return (
-    <div className="bg-card rounded-xl shadow-sm border border-border p-5 mb-6">
+    <div className="bg-card rounded-xl shadow-sm border border-border p-3 mb-4">
       <div className="flex items-start gap-4">
         <EntityAvatar name={entity.name} />
         <div className="flex-1 min-w-0">

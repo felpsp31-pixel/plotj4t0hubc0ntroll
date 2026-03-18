@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRecibos } from '@/contexts/RecibosContext';
+import { useSyncReciboSummaries } from '@/hooks/useSyncReciboSummaries';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 

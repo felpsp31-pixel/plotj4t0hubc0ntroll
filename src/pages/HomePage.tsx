@@ -24,14 +24,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
-      <div className="flex flex-col items-center mb-10">
-        <img
-          src="/logo.png"
-          alt="Logo da empresa"
-          className="h-24 w-auto object-contain"
-        />
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-background p-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl w-full">
         <Card className="flex flex-col items-center text-center">
           <CardHeader>

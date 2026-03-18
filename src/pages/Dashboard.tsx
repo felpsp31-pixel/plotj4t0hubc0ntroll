@@ -3,7 +3,7 @@ import { LogOut, Receipt, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import ImportNotaFiscalDialog from '@/components/ImportNotaFiscalDialog';
 import { useMontantes } from '@/hooks/useMontantes';
 import { useAuth } from '@/contexts/AuthContext';
-import EntitySidebar from '@/components/EntitySidebar';
+import EntitySidebar, { type SidebarTab } from '@/components/EntitySidebar';
 import EntityHeader from '@/components/EntityHeader';
 import KanbanBoard from '@/components/KanbanBoard';
 import StatusSummaryCards from '@/components/StatusSummaryCards';

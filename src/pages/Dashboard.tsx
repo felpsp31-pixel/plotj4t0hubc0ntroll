@@ -11,9 +11,10 @@ import ClientsTable from '@/components/ClientsTable';
 import SuppliersTable from '@/components/SuppliersTable';
 import ExportResumoButton from '@/components/ExportResumoButton';
 import NewInvoiceDialog from '@/components/NewInvoiceDialog';
-import { MOCK_ENTITIES } from '@/types/finance';
+import SupplierFormDialog from '@/components/SupplierFormDialog';
 import type { Entity } from '@/types/finance';
 import { useClientesFinanceiro } from '@/hooks/useClientesFinanceiro';
+import { useFinancialEntities } from '@/hooks/useFinancialEntities';
 import { useFinancialInvoices } from '@/hooks/useFinancialInvoices';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
@@ -28,12 +29,13 @@ const Dashboard = () => {
   const { signOut } = useAuth();
   const montantes = useMontantes();
   const clientesRecibos = useClientesFinanceiro();
+  const { entities: ownEntities, addEntity, deleteEntity, updateEntity: updateEntityFn } = useFinancialEntities();
   const isMobile = useIsMobile();
   const totalOperacional = montantes.reduce((s, m) => s + m.total, 0);
 
   const allEntities = useMemo<Entity[]>(() => {
-    const merged = [...MOCK_ENTITIES];
-    const existingDocs = new Set(MOCK_ENTITIES.map(e => e.document).filter(Boolean));
+    const merged = [...ownEntities];
+    const existingDocs = new Set(ownEntities.map(e => e.document).filter(Boolean));
     for (const c of clientesRecibos) {
       if (!existingDocs.has(c.cnpj)) {
         merged.push({
@@ -48,7 +50,7 @@ const Dashboard = () => {
       }
     }
     return merged;
-  }, [clientesRecibos]);
+  }, [ownEntities, clientesRecibos]);
 
   const { invoices, handleMarkPaid, handleDelete, handleUpdate, handleAdd } = useFinancialInvoices();
 
@@ -181,10 +183,20 @@ const Dashboard = () => {
         {selectedEntity ? (
           <>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 gap-2 sm:gap-4">
-              <EntityHeader entity={selectedEntity} />
+              <EntityHeader
+                entity={selectedEntity}
+                onUpdate={selectedEntity.type === 'supplier' ? (data) => updateEntityFn(selectedEntity.id, data) : undefined}
+                onDelete={selectedEntity.type === 'supplier' ? () => { deleteEntity(selectedEntity.id); setSelectedId(null); } : undefined}
+              />
               <div className="flex items-center gap-2 flex-wrap">
                 <ImportNotaFiscalDialog />
                 <NewInvoiceDialog entityId={selectedEntity.id} onAdd={handleAdd} />
+                <SupplierFormDialog
+                  onSave={(data) => {
+                    const newEntity = addEntity({ ...data, type: 'supplier' });
+                    setSelectedId(newEntity.id);
+                  }}
+                />
                 <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={signOut} title="Sair">
                   <LogOut className="h-4 w-4" />
                 </Button>

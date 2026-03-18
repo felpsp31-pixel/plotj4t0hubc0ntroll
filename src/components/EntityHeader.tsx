@@ -1,12 +1,23 @@
-import { Phone, Mail, FileText } from 'lucide-react';
+import { useState } from 'react';
+import { Phone, Mail, FileText, Pencil, Trash2 } from 'lucide-react';
 import EntityAvatar from './EntityAvatar';
+import SupplierFormDialog from './SupplierFormDialog';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import type { Entity } from '@/types/finance';
 
 interface EntityHeaderProps {
   entity: Entity;
+  onUpdate?: (data: Partial<Entity>) => void;
+  onDelete?: () => void;
 }
 
-const EntityHeader = ({ entity }: EntityHeaderProps) => {
+const EntityHeader = ({ entity, onUpdate, onDelete }: EntityHeaderProps) => {
+  const isSupplier = entity.type === 'supplier';
+
   return (
     <div className="bg-card rounded-xl shadow-sm border border-border p-3 mb-4">
       <div className="flex items-start gap-4">
@@ -18,6 +29,38 @@ const EntityHeader = ({ entity }: EntityHeaderProps) => {
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold bg-badge-iss text-badge-iss-foreground shrink-0">
                 Retém ISS
               </span>
+            )}
+            {isSupplier && onUpdate && (
+              <SupplierFormDialog
+                defaultValues={entity}
+                onSave={(data) => onUpdate(data)}
+                trigger={
+                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" title="Editar fornecedor">
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                }
+              />
+            )}
+            {isSupplier && onDelete && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-destructive hover:text-destructive" title="Excluir fornecedor">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Excluir fornecedor</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Tem certeza que deseja remover este fornecedor? Os lançamentos vinculados serão mantidos.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={onDelete}>Confirmar</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
           </div>
           <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">

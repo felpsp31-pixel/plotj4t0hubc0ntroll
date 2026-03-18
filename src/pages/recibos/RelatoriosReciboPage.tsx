@@ -152,7 +152,7 @@ const RelatoriosReciboPage = () => {
                 </TableRow>
               ))}
               {sorted.length === 0 && (
-                <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">Nenhum recibo encontrado</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Nenhum recibo encontrado</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

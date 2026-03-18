@@ -121,7 +121,7 @@ const RelatoriosReciboPage = () => {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow><TableHead>Nº</TableHead><TableHead>Data</TableHead><TableHead>Cliente</TableHead><TableHead>Valor</TableHead></TableRow>
+              <TableRow><TableHead>Nº</TableHead><TableHead>Data</TableHead><TableHead>Cliente</TableHead><TableHead>Valor</TableHead><TableHead className="w-10"></TableHead></TableRow>
             </TableHeader>
             <TableBody>
               {sorted.map(r => (

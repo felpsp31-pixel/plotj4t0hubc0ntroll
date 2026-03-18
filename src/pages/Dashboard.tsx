@@ -11,15 +11,16 @@ import ClientsTable from '@/components/ClientsTable';
 import SuppliersTable from '@/components/SuppliersTable';
 import ExportResumoButton from '@/components/ExportResumoButton';
 import NewInvoiceDialog from '@/components/NewInvoiceDialog';
-import SupplierFormDialog from '@/components/SupplierFormDialog';
 import type { Entity } from '@/types/finance';
 import { useClientesFinanceiro } from '@/hooks/useClientesFinanceiro';
-import { useFinancialEntities } from '@/hooks/useFinancialEntities';
 import { useFinancialInvoices } from '@/hooks/useFinancialInvoices';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const MIN_SIDEBAR = 260;
@@ -29,13 +30,43 @@ const Dashboard = () => {
   const { signOut } = useAuth();
   const montantes = useMontantes();
   const clientesRecibos = useClientesFinanceiro();
-  const { entities: ownEntities, addEntity, deleteEntity, updateEntity: updateEntityFn } = useFinancialEntities();
   const isMobile = useIsMobile();
   const totalOperacional = montantes.reduce((s, m) => s + m.total, 0);
 
+  // --- Supplier state (localStorage) ---
+  const [suppliers, setSuppliers] = useState<Entity[]>(() => {
+    try { return JSON.parse(localStorage.getItem('financeiro_suppliers') ?? '[]'); }
+    catch { return []; }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('financeiro_suppliers', JSON.stringify(suppliers));
+  }, [suppliers]);
+
+  const [supplierDialogOpen, setSupplierDialogOpen] = useState(false);
+  const [supplierForm, setSupplierForm] = useState({ name: '', document: '', phone: '', email: '' });
+
+  const handleAddSupplier = () => {
+    if (!supplierForm.name.trim()) { toast.warning('Nome obrigatório'); return; }
+    const newSupplier: Entity = {
+      id: crypto.randomUUID(),
+      name: supplierForm.name.trim(),
+      type: 'supplier',
+      document: supplierForm.document.trim() || undefined,
+      phone: supplierForm.phone.trim() || undefined,
+      email: supplierForm.email.trim() || undefined,
+      retainsISS: false,
+    };
+    setSuppliers(prev => [...prev, newSupplier]);
+    setSelectedId(newSupplier.id);
+    setSupplierForm({ name: '', document: '', phone: '', email: '' });
+    setSupplierDialogOpen(false);
+    toast.success('Fornecedor cadastrado com sucesso!');
+  };
+
   const allEntities = useMemo<Entity[]>(() => {
-    const merged = [...ownEntities];
-    const existingDocs = new Set(ownEntities.map(e => e.document).filter(Boolean));
+    const merged = [...suppliers];
+    const existingDocs = new Set(suppliers.map(e => e.document).filter(Boolean));
     for (const c of clientesRecibos) {
       if (!existingDocs.has(c.cnpj)) {
         merged.push({
@@ -50,7 +81,7 @@ const Dashboard = () => {
       }
     }
     return merged;
-  }, [ownEntities, clientesRecibos]);
+  }, [suppliers, clientesRecibos]);
 
   const { invoices, handleMarkPaid, handleDelete, handleUpdate, handleAdd } = useFinancialInvoices();
 
@@ -183,20 +214,62 @@ const Dashboard = () => {
         {selectedEntity ? (
           <>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 gap-2 sm:gap-4">
-              <EntityHeader
-                entity={selectedEntity}
-                onUpdate={selectedEntity.type === 'supplier' ? (data) => updateEntityFn(selectedEntity.id, data) : undefined}
-                onDelete={selectedEntity.type === 'supplier' ? () => { deleteEntity(selectedEntity.id); setSelectedId(null); } : undefined}
-              />
+              <EntityHeader entity={selectedEntity} />
               <div className="flex items-center gap-2 flex-wrap">
                 <ImportNotaFiscalDialog />
                 <NewInvoiceDialog entityId={selectedEntity.id} onAdd={handleAdd} />
-                <SupplierFormDialog
-                  onSave={(data) => {
-                    const newEntity = addEntity({ ...data, type: 'supplier' });
-                    setSelectedId(newEntity.id);
-                  }}
-                />
+                {/* Botão de cadastro de fornecedor */}
+                <Dialog open={supplierDialogOpen} onOpenChange={setSupplierDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">+ Fornecedor</Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Cadastrar Fornecedor</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                      <div>
+                        <Label>Nome / Razão Social *</Label>
+                        <Input
+                          placeholder="Nome do fornecedor"
+                          value={supplierForm.name}
+                          onChange={e => setSupplierForm(p => ({ ...p, name: e.target.value }))}
+                          className="text-base mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label>CNPJ</Label>
+                        <Input
+                          placeholder="00.000.000/0000-00"
+                          value={supplierForm.document}
+                          onChange={e => setSupplierForm(p => ({ ...p, document: e.target.value }))}
+                          className="text-base mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label>Telefone</Label>
+                        <Input
+                          placeholder="(00) 00000-0000"
+                          value={supplierForm.phone}
+                          onChange={e => setSupplierForm(p => ({ ...p, phone: e.target.value }))}
+                          className="text-base mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label>E-mail</Label>
+                        <Input
+                          placeholder="email@fornecedor.com"
+                          value={supplierForm.email}
+                          onChange={e => setSupplierForm(p => ({ ...p, email: e.target.value }))}
+                          className="text-base mt-1"
+                        />
+                      </div>
+                      <Button className="w-full min-h-[44px]" onClick={handleAddSupplier}>
+                        Cadastrar Fornecedor
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
                 <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={signOut} title="Sair">
                   <LogOut className="h-4 w-4" />
                 </Button>

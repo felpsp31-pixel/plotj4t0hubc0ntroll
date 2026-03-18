@@ -141,10 +141,17 @@ const EmissaoReciboPage = () => {
   return (
     <div className="space-y-2 h-full flex flex-col">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-bold text-foreground">Emissão de Recibo</h1>
-        <span className="text-sm font-semibold text-primary">
-          Nº {saved && lastRecibo ? lastRecibo.number : nextNumber}
-        </span>
+        <div>
+          <h1 className="text-lg font-bold text-foreground">Emissão de Recibo</h1>
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-semibold text-primary">
+              Nº {saved && lastRecibo ? lastRecibo.number : nextNumber}
+            </span>
+            <span className="text-sm text-muted-foreground">
+              {formatDate(new Date().toISOString().slice(0, 10))}
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

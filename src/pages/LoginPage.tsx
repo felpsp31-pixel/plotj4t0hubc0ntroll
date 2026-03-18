@@ -3,30 +3,32 @@ import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Lock } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!password) return;
     setLoading(true);
-    setTimeout(() => {
-      // AVISO: senha comparada no frontend via variável de ambiente.
-      // Para uso interno — não expor este sistema publicamente sem autenticação server-side.
-      const envPass = import.meta.env.VITE_SYSTEM_PASSWORD;
-      console.log('[LoginPage] env defined:', typeof envPass !== 'undefined', '| input length:', password.length, '| match:', password === envPass);
-      if (password === envPass) {
+    try {
+      const ok = await login(password);
+      if (ok) {
         sessionStorage.setItem('system_auth', 'true');
         navigate('/');
       } else {
         setError(true);
       }
+    } catch {
+      setError(true);
+    } finally {
       setLoading(false);
-    }, 300);
+    }
   };
 
   return (

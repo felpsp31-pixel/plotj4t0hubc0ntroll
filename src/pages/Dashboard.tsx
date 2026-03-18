@@ -12,6 +12,8 @@ import SuppliersTable from '@/components/SuppliersTable';
 import ExportResumoButton from '@/components/ExportResumoButton';
 import NewInvoiceDialog from '@/components/NewInvoiceDialog';
 import { MOCK_ENTITIES, MOCK_INVOICES } from '@/types/finance';
+import type { Entity } from '@/types/finance';
+import { useClientesFinanceiro } from '@/hooks/useClientesFinanceiro';
 import type { Invoice } from '@/types/finance';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -24,14 +26,36 @@ const MAX_SIDEBAR = 450;
 const Dashboard = () => {
   const { signOut } = useAuth();
   const montantes = useMontantes();
+  const clientesRecibos = useClientesFinanceiro();
   const totalOperacional = montantes.reduce((s, m) => s + m.total, 0);
+
+  // Merge recibos clients into entities list
+  const allEntities: Entity[] = (() => {
+    const merged = [...MOCK_ENTITIES];
+    const existingDocs = new Set(MOCK_ENTITIES.map(e => e.document).filter(Boolean));
+    for (const c of clientesRecibos) {
+      if (!existingDocs.has(c.cnpj)) {
+        merged.push({
+          id: c.id,
+          name: c.name,
+          type: 'client' as const,
+          phone: c.phone || undefined,
+          email: c.email || undefined,
+          document: c.cnpj,
+          retainsISS: false,
+        });
+      }
+    }
+    return merged;
+  })();
+
   const [selectedId, setSelectedId] = useState<string | null>(MOCK_ENTITIES[0]?.id ?? null);
   const [invoices, setInvoices] = useState(MOCK_INVOICES);
   const [sidebarWidth, setSidebarWidth] = useState(300);
   const [resumoOpen, setResumoOpen] = useState(false);
   const dragging = useRef(false);
 
-  const selectedEntity = MOCK_ENTITIES.find((e) => e.id === selectedId) ?? null;
+  const selectedEntity = allEntities.find((e) => e.id === selectedId) ?? null;
   const entityInvoices = selectedId
     ? invoices.filter((inv) => inv.entityId === selectedId)
     : [];
@@ -85,7 +109,7 @@ const Dashboard = () => {
 
     const overdueToday = invoices.filter((inv) => inv.dueDate === todayStr && inv.status !== 'paid');
     overdueToday.forEach((inv) => {
-      const entity = MOCK_ENTITIES.find((e) => e.id === inv.entityId);
+      const entity = allEntities.find((e) => e.id === inv.entityId);
       if (entity) {
         toast.warning(`Atenção: Nota de ${entity.name} vence hoje!`, { duration: 5000 });
       }
@@ -96,7 +120,7 @@ const Dashboard = () => {
       toast.warning(`${overdue.length} título(s) em atraso detectado(s).`, { duration: 5000 });
     }
 
-    const supplierEntities = MOCK_ENTITIES.filter((e) => e.type === 'supplier');
+    const supplierEntities = allEntities.filter((e) => e.type === 'supplier');
     const supplierIds = new Set(supplierEntities.map((e) => e.id));
     const dueTomorrow = invoices.filter(
       (inv) => inv.dueDate === tomorrowStr && inv.status !== 'paid' && supplierIds.has(inv.entityId)
@@ -143,7 +167,7 @@ const Dashboard = () => {
     <div className="h-screen flex overflow-hidden bg-background">
       <div style={{ width: sidebarWidth, minWidth: MIN_SIDEBAR, maxWidth: MAX_SIDEBAR }} className="shrink-0">
         <EntitySidebar
-          entities={MOCK_ENTITIES}
+          entities={allEntities}
           invoices={invoices}
           selectedId={selectedId}
           onSelect={setSelectedId}
@@ -192,10 +216,10 @@ const Dashboard = () => {
         <SheetContent side="left" className="w-[600px] sm:w-[700px] sm:max-w-none overflow-y-auto">
           <SheetHeader className="flex flex-row items-center justify-between pr-8">
             <SheetTitle>Resumo Financeiro</SheetTitle>
-            <ExportResumoButton entities={MOCK_ENTITIES} invoices={invoices} />
+            <ExportResumoButton entities={allEntities} invoices={invoices} />
           </SheetHeader>
           <div className="mt-4">
-            <ClientsTable entities={MOCK_ENTITIES} invoices={invoices} />
+            <ClientsTable entities={allEntities} invoices={invoices} />
           </div>
         </SheetContent>
       </Sheet>

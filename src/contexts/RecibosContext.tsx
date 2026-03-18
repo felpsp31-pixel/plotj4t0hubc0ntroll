@@ -1,5 +1,12 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import type { Cliente, Solicitante, Obra, Servico, Recibo, EmpresaInfo } from '@/types/recibos';
+
+interface MontanteCliente {
+  clienteId: string;
+  clienteName: string;
+  cnpj: string;
+  total: number;
+}
 
 interface RecibosContextType {
   empresaInfo: EmpresaInfo;
@@ -23,6 +30,7 @@ interface RecibosContextType {
   recibos: Recibo[];
   addRecibo: (r: Omit<Recibo, 'id' | 'number'>) => Recibo;
   deleteRecibo: (id: string) => void;
+  montantePorCliente: MontanteCliente[];
 }
 
 const RecibosContext = createContext<RecibosContextType>({} as RecibosContextType);
@@ -47,6 +55,44 @@ const defaultEmpresa: EmpresaInfo = {
   logo: '',
 };
 
+// --- Helpers for financeiro_clientes sync ---
+function loadFinanceiroClientes(): any[] {
+  try {
+    const raw = localStorage.getItem('financeiro_clientes');
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveFinanceiroClientes(list: any[]) {
+  localStorage.setItem('financeiro_clientes', JSON.stringify(list));
+}
+
+function syncAddCliente(cliente: Cliente) {
+  const list = loadFinanceiroClientes();
+  const exists = list.find((c: any) => c.cnpj === cliente.cnpj);
+  if (!exists) {
+    list.push({ ...cliente, origem: 'operacional' });
+    saveFinanceiroClientes(list);
+  }
+}
+
+function syncUpdateCliente(cliente: Cliente) {
+  const list = loadFinanceiroClientes();
+  const idx = list.findIndex((c: any) => c.cnpj === cliente.cnpj || c.id === cliente.id);
+  if (idx >= 0) {
+    list[idx] = { ...list[idx], ...cliente, origem: list[idx].origem || 'operacional' };
+    saveFinanceiroClientes(list);
+  }
+}
+
+function syncDeleteCliente(cnpj: string) {
+  const list = loadFinanceiroClientes();
+  const filtered = list.filter((c: any) => c.cnpj !== cnpj);
+  saveFinanceiroClientes(filtered);
+}
+
 export const RecibosProvider = ({ children }: { children: ReactNode }) => {
   const [empresaInfo, setEmpresaInfoState] = useState<EmpresaInfo>(() => load('recibos_empresa', defaultEmpresa));
   const [clientes, setClientes] = useState<Cliente[]>(() => load('recibos_clientes', []));
@@ -62,13 +108,48 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => { localStorage.setItem('recibos_servicos', JSON.stringify(servicos)); }, [servicos]);
   useEffect(() => { localStorage.setItem('recibos_recibos', JSON.stringify(recibos)); }, [recibos]);
 
+  // Sync montantes to localStorage whenever recibos or clientes change
+  const montantePorCliente = useMemo<MontanteCliente[]>(() => {
+    return clientes.map(c => ({
+      clienteId: c.id,
+      clienteName: c.name,
+      cnpj: c.cnpj,
+      total: recibos
+        .filter(r => r.clienteId === c.id)
+        .reduce((sum, r) => sum + r.total, 0),
+    }));
+  }, [clientes, recibos]);
+
+  useEffect(() => {
+    localStorage.setItem('operacional_montantes', JSON.stringify(montantePorCliente));
+  }, [montantePorCliente]);
+
   const uid = () => crypto.randomUUID();
 
   const setEmpresaInfo = useCallback((info: EmpresaInfo) => setEmpresaInfoState(info), []);
 
-  const addCliente = useCallback((c: Omit<Cliente, 'id'>) => setClientes(p => [...p, { ...c, id: uid() }]), []);
-  const updateCliente = useCallback((id: string, c: Partial<Cliente>) => setClientes(p => p.map(x => x.id === id ? { ...x, ...c } : x)), []);
-  const deleteCliente = useCallback((id: string) => setClientes(p => p.filter(x => x.id !== id)), []);
+  const addCliente = useCallback((c: Omit<Cliente, 'id'>) => {
+    const newCliente: Cliente = { ...c, id: uid() };
+    setClientes(p => [...p, newCliente]);
+    syncAddCliente(newCliente);
+  }, []);
+
+  const updateCliente = useCallback((id: string, c: Partial<Cliente>) => {
+    setClientes(p => {
+      const updated = p.map(x => x.id === id ? { ...x, ...c } : x);
+      const found = updated.find(x => x.id === id);
+      if (found) syncUpdateCliente(found);
+      return updated;
+    });
+  }, []);
+
+  const deleteCliente = useCallback((id: string) => {
+    setClientes(p => {
+      const toDelete = p.find(x => x.id === id);
+      if (toDelete) syncDeleteCliente(toDelete.cnpj);
+      return p.filter(x => x.id !== id);
+    });
+  }, []);
 
   const addSolicitante = useCallback((s: Omit<Solicitante, 'id'>) => setSolicitantes(p => [...p, { ...s, id: uid() }]), []);
   const updateSolicitante = useCallback((id: string, s: Partial<Solicitante>) => setSolicitantes(p => p.map(x => x.id === id ? { ...x, ...s } : x)), []);
@@ -102,6 +183,7 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
       obras, addObra, updateObra, deleteObra,
       servicos, addServico, updateServico, deleteServico,
       recibos, addRecibo, deleteRecibo,
+      montantePorCliente,
     }}>
       {children}
     </RecibosContext.Provider>

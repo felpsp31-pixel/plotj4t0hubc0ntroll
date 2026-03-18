@@ -20,7 +20,7 @@ const formatDate = (date: string) => {
 };
 
 const RelatoriosReciboPage = () => {
-  const { recibos, clientes, empresaInfo } = useRecibos();
+  const { recibos, clientes, empresaInfo, deleteRecibo } = useRecibos();
   const [clienteFilter, setClienteFilter] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');

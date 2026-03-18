@@ -170,6 +170,13 @@ const Dashboard = () => {
               </div>
             </div>
             <StatusSummaryCards invoices={entityInvoices} />
+            {totalOperacional > 0 && (
+              <div className="mb-2 p-3 rounded-md border border-border bg-muted/50 flex items-center gap-2">
+                <Receipt className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">Faturamento Operacional (Recibos):</span>
+                <span className="text-sm font-bold text-primary">{totalOperacional.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+              </div>
+            )}
             <div className="flex-1 min-h-0">
               <KanbanBoard invoices={entityInvoices} onMarkPaid={handleMarkPaid} onDelete={handleDelete} onUpdate={handleUpdate} />
             </div>

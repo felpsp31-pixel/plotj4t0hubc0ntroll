@@ -11,10 +11,10 @@ import ClientsTable from '@/components/ClientsTable';
 import SuppliersTable from '@/components/SuppliersTable';
 import ExportResumoButton from '@/components/ExportResumoButton';
 import NewInvoiceDialog from '@/components/NewInvoiceDialog';
-import { MOCK_ENTITIES, MOCK_INVOICES } from '@/types/finance';
+import { MOCK_ENTITIES } from '@/types/finance';
 import type { Entity } from '@/types/finance';
 import { useClientesFinanceiro } from '@/hooks/useClientesFinanceiro';
-import type { Invoice } from '@/types/finance';
+import { useFinancialInvoices } from '@/hooks/useFinancialInvoices';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -49,8 +49,9 @@ const Dashboard = () => {
     return merged;
   })();
 
+  const { invoices, handleMarkPaid, handleDelete, handleUpdate, handleAdd } = useFinancialInvoices();
+
   const [selectedId, setSelectedId] = useState<string | null>(MOCK_ENTITIES[0]?.id ?? null);
-  const [invoices, setInvoices] = useState(MOCK_INVOICES);
   const [sidebarWidth, setSidebarWidth] = useState(300);
   const [resumoOpen, setResumoOpen] = useState(false);
   const dragging = useRef(false);
@@ -60,45 +61,6 @@ const Dashboard = () => {
     ? invoices.filter((inv) => inv.entityId === selectedId)
     : [];
 
-  const handleMarkPaid = (invoiceId: string) => {
-    const previous = invoices.find((inv) => inv.id === invoiceId);
-    if (!previous) return;
-    const previousStatus = previous.status;
-
-    setInvoices((prev) =>
-      prev.map((inv) => inv.id === invoiceId ? { ...inv, status: 'paid' as const } : inv)
-    );
-
-    toast.success('Título marcado como pago!', {
-      action: {
-        label: 'Desfazer',
-        onClick: () => {
-          setInvoices((prev) =>
-            prev.map((inv) => inv.id === invoiceId ? { ...inv, status: previousStatus } : inv)
-          );
-          toast.info('Ação desfeita.');
-        },
-      },
-      duration: 6000,
-    });
-  };
-
-  const handleDelete = (invoiceId: string) => {
-    setInvoices((prev) => prev.filter((inv) => inv.id !== invoiceId));
-    toast.success('Lançamento apagado.');
-  };
-
-  const handleUpdate = (invoiceId: string, data: Partial<Invoice>) => {
-    setInvoices((prev) =>
-      prev.map((inv) => inv.id === invoiceId ? { ...inv, ...data } : inv)
-    );
-    toast.success('Lançamento atualizado.');
-  };
-
-  const handleAdd = (invoice: Invoice) => {
-    setInvoices((prev) => [...prev, invoice]);
-    toast.success('Lançamento adicionado.');
-  };
 
   useEffect(() => {
     const today = new Date();

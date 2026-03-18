@@ -109,10 +109,10 @@ const ClientsTable = ({ entities, invoices }: ClientsTableProps) => {
           <TableBody>
             {clientData.map((client) => (
               <TableRow key={client.id}>
-                <TableCell className="font-medium">{client.name}</TableCell>
-                <TableCell className="text-muted-foreground">{client.document ?? '—'}</TableCell>
+                <TableCell className="font-medium truncate max-w-[150px]">{client.name}</TableCell>
+                <TableCell className="text-muted-foreground truncate max-w-[120px]">{client.document ?? '—'}</TableCell>
                 <TableCell className="text-center">{client.invoiceCount}</TableCell>
-                <TableCell className="text-right font-semibold">{fmt(client.total)}</TableCell>
+                <TableCell className="text-right font-semibold text-sm whitespace-nowrap">{fmt(client.total)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

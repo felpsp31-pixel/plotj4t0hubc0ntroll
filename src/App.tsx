@@ -12,7 +12,6 @@ import FinanceiroLayout from "@/components/FinanceiroLayout";
 import RecibosLayout from "@/components/recibos/RecibosLayout";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
-import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import EmissaoReciboPage from "./pages/recibos/EmissaoReciboPage";

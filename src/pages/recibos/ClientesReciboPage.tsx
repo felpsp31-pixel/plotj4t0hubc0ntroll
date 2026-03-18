@@ -4,9 +4,41 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import Combobox from '@/components/recibos/Combobox';
 import { Plus, Pencil, Trash2, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
+
+const validarCNPJ = (cnpj: string): boolean => {
+  const nums = cnpj.replace(/\D/g, '');
+  if (nums.length !== 14 || /^(\d)\1+$/.test(nums)) return false;
+  const calc = (x: number) => {
+    const n = nums.slice(0, x);
+    const w = n.split('').reduce((acc, v, i) =>
+      acc + parseInt(v) * ((x - i - 1) % 8 + 2), 0);
+    const r = 11 - (w % 11);
+    return r >= 10 ? 0 : r;
+  };
+  return calc(12) === parseInt(nums[12]) && calc(13) === parseInt(nums[13]);
+};
+
+const formatCNPJ = (value: string): string => {
+  const nums = value.replace(/\D/g, '').slice(0, 14);
+  if (nums.length <= 2) return nums;
+  if (nums.length <= 5) return `${nums.slice(0, 2)}.${nums.slice(2)}`;
+  if (nums.length <= 8) return `${nums.slice(0, 2)}.${nums.slice(2, 5)}.${nums.slice(5)}`;
+  if (nums.length <= 12) return `${nums.slice(0, 2)}.${nums.slice(2, 5)}.${nums.slice(5, 8)}/${nums.slice(8)}`;
+  return `${nums.slice(0, 2)}.${nums.slice(2, 5)}.${nums.slice(5, 8)}/${nums.slice(8, 12)}-${nums.slice(12)}`;
+};
+
+const validateCnpjField = (cnpj: string): boolean => {
+  if (!cnpj || cnpj.replace(/\D/g, '').length === 0) return true; // optional
+  if (!validarCNPJ(cnpj)) {
+    toast.error('CNPJ inválido');
+    return false;
+  }
+  return true;
+};
 
 const ClientesReciboPage = () => {
   const {
@@ -29,6 +61,24 @@ const ClientesReciboPage = () => {
 
   const clienteOptions = clientes.map(c => ({ value: c.id, label: c.name }));
 
+  const DeleteButton = ({ onConfirm }: { onConfirm: () => void }) => (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]"><Trash2 className="h-4 w-4" /></Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Tem certeza que deseja excluir?</AlertDialogTitle>
+          <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>Confirmar</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold text-foreground">Clientes, Solicitantes e Obras</h1>
@@ -43,11 +93,15 @@ const ClientesReciboPage = () => {
         <TabsContent value="clientes" className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
             <Input placeholder="Nome" value={cForm.name} onChange={e => setCForm(p => ({ ...p, name: e.target.value }))} className="text-base" />
-            <Input placeholder="CNPJ" value={cForm.cnpj} onChange={e => setCForm(p => ({ ...p, cnpj: e.target.value }))} className="text-base" />
+            <Input placeholder="CNPJ" value={cForm.cnpj} onChange={e => setCForm(p => ({ ...p, cnpj: formatCNPJ(e.target.value) }))} className="text-base" />
             <Input placeholder="Telefone" value={cForm.phone} onChange={e => setCForm(p => ({ ...p, phone: e.target.value }))} className="text-base" />
             <Input placeholder="Email" value={cForm.email} onChange={e => setCForm(p => ({ ...p, email: e.target.value }))} className="text-base" />
           </div>
-          <Button size="sm" className="min-h-[44px] sm:min-h-0" onClick={() => { if (!cForm.name) { toast.error('Nome obrigatório'); return; } addCliente(cForm); setCForm({ name: '', cnpj: '', phone: '', email: '' }); toast.success('Cliente adicionado'); }}>
+          <Button size="sm" className="min-h-[44px] sm:min-h-0" onClick={() => {
+            if (!cForm.name) { toast.error('Nome obrigatório'); return; }
+            if (!validateCnpjField(cForm.cnpj)) return;
+            addCliente(cForm); setCForm({ name: '', cnpj: '', phone: '', email: '' }); toast.success('Cliente adicionado');
+          }}>
             <Plus className="h-4 w-4 mr-1" /> Adicionar
           </Button>
           <div className="overflow-x-auto">
@@ -59,11 +113,14 @@ const ClientesReciboPage = () => {
                     {cEdit === c.id ? (
                       <>
                         <TableCell><Input value={cEditData.name} onChange={e => setCEditData(p => ({ ...p, name: e.target.value }))} className="text-base" /></TableCell>
-                        <TableCell><Input value={cEditData.cnpj} onChange={e => setCEditData(p => ({ ...p, cnpj: e.target.value }))} className="text-base" /></TableCell>
+                        <TableCell><Input value={cEditData.cnpj} onChange={e => setCEditData(p => ({ ...p, cnpj: formatCNPJ(e.target.value) }))} className="text-base" /></TableCell>
                         <TableCell><Input value={cEditData.phone} onChange={e => setCEditData(p => ({ ...p, phone: e.target.value }))} className="text-base" /></TableCell>
                         <TableCell><Input value={cEditData.email} onChange={e => setCEditData(p => ({ ...p, email: e.target.value }))} className="text-base" /></TableCell>
                         <TableCell className="flex gap-1">
-                          <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]" onClick={() => { updateCliente(c.id, cEditData); setCEdit(null); toast.success('Atualizado'); }}><Check className="h-4 w-4" /></Button>
+                          <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]" onClick={() => {
+                            if (!validateCnpjField(cEditData.cnpj)) return;
+                            updateCliente(c.id, cEditData); setCEdit(null); toast.success('Atualizado');
+                          }}><Check className="h-4 w-4" /></Button>
                           <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]" onClick={() => setCEdit(null)}><X className="h-4 w-4" /></Button>
                         </TableCell>
                       </>
@@ -75,7 +132,7 @@ const ClientesReciboPage = () => {
                         <TableCell className="text-foreground">{c.email}</TableCell>
                         <TableCell className="flex gap-1">
                           <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]" onClick={() => { setCEdit(c.id); setCEditData({ name: c.name, cnpj: c.cnpj, phone: c.phone, email: c.email }); }}><Pencil className="h-4 w-4" /></Button>
-                          <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]" onClick={() => { deleteCliente(c.id); toast.success('Removido'); }}><Trash2 className="h-4 w-4" /></Button>
+                          <DeleteButton onConfirm={() => { deleteCliente(c.id); toast.success('Removido'); }} />
                         </TableCell>
                       </>
                     )}
@@ -121,7 +178,7 @@ const ClientesReciboPage = () => {
                           <TableCell className="text-foreground">{s.phone}</TableCell>
                           <TableCell className="flex gap-1">
                             <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]" onClick={() => { setSEdit(s.id); setSEditData({ clienteId: s.clienteId, name: s.name, phone: s.phone }); }}><Pencil className="h-4 w-4" /></Button>
-                            <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]" onClick={() => { deleteSolicitante(s.id); toast.success('Removido'); }}><Trash2 className="h-4 w-4" /></Button>
+                            <DeleteButton onConfirm={() => { deleteSolicitante(s.id); toast.success('Removido'); }} />
                           </TableCell>
                         </>
                       )}
@@ -165,7 +222,7 @@ const ClientesReciboPage = () => {
                           <TableCell className="text-foreground">{o.name}</TableCell>
                           <TableCell className="flex gap-1">
                             <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]" onClick={() => { setOEdit(o.id); setOEditData({ clienteId: o.clienteId, name: o.name }); }}><Pencil className="h-4 w-4" /></Button>
-                            <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]" onClick={() => { deleteObra(o.id); toast.success('Removida'); }}><Trash2 className="h-4 w-4" /></Button>
+                            <DeleteButton onConfirm={() => { deleteObra(o.id); toast.success('Removida'); }} />
                           </TableCell>
                         </>
                       )}

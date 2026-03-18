@@ -52,7 +52,7 @@ const Dashboard = () => {
 
   const { invoices, handleMarkPaid, handleDelete, handleUpdate, handleAdd } = useFinancialInvoices();
 
-  const [selectedId, setSelectedId] = useState<string | null>(MOCK_ENTITIES[0]?.id ?? null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState(300);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => isMobile);
   const [resumoOpen, setResumoOpen] = useState(false);

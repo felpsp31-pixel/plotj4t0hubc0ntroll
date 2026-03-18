@@ -15,6 +15,8 @@ const LoginPage = () => {
     if (!password) return;
     setLoading(true);
     setTimeout(() => {
+      // AVISO: senha comparada no frontend via variável de ambiente.
+      // Para uso interno — não expor este sistema publicamente sem autenticação server-side.
       if (password === import.meta.env.VITE_SYSTEM_PASSWORD) {
         sessionStorage.setItem('system_auth', 'true');
         navigate('/');

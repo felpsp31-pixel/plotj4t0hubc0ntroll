@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Trash2 } from 'lucide-react';
 import { useRecibos } from '@/contexts/RecibosContext';
 import RecibosAuthGuard from '@/components/recibos/RecibosAuthGuard';
 import Combobox from '@/components/recibos/Combobox';
@@ -6,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 

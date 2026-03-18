@@ -219,7 +219,7 @@ const Dashboard = () => {
             <ExportResumoButton entities={allEntities} invoices={invoices} />
           </SheetHeader>
           <div className="mt-4">
-            <ClientsTable entities={MOCK_ENTITIES} invoices={invoices} />
+            <ClientsTable entities={allEntities} invoices={invoices} />
           </div>
         </SheetContent>
       </Sheet>

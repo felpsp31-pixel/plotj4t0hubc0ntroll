@@ -55,7 +55,7 @@ const Dashboard = () => {
   const [resumoOpen, setResumoOpen] = useState(false);
   const dragging = useRef(false);
 
-  const selectedEntity = MOCK_ENTITIES.find((e) => e.id === selectedId) ?? null;
+  const selectedEntity = allEntities.find((e) => e.id === selectedId) ?? null;
   const entityInvoices = selectedId
     ? invoices.filter((inv) => inv.entityId === selectedId)
     : [];

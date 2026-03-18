@@ -26,6 +26,14 @@ const EmissaoReciboPage = () => {
 
   const total = lines.reduce((s, l) => s + l.total, 0);
 
+  const nextNumber = useMemo(() => {
+    const maxNum = recibos.reduce((max, rc) => {
+      const n = parseInt(rc.number, 10);
+      return isNaN(n) ? max : Math.max(max, n);
+    }, 0);
+    return String(maxNum + 1).padStart(4, '0');
+  }, [recibos]);
+
   const updateLine = (idx: number, field: string, value: string | number) => {
     setLines(prev => {
       const next = [...prev];

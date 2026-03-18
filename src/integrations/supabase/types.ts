@@ -32,6 +32,81 @@ export type Database = {
         }
         Relationships: []
       }
+      financial_invoices: {
+        Row: {
+          attachments: Json
+          created_at: string
+          description: string
+          due_date: string
+          entity_id: string
+          entity_name: string
+          entity_type: string
+          id: string
+          reference_month: string
+          status: string
+          value: number
+        }
+        Insert: {
+          attachments?: Json
+          created_at?: string
+          description: string
+          due_date: string
+          entity_id: string
+          entity_name: string
+          entity_type?: string
+          id?: string
+          reference_month: string
+          status?: string
+          value?: number
+        }
+        Update: {
+          attachments?: Json
+          created_at?: string
+          description?: string
+          due_date?: string
+          entity_id?: string
+          entity_name?: string
+          entity_type?: string
+          id?: string
+          reference_month?: string
+          status?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      monthly_recibo_summaries: {
+        Row: {
+          cliente_id: string
+          cliente_name: string
+          cnpj: string
+          created_at: string
+          id: string
+          month: string
+          processed: boolean
+          total: number
+        }
+        Insert: {
+          cliente_id: string
+          cliente_name: string
+          cnpj: string
+          created_at?: string
+          id?: string
+          month: string
+          processed?: boolean
+          total?: number
+        }
+        Update: {
+          cliente_id?: string
+          cliente_name?: string
+          cnpj?: string
+          created_at?: string
+          id?: string
+          month?: string
+          processed?: boolean
+          total?: number
+        }
+        Relationships: []
+      }
       notas_fiscais: {
         Row: {
           created_at: string

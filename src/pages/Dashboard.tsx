@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { LogOut, Receipt } from 'lucide-react';
+import { LogOut, Receipt, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import ImportNotaFiscalDialog from '@/components/ImportNotaFiscalDialog';
 import { useMontantes } from '@/hooks/useMontantes';
 import { useAuth } from '@/contexts/AuthContext';

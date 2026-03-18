@@ -53,6 +53,7 @@ const Dashboard = () => {
 
   const [selectedId, setSelectedId] = useState<string | null>(MOCK_ENTITIES[0]?.id ?? null);
   const [sidebarWidth, setSidebarWidth] = useState(300);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [resumoOpen, setResumoOpen] = useState(false);
   const dragging = useRef(false);
 

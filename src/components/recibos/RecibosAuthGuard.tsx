@@ -65,12 +65,10 @@ const RecibosAuthGuard = ({ children }: { children: ReactNode }) => {
         <h2 className="text-xl font-semibold text-foreground">Acesso Restrito</h2>
         <Input
           type="password"
-          inputMode="numeric"
-          pattern="[0-9]*"
           placeholder="Senha"
           className="text-base"
           value={password}
-          onChange={e => { setPassword(e.target.value.replace(/[^0-9]/g, '')); setError(false); }}
+          onChange={e => { setPassword(e.target.value); setError(false); }}
           autoCapitalize="none"
           autoCorrect="off"
           autoComplete="off"

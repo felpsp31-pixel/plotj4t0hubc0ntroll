@@ -53,12 +53,10 @@ const LoginPage = () => {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="password"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
                   placeholder="Digite a senha de acesso"
                   className="pl-9 text-base"
                   value={password}
-                  onChange={(e) => { setPassword(e.target.value.replace(/[^0-9]/g, '')); setError(false); }}
+                  onChange={(e) => { setPassword(e.target.value); setError(false); }}
                   autoCapitalize="none"
                   autoCorrect="off"
                   autoComplete="off"

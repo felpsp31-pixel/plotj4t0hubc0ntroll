@@ -338,7 +338,7 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
       cliente_id: newRecibo.clienteId,
       solicitante_id: newRecibo.solicitanteId || null,
       obra_id: newRecibo.obraId || null,
-      lines: newRecibo.lines as unknown as Record<string, unknown>[],
+      lines: JSON.parse(JSON.stringify(newRecibo.lines)),
       total: newRecibo.total,
     }]).then(({ error }) => {
       if (error) console.error('Error saving recibo:', error);

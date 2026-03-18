@@ -32,6 +32,63 @@ export type Database = {
         }
         Relationships: []
       }
+      clientes: {
+        Row: {
+          cnpj: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+        }
+        Insert: {
+          cnpj?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name: string
+          phone?: string
+        }
+        Update: {
+          cnpj?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+        }
+        Relationships: []
+      }
+      empresa_info: {
+        Row: {
+          address: string
+          cnpj: string
+          email: string
+          id: string
+          logo: string
+          name: string
+          phone: string
+        }
+        Insert: {
+          address?: string
+          cnpj?: string
+          email?: string
+          id?: string
+          logo?: string
+          name?: string
+          phone?: string
+        }
+        Update: {
+          address?: string
+          cnpj?: string
+          email?: string
+          id?: string
+          logo?: string
+          name?: string
+          phone?: string
+        }
+        Relationships: []
+      }
       financial_invoices: {
         Row: {
           attachments: Json
@@ -137,6 +194,170 @@ export type Database = {
           tomador?: string | null
           valor_liquido?: number | null
           vencimento?: string | null
+        }
+        Relationships: []
+      }
+      obras: {
+        Row: {
+          cliente_id: string
+          id: string
+          name: string
+        }
+        Insert: {
+          cliente_id: string
+          id?: string
+          name: string
+        }
+        Update: {
+          cliente_id?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obras_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recibos: {
+        Row: {
+          cliente_id: string
+          created_at: string
+          date: string
+          id: string
+          lines: Json
+          number: string
+          obra_id: string | null
+          solicitante_id: string | null
+          total: number
+        }
+        Insert: {
+          cliente_id: string
+          created_at?: string
+          date?: string
+          id?: string
+          lines?: Json
+          number: string
+          obra_id?: string | null
+          solicitante_id?: string | null
+          total?: number
+        }
+        Update: {
+          cliente_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          lines?: Json
+          number?: string
+          obra_id?: string | null
+          solicitante_id?: string | null
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recibos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recibos_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recibos_solicitante_id_fkey"
+            columns: ["solicitante_id"]
+            isOneToOne: false
+            referencedRelation: "solicitantes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      servicos: {
+        Row: {
+          code: string
+          description: string
+          id: string
+          unit_price: number
+        }
+        Insert: {
+          code?: string
+          description?: string
+          id?: string
+          unit_price?: number
+        }
+        Update: {
+          code?: string
+          description?: string
+          id?: string
+          unit_price?: number
+        }
+        Relationships: []
+      }
+      solicitantes: {
+        Row: {
+          cliente_id: string
+          id: string
+          name: string
+          phone: string
+        }
+        Insert: {
+          cliente_id: string
+          id?: string
+          name: string
+          phone?: string
+        }
+        Update: {
+          cliente_id?: string
+          id?: string
+          name?: string
+          phone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "solicitantes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppliers: {
+        Row: {
+          created_at: string
+          document: string | null
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          retains_iss: boolean
+        }
+        Insert: {
+          created_at?: string
+          document?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          retains_iss?: boolean
+        }
+        Update: {
+          created_at?: string
+          document?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          retains_iss?: boolean
         }
         Relationships: []
       }

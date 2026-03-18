@@ -167,7 +167,7 @@ const Dashboard = () => {
     <div className="h-screen flex overflow-hidden bg-background">
       <div style={{ width: sidebarWidth, minWidth: MIN_SIDEBAR, maxWidth: MAX_SIDEBAR }} className="shrink-0">
         <EntitySidebar
-          entities={MOCK_ENTITIES}
+          entities={allEntities}
           invoices={invoices}
           selectedId={selectedId}
           onSelect={setSelectedId}

@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useRecibos } from '@/contexts/RecibosContext';
-import { useSyncReciboSummaries } from '@/hooks/useSyncReciboSummaries';
+
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -26,7 +26,7 @@ const RecibosLayout = () => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const { empresaInfo, setEmpresaInfo } = useRecibos();
-  useSyncReciboSummaries();
+  
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);

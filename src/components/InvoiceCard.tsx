@@ -59,12 +59,6 @@ const InvoiceCard = ({ invoice, onMarkPaid, onDelete, onUpdate }: InvoiceCardPro
       
       <div className="flex items-start justify-between mb-3">
         <p className="text-2xl font-semibold text-foreground">{formatted}</p>
-        {hasAttachments &&
-        <button onClick={() => setPreviewOpen(true)} className="flex items-center gap-1 text-primary hover:text-primary/80 transition-colors">
-            <Paperclip className="h-4 w-4 shrink-0" />
-            <span className="text-xs font-medium">{invoice.attachments.length}</span>
-          </button>
-        }
       </div>
 
       <p className="text-sm text-muted-foreground mb-2 truncate">{invoice.description}</p>

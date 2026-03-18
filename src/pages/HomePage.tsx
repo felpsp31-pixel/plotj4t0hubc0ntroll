@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Lock } from 'lucide-react';
+import { FileText, Lock, LogOut } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -23,8 +23,25 @@ const HomePage = () => {
     }
   };
 
+  const handleLogout = () => {
+    sessionStorage.removeItem('system_auth');
+    sessionStorage.removeItem('financial_auth');
+    sessionStorage.removeItem('recibos_auth');
+    navigate('/login');
+  };
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 sm:p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 sm:p-6 relative">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="absolute top-4 right-4 text-muted-foreground hover:text-foreground min-h-[44px]"
+        onClick={handleLogout}
+      >
+        <LogOut className="h-4 w-4 mr-2" />
+        Sair
+      </Button>
+
       <div className="flex flex-col items-center mb-10">
         <img
           src="/logo.png"
@@ -47,7 +64,7 @@ const HomePage = () => {
         <Card className="flex flex-col items-center text-center">
           <CardHeader>
             <Lock className="mx-auto h-10 w-10 text-primary" />
-            <CardTitle className="text-lg">Área Financeira</CardTitle>
+            <CardTitle className="text-lg">Financeiro</CardTitle>
             <CardDescription>Faturamento geral, notas fiscais e relatórios financeiros</CardDescription>
           </CardHeader>
           <CardContent>
@@ -59,7 +76,7 @@ const HomePage = () => {
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Área Financeira</DialogTitle>
+            <DialogTitle>Financeiro</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleFinanceiroAuth} className="space-y-4">
             <Input

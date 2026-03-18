@@ -23,6 +23,8 @@ const MAX_SIDEBAR = 450;
 
 const Dashboard = () => {
   const { signOut } = useAuth();
+  const montantes = useMontantes();
+  const totalOperacional = montantes.reduce((s, m) => s + m.total, 0);
   const [selectedId, setSelectedId] = useState<string | null>(MOCK_ENTITIES[0]?.id ?? null);
   const [invoices, setInvoices] = useState(MOCK_INVOICES);
   const [sidebarWidth, setSidebarWidth] = useState(300);

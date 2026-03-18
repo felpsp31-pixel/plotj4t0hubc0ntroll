@@ -68,7 +68,7 @@ const RecibosLayout = () => {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto p-6">
+      <main className="flex-1 overflow-hidden p-4 flex flex-col">
         <Outlet />
       </main>
 

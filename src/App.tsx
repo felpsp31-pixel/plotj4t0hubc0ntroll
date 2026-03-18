@@ -6,9 +6,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { RecibosProvider } from "@/contexts/RecibosContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import SystemGuard from "@/components/SystemGuard";
 import FinanceiroGuard from "@/components/FinanceiroGuard";
 import FinanceiroLayout from "@/components/FinanceiroLayout";
 import RecibosLayout from "@/components/recibos/RecibosLayout";
+import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -30,26 +32,30 @@ const App = () => (
         <RecibosProvider>
           <BrowserRouter>
             <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/" element={<HomePage />} />
+              <Route path="/login" element={<LoginPage />} />
 
-              {/* Recibos module */}
-              <Route path="/recibos" element={<RecibosLayout />}>
-                <Route index element={<EmissaoReciboPage />} />
-                <Route path="clientes" element={<ClientesReciboPage />} />
-                <Route path="servicos" element={<ServicosReciboPage />} />
-                <Route path="dashboard" element={<DashboardReciboPage />} />
-                <Route path="relatorios" element={<RelatoriosReciboPage />} />
-              </Route>
+              {/* All routes below require system auth */}
+              <Route element={<SystemGuard />}>
+                <Route path="/" element={<HomePage />} />
 
-              {/* Financial module */}
-              <Route path="/financeiro" element={<FinanceiroGuard />}>
-                <Route element={<FinanceiroLayout />}>
-                  <Route index element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                {/* Recibos module */}
+                <Route path="/recibos" element={<RecibosLayout />}>
+                  <Route index element={<EmissaoReciboPage />} />
+                  <Route path="clientes" element={<ClientesReciboPage />} />
+                  <Route path="servicos" element={<ServicosReciboPage />} />
+                  <Route path="dashboard" element={<DashboardReciboPage />} />
+                  <Route path="relatorios" element={<RelatoriosReciboPage />} />
                 </Route>
-              </Route>
 
-              <Route path="*" element={<NotFound />} />
+                {/* Financial module */}
+                <Route path="/financeiro" element={<FinanceiroGuard />}>
+                  <Route element={<FinanceiroLayout />}>
+                    <Route index element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                  </Route>
+                </Route>
+
+                <Route path="*" element={<NotFound />} />
+              </Route>
             </Routes>
           </BrowserRouter>
         </RecibosProvider>

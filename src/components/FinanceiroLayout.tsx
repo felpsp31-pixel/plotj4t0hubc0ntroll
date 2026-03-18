@@ -54,7 +54,7 @@ const FinanceiroLayout = () => {
       <div className="border-t border-border px-3 py-2">
         {expanded ? (
           <Button variant="ghost" className="w-full justify-start gap-3 px-1 text-destructive min-h-[44px]" onClick={() => { handleExit(); setMobileDrawerOpen(false); }}>
-            <LogOut className="h-5 w-5 shrink-0" /> Sair da área financeira
+            <LogOut className="h-5 w-5 shrink-0" /> Sair do Financeiro
           </Button>
         ) : (
           <Tooltip>
@@ -63,7 +63,7 @@ const FinanceiroLayout = () => {
                 <LogOut className="h-5 w-5 shrink-0" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="right">Sair da área financeira</TooltipContent>
+            <TooltipContent side="right">Sair do Financeiro</TooltipContent>
           </Tooltip>
         )}
       </div>

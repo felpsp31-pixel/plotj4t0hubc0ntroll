@@ -47,14 +47,15 @@ const sheetVariants = cva(
   },
 );
 
-interface SheetContentProps
-  extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
-    VariantProps<typeof sheetVariants> {
+interface SheetContentProps extends VariantProps<typeof sheetVariants> {
+  className?: string;
+  children?: React.ReactNode;
   side?: "top" | "bottom" | "left" | "right";
+  [key: string]: any;
 }
 
 const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Content>, SheetContentProps>(
-  ({ side = "right", className, children, ...props }: SheetContentProps, ref) => (
+  ({ side = "right", className, children, ...props }, ref) => (
     <SheetPortal>
       <SheetOverlay />
       <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>

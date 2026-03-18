@@ -21,6 +21,7 @@ const links = [
 const RecibosLayout = () => {
   const navigate = useNavigate();
   const { empresaInfo, setEmpresaInfo } = useRecibos();
+  useSyncReciboSummaries();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [form, setForm] = useState(empresaInfo);
 

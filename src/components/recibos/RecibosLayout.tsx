@@ -96,7 +96,7 @@ const RecibosLayout = () => {
                         isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
                       )}
                     >
-                      <l.icon className="h-4 w-4" />
+                      <l.icon className="h-5 w-5" />
                     </NavLink>
                   </TooltipTrigger>
                   <TooltipContent side="right">{l.label}</TooltipContent>

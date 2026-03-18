@@ -27,7 +27,7 @@ export function useFinancialInvoices() {
       dueDate: row.due_date,
       referenceMonth: row.reference_month,
       status: row.status as Invoice['status'],
-      attachments: (row.attachments as Attachment[]) || [],
+      attachments: (row.attachments as unknown as Attachment[]) || [],
     }));
 
     // Merge: mock invoices + db invoices (db invoices won't have mock ids)

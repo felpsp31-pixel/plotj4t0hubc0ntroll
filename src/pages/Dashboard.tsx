@@ -26,7 +26,29 @@ const MAX_SIDEBAR = 450;
 const Dashboard = () => {
   const { signOut } = useAuth();
   const montantes = useMontantes();
+  const clientesRecibos = useClientesFinanceiro();
   const totalOperacional = montantes.reduce((s, m) => s + m.total, 0);
+
+  // Merge recibos clients into entities list
+  const allEntities: Entity[] = (() => {
+    const merged = [...MOCK_ENTITIES];
+    const existingDocs = new Set(MOCK_ENTITIES.map(e => e.document).filter(Boolean));
+    for (const c of clientesRecibos) {
+      if (!existingDocs.has(c.cnpj)) {
+        merged.push({
+          id: c.id,
+          name: c.name,
+          type: 'client' as const,
+          phone: c.phone || undefined,
+          email: c.email || undefined,
+          document: c.cnpj,
+          retainsISS: false,
+        });
+      }
+    }
+    return merged;
+  })();
+
   const [selectedId, setSelectedId] = useState<string | null>(MOCK_ENTITIES[0]?.id ?? null);
   const [invoices, setInvoices] = useState(MOCK_INVOICES);
   const [sidebarWidth, setSidebarWidth] = useState(300);

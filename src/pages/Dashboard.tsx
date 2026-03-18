@@ -187,6 +187,7 @@ const Dashboard = () => {
             Selecione um cliente ou fornecedor
           </div>
         )}
+        </div>
       </div>
 
       <Sheet open={resumoOpen} onOpenChange={setResumoOpen}>

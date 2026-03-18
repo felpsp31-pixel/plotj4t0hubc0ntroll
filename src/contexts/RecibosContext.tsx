@@ -123,6 +123,7 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     localStorage.setItem('operacional_montantes', JSON.stringify(montantePorCliente));
+    window.dispatchEvent(new CustomEvent('operacional_montantes_updated'));
   }, [montantePorCliente]);
 
   const uid = () => crypto.randomUUID();

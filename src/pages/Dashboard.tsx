@@ -274,7 +274,7 @@ const Dashboard = () => {
                       </Button>
                     </div>
                   </DialogContent>
-                </Dialog>
+                </Dialog>}
                 <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={signOut} title="Sair">
                   <LogOut className="h-4 w-4" />
                 </Button>

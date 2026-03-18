@@ -54,66 +54,47 @@ const RecibosLayout = () => {
             expanded ? 'w-56' : 'w-14'
           )}
         >
-          <div className={cn(expanded ? 'p-4' : 'flex justify-center py-4')}>
-            {expanded ? (
-              <button onClick={() => navigate('/')} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                <ArrowLeft className="h-4 w-4" /> Início
-              </button>
-            ) : (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button onClick={() => navigate('/')} className="p-1.5 rounded-md text-muted-foreground hover:text-foreground transition-colors">
-                    <ArrowLeft className="h-5 w-5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right">Início</TooltipContent>
-              </Tooltip>
-            )}
+          <div className="px-3 py-4">
+            <button onClick={() => navigate('/')} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="h-5 w-5 shrink-0" />
+              {expanded && <span className="whitespace-nowrap">Início</span>}
+            </button>
           </div>
-          <nav className={cn('flex-1 space-y-1', expanded ? 'px-2' : 'px-1.5')}>
-            {links.map(l => (
-              expanded ? (
+          <nav className="flex-1 space-y-1 px-2">
+            {links.map(l => {
+              const icon = <l.icon className="h-5 w-5 shrink-0" />;
+              const link = (
                 <NavLink
                   key={l.to}
                   to={l.to}
                   end={l.end}
                   className={({ isActive }) => cn(
-                    'flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors whitespace-nowrap',
+                    'flex items-center gap-2 px-2 py-2 rounded-md text-sm transition-colors whitespace-nowrap',
                     isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
                   )}
                 >
-                  <l.icon className="h-4 w-4 shrink-0" />
-                  {l.label}
+                  {icon}
+                  {expanded && l.label}
                 </NavLink>
-              ) : (
+              );
+              return expanded ? link : (
                 <Tooltip key={l.to}>
-                  <TooltipTrigger asChild>
-                    <NavLink
-                      to={l.to}
-                      end={l.end}
-                      className={({ isActive }) => cn(
-                        'flex items-center justify-center p-2 rounded-md text-sm transition-colors',
-                        isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
-                      )}
-                    >
-                      <l.icon className="h-5 w-5" />
-                    </NavLink>
-                  </TooltipTrigger>
+                  <TooltipTrigger asChild>{link}</TooltipTrigger>
                   <TooltipContent side="right">{l.label}</TooltipContent>
                 </Tooltip>
-              )
-            ))}
+              );
+            })}
           </nav>
-          <div className={cn('border-t border-border', expanded ? 'p-2' : 'p-1.5')}>
+          <div className="border-t border-border p-2">
             {expanded ? (
-              <Button variant="ghost" className="w-full justify-start" onClick={() => { setForm(empresaInfo); setSettingsOpen(true); }}>
-                <Settings className="h-4 w-4 mr-2" /> Configurações
+              <Button variant="ghost" className="w-full justify-start gap-2 px-2" onClick={() => { setForm(empresaInfo); setSettingsOpen(true); }}>
+                <Settings className="h-5 w-5 shrink-0" /> Configurações
               </Button>
             ) : (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" className="w-full justify-center px-2" onClick={() => { setForm(empresaInfo); setSettingsOpen(true); }}>
-                    <Settings className="h-5 w-5" />
+                  <Button variant="ghost" className="w-full justify-start px-2" onClick={() => { setForm(empresaInfo); setSettingsOpen(true); }}>
+                    <Settings className="h-5 w-5 shrink-0" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="right">Configurações</TooltipContent>

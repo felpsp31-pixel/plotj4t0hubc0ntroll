@@ -51,10 +51,10 @@ const RecibosLayout = () => {
           onMouseLeave={() => setHovered(false)}
           className={cn(
             'shrink-0 flex flex-col border-r border-border bg-sidebar-background transition-all duration-200 overflow-hidden',
-            expanded ? 'w-56' : 'w-12'
+            expanded ? 'w-56' : 'w-14'
           )}
         >
-          <div className={cn('p-4', expanded ? '' : 'flex justify-center px-0 py-4')}>
+          <div className={cn(expanded ? 'p-4' : 'flex justify-center py-4')}>
             {expanded ? (
               <button onClick={() => navigate('/')} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
                 <ArrowLeft className="h-4 w-4" /> Início

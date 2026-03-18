@@ -70,7 +70,7 @@ const RecibosLayout = () => {
               </Tooltip>
             )}
           </div>
-          <nav className={cn('flex-1 space-y-1', expanded ? 'px-2' : 'px-1')}>
+          <nav className={cn('flex-1 space-y-1', expanded ? 'px-2' : 'px-1.5')}>
             {links.map(l => (
               expanded ? (
                 <NavLink

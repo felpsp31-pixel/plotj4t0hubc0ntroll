@@ -102,16 +102,16 @@ export function useFinancialInvoices() {
   const handleAdd = useCallback(async (invoice: Invoice) => {
     setInvoices((prev) => [...prev, invoice]);
     // Also persist to DB
-    await supabase.from('financial_invoices').insert({
+    await supabase.from('financial_invoices').insert([{
       entity_id: invoice.entityId,
-      entity_name: '', // will be filled if needed
+      entity_name: '',
       description: invoice.description,
       value: invoice.value,
       due_date: invoice.dueDate,
       reference_month: invoice.referenceMonth,
       status: invoice.status,
-      attachments: invoice.attachments,
-    });
+      attachments: invoice.attachments as unknown as Record<string, unknown>[],
+    }]);
     toast.success('Lançamento adicionado.');
   }, []);
 

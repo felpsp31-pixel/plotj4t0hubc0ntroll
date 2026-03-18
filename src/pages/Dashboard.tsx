@@ -103,6 +103,7 @@ const Dashboard = () => {
     : [];
 
   useEffect(() => {
+    if (invoices.length === 0) return;
     const today = new Date();
     const todayStr = today.toISOString().slice(0, 10);
     const tomorrow = new Date(today);
@@ -137,8 +138,7 @@ const Dashboard = () => {
         );
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [invoices, allEntities]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {

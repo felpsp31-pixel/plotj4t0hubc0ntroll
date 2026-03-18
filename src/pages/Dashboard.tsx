@@ -61,45 +61,6 @@ const Dashboard = () => {
     ? invoices.filter((inv) => inv.entityId === selectedId)
     : [];
 
-  const handleMarkPaid = (invoiceId: string) => {
-    const previous = invoices.find((inv) => inv.id === invoiceId);
-    if (!previous) return;
-    const previousStatus = previous.status;
-
-    setInvoices((prev) =>
-      prev.map((inv) => inv.id === invoiceId ? { ...inv, status: 'paid' as const } : inv)
-    );
-
-    toast.success('Título marcado como pago!', {
-      action: {
-        label: 'Desfazer',
-        onClick: () => {
-          setInvoices((prev) =>
-            prev.map((inv) => inv.id === invoiceId ? { ...inv, status: previousStatus } : inv)
-          );
-          toast.info('Ação desfeita.');
-        },
-      },
-      duration: 6000,
-    });
-  };
-
-  const handleDelete = (invoiceId: string) => {
-    setInvoices((prev) => prev.filter((inv) => inv.id !== invoiceId));
-    toast.success('Lançamento apagado.');
-  };
-
-  const handleUpdate = (invoiceId: string, data: Partial<Invoice>) => {
-    setInvoices((prev) =>
-      prev.map((inv) => inv.id === invoiceId ? { ...inv, ...data } : inv)
-    );
-    toast.success('Lançamento atualizado.');
-  };
-
-  const handleAdd = (invoice: Invoice) => {
-    setInvoices((prev) => [...prev, invoice]);
-    toast.success('Lançamento adicionado.');
-  };
 
   useEffect(() => {
     const today = new Date();

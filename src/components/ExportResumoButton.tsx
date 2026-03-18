@@ -43,7 +43,7 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
 
   const filterInvoices = (invs: Invoice[]) => {
     return invs.filter((inv) => {
-      const due = new Date(inv.dueDate);
+      const due = new Date(inv.dueDate + 'T00:00:00');
       if (startDate && due < startDate) return false;
       if (endDate && due > endDate) return false;
       if (selectedEntityId !== 'all' && inv.entityId !== selectedEntityId) return false;

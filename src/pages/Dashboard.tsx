@@ -84,7 +84,7 @@ const Dashboard = () => {
     overdueToday.forEach((inv) => {
       const entity = MOCK_ENTITIES.find((e) => e.id === inv.entityId);
       if (entity) {
-        toast.error(`Atenção: Nota de ${entity.name} está Atrasada!`, { duration: 5000 });
+        toast.warning(`Atenção: Nota de ${entity.name} vence hoje!`, { duration: 5000 });
       }
     });
 

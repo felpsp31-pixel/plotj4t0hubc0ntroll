@@ -1,10 +1,10 @@
-import { Calendar, Hash, CheckCircle2, Trash2, Eye } from 'lucide-react';
-import { motion } from 'framer-motion';
-import type { Invoice, Attachment } from '@/types/finance';
-import PdfUploadButton, { type ExtractedData } from './PdfUploadButton';
-import PdfAttachButton from './PdfAttachButton';
-import FilePreviewModal from './FilePreviewModal';
-import { useState } from 'react';
+import { Calendar, CheckCircle2, Trash2, Eye } from "lucide-react";
+import { motion } from "framer-motion";
+import type { Invoice, Attachment } from "@/types/finance";
+import PdfUploadButton, { type ExtractedData } from "./PdfUploadButton";
+import PdfAttachButton from "./PdfAttachButton";
+import FilePreviewModal from "./FilePreviewModal";
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,8 +14,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger } from
-'@/components/ui/alert-dialog';
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface InvoiceCardProps {
   invoice: Invoice;
@@ -25,20 +25,20 @@ interface InvoiceCardProps {
 }
 
 const statusStyles: Record<string, string> = {
-  open: 'border-l-primary',
-  paid: 'border-l-success',
-  overdue: 'border-l-destructive'
+  open: "border-l-primary",
+  paid: "border-l-success",
+  overdue: "border-l-destructive",
 };
 
 const InvoiceCard = ({ invoice, onMarkPaid, onDelete, onUpdate }: InvoiceCardProps) => {
   const [previewOpen, setPreviewOpen] = useState(false);
 
-  const formatted = new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
+  const formatted = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
   }).format(invoice.value);
 
-  const dueFormatted = new Date(invoice.dueDate + 'T00:00:00').toLocaleDateString('pt-BR');
+  const dueFormatted = new Date(invoice.dueDate + "T00:00:00").toLocaleDateString("pt-BR");
 
   const hasAttachments = invoice.attachments.length > 0;
 
@@ -55,8 +55,8 @@ const InvoiceCard = ({ invoice, onMarkPaid, onDelete, onUpdate }: InvoiceCardPro
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.15 }}
-      className={`bg-card rounded-xl shadow-sm hover:shadow-md border border-border border-l-4 ${statusStyles[invoice.status]} p-4 transition-shadow duration-150`}>
-      
+      className={`bg-card rounded-xl shadow-sm hover:shadow-md border border-border border-l-4 ${statusStyles[invoice.status]} p-4 transition-shadow duration-150`}
+    >
       <div className="flex items-start justify-between mb-3">
         <p className="text-2xl font-semibold text-foreground">{formatted}</p>
       </div>
@@ -69,56 +69,53 @@ const InvoiceCard = ({ invoice, onMarkPaid, onDelete, onUpdate }: InvoiceCardPro
             <Calendar className="h-3.5 w-3.5" />
             {dueFormatted}
           </span>
-          
-
-
-          
         </div>
 
         <div className="flex items-center gap-2">
-          {hasAttachments &&
-          <button
-            onClick={() => setPreviewOpen(true)}
-            className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors">
+          {hasAttachments && (
+            <button
+              onClick={() => setPreviewOpen(true)}
+              className="flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+            >
               <Eye className="h-3.5 w-3.5" />
               <span>{invoice.attachments.length}</span>
             </button>
-          }
-          {onUpdate &&
-          <PdfAttachButton
-            invoiceId={invoice.id}
-            attachments={invoice.attachments}
-            onAttached={(url, name) =>
-            onUpdate(invoice.id, {
-              attachments: [...invoice.attachments, { url, name, date: new Date().toISOString() }]
-            })
-            } />
-
-          }
-          {onUpdate &&
-          <PdfUploadButton
-            variant="icon"
-            onExtracted={(data) => {
-              const updates: Partial<Invoice> = {};
-              if (data.value != null) updates.value = data.value;
-              if (data.dueDate) updates.dueDate = data.dueDate;
-              if (data.description) updates.description = data.description;
-              onUpdate(invoice.id, updates);
-            }} />
-
-          }
-          {(invoice.status === 'open' || invoice.status === 'overdue') && onMarkPaid &&
-          <button
-            onClick={() => onMarkPaid(invoice.id)}
-            className="flex items-center gap-1 text-xs font-medium text-success hover:text-success/80 transition-colors">
-            
+          )}
+          {onUpdate && (
+            <PdfAttachButton
+              invoiceId={invoice.id}
+              attachments={invoice.attachments}
+              onAttached={(url, name) =>
+                onUpdate(invoice.id, {
+                  attachments: [...invoice.attachments, { url, name, date: new Date().toISOString() }],
+                })
+              }
+            />
+          )}
+          {onUpdate && (
+            <PdfUploadButton
+              variant="icon"
+              onExtracted={(data) => {
+                const updates: Partial<Invoice> = {};
+                if (data.value != null) updates.value = data.value;
+                if (data.dueDate) updates.dueDate = data.dueDate;
+                if (data.description) updates.description = data.description;
+                onUpdate(invoice.id, updates);
+              }}
+            />
+          )}
+          {(invoice.status === "open" || invoice.status === "overdue") && onMarkPaid && (
+            <button
+              onClick={() => onMarkPaid(invoice.id)}
+              className="flex items-center gap-1 text-xs font-medium text-success hover:text-success/80 transition-colors"
+            >
               <CheckCircle2 className="h-3.5 w-3.5" />
               Pagar
             </button>
-          }
+          )}
 
-          {onDelete &&
-          <AlertDialog>
+          {onDelete && (
+            <AlertDialog>
               <AlertDialogTrigger asChild>
                 <button className="flex items-center gap-1 text-xs font-medium text-destructive hover:text-destructive/80 transition-colors">
                   <Trash2 className="h-3.5 w-3.5" />
@@ -134,28 +131,28 @@ const InvoiceCard = ({ invoice, onMarkPaid, onDelete, onUpdate }: InvoiceCardPro
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
                   <AlertDialogAction
-                  onClick={() => onDelete(invoice.id)}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                  
+                    onClick={() => onDelete(invoice.id)}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
                     Apagar
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-          }
+          )}
         </div>
       </div>
 
-      {hasAttachments &&
-      <FilePreviewModal
-        open={previewOpen}
-        onOpenChange={setPreviewOpen}
-        attachments={invoice.attachments}
-        onRemove={onUpdate ? handleRemoveAttachment : undefined} />
-
-      }
-    </motion.div>);
-
+      {hasAttachments && (
+        <FilePreviewModal
+          open={previewOpen}
+          onOpenChange={setPreviewOpen}
+          attachments={invoice.attachments}
+          onRemove={onUpdate ? handleRemoveAttachment : undefined}
+        />
+      )}
+    </motion.div>
+  );
 };
 
 export default InvoiceCard;

@@ -5,23 +5,64 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
+import bcrypt from 'bcryptjs';
+import { useAuth } from '@/contexts/AuthContext';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const { signOut: authSignOut } = useAuth();
   const [modalOpen, setModalOpen] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleFinanceiroAuth = (e: React.FormEvent) => {
+  const handleFinanceiroAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    // AVISO: senha comparada no frontend via variável de ambiente.
-    // Para uso interno — não expor este sistema publicamente sem autenticação server-side.
-    if (password === import.meta.env.VITE_FINANCIAL_PASSWORD) {
-      sessionStorage.setItem('financial_auth', 'true');
-      setModalOpen(false);
-      navigate('/financeiro');
-    } else {
+    const trimmed = password.trim();
+    if (!trimmed) return;
+
+    setLoading(true);
+    try {
+      // Try database first
+      const { data } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'financial_password')
+        .single();
+
+      const stored = data?.value?.trim() ?? '';
+      let valid = false;
+
+      if (stored.startsWith('$2a$') || stored.startsWith('$2b$') || stored.startsWith('$2y$')) {
+        valid = bcrypt.compareSync(trimmed, stored);
+      } else if (stored && stored !== 'PLACEHOLDER') {
+        valid = trimmed === stored;
+      }
+
+      // Fallback to env var
+      if (!valid) {
+        const envPass = String(import.meta.env.VITE_FINANCIAL_PASSWORD ?? '').trim();
+        valid = !!envPass && trimmed === envPass;
+
+        // Auto-hash into DB for future use
+        if (valid) {
+          const hashed = bcrypt.hashSync(trimmed, 12);
+          await supabase.from('app_settings').update({ value: hashed }).eq('key', 'financial_password');
+        }
+      }
+
+      if (valid) {
+        sessionStorage.setItem('financial_auth', 'true');
+        setModalOpen(false);
+        navigate('/financeiro');
+      } else {
+        setError(true);
+      }
+    } catch {
       setError(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -29,6 +70,7 @@ const HomePage = () => {
     sessionStorage.removeItem('system_auth');
     sessionStorage.removeItem('financial_auth');
     sessionStorage.removeItem('recibos_auth');
+    authSignOut();
     navigate('/login');
   };
 
@@ -87,9 +129,14 @@ const HomePage = () => {
               className="text-base"
               value={password}
               onChange={e => { setPassword(e.target.value); setError(false); }}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
             />
             {error && <p className="text-sm text-destructive">Senha incorreta</p>}
-            <Button type="submit" className="w-full min-h-[44px]">Entrar</Button>
+            <Button type="submit" className="w-full min-h-[44px]" disabled={loading}>
+              {loading ? 'Verificando...' : 'Entrar'}
+            </Button>
           </form>
         </DialogContent>
       </Dialog>

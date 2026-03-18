@@ -10,7 +10,7 @@ import autoTable from 'jspdf-autotable';
 import type { LinhaRecibo } from '@/types/recibos';
 
 const emptyLines = (): LinhaRecibo[] =>
-  Array.from({ length: 10 }, () => ({ serviceCode: '', description: '', quantity: 0, unitPrice: 0, total: 0 }));
+  Array.from({ length: 6 }, () => ({ serviceCode: '', description: '', quantity: 0, unitPrice: 0, total: 0 }));
 
 const EmissaoReciboPage = () => {
   const { clientes, solicitantes, obras, servicos, recibos, addRecibo, empresaInfo } = useRecibos();

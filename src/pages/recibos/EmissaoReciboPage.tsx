@@ -134,7 +134,12 @@ const EmissaoReciboPage = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">Emissão de Recibo</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-foreground">Emissão de Recibo</h1>
+        <span className="text-lg font-semibold text-primary">
+          Recibo Nº {saved && lastRecibo ? lastRecibo.number : nextNumber}
+        </span>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>

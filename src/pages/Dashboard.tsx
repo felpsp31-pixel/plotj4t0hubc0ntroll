@@ -183,10 +183,20 @@ const Dashboard = () => {
         {selectedEntity ? (
           <>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 gap-2 sm:gap-4">
-              <EntityHeader entity={selectedEntity} />
+              <EntityHeader
+                entity={selectedEntity}
+                onUpdate={selectedEntity.type === 'supplier' ? (data) => updateEntityFn(selectedEntity.id, data) : undefined}
+                onDelete={selectedEntity.type === 'supplier' ? () => { deleteEntity(selectedEntity.id); setSelectedId(null); } : undefined}
+              />
               <div className="flex items-center gap-2 flex-wrap">
                 <ImportNotaFiscalDialog />
                 <NewInvoiceDialog entityId={selectedEntity.id} onAdd={handleAdd} />
+                <SupplierFormDialog
+                  onSave={(data) => {
+                    const newEntity = addEntity({ ...data, type: 'supplier' });
+                    setSelectedId(newEntity.id);
+                  }}
+                />
                 <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]" onClick={signOut} title="Sair">
                   <LogOut className="h-4 w-4" />
                 </Button>

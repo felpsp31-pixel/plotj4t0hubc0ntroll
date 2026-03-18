@@ -176,6 +176,8 @@ const Dashboard = () => {
               selectedId={selectedId}
               onSelect={setSelectedId}
               onOpenResumo={() => setResumoOpen(true)}
+              activeTab={sidebarTab}
+              onTabChange={setSidebarTab}
             />
           </div>
           <div

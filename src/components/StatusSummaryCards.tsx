@@ -26,7 +26,7 @@ const StatusSummaryCards = ({ invoices }: StatusSummaryCardsProps) => {
               <span className="text-xs font-medium text-muted-foreground">{label}</span>
               <span className="ml-auto text-xs text-muted-foreground">{items.length} título(s)</span>
             </div>
-            <p className="text-xl font-bold text-foreground">{fmt(total)}</p>
+            <p className="text-base font-bold text-foreground truncate">{fmt(total)}</p>
           </div>
         );
       })}

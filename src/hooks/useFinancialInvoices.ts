@@ -110,7 +110,7 @@ export function useFinancialInvoices() {
       due_date: invoice.dueDate,
       reference_month: invoice.referenceMonth,
       status: invoice.status,
-      attachments: invoice.attachments as unknown as Record<string, unknown>[],
+      attachments: JSON.parse(JSON.stringify(invoice.attachments)),
     }]);
     toast.success('Lançamento adicionado.');
   }, []);

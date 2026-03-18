@@ -197,6 +197,8 @@ const Dashboard = () => {
               selectedId={selectedId}
               onSelect={(id) => { setSelectedId(id); setSidebarCollapsed(true); }}
               onOpenResumo={() => setResumoOpen(true)}
+              activeTab={sidebarTab}
+              onTabChange={setSidebarTab}
             />
           </SheetContent>
         </Sheet>

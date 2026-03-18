@@ -35,7 +35,14 @@ export function useFinancialInvoices() {
 
     const mockIds = new Set(MOCK_INVOICES.map((m) => m.id));
     const combined = [...MOCK_INVOICES, ...dbInvoices.filter((d) => !mockIds.has(d.id))];
-    setInvoices(combined);
+
+    const today = new Date().toISOString().slice(0, 10);
+    const withOverdue = combined.map(inv =>
+      inv.status === 'open' && inv.dueDate < today
+        ? { ...inv, status: 'overdue' as const }
+        : inv
+    );
+    setInvoices(withOverdue);
     setLoading(false);
   }, []);
 

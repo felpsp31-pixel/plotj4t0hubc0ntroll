@@ -125,12 +125,15 @@ const HomePage = () => {
           <form onSubmit={handleFinanceiroAuth} className="space-y-4">
             <Input
               type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
               placeholder="Senha"
               className="text-base"
               value={password}
-              onChange={e => { setPassword(e.target.value); setError(false); }}
+              onChange={e => { setPassword(e.target.value.replace(/[^0-9]/g, '')); setError(false); }}
               autoCapitalize="none"
               autoCorrect="off"
+              autoComplete="off"
               spellCheck={false}
             />
             {error && <p className="text-sm text-destructive">Senha incorreta</p>}

@@ -77,18 +77,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = useCallback(async (password: string): Promise<boolean> => {
     try {
+      const normalizedPassword = password.trim();
+      if (!normalizedPassword) return false;
+
       const { supabase } = await import('@/integrations/supabase/client');
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('app_settings')
         .select('value')
         .eq('key', 'access_password')
         .single();
-      if (error || !data) return false;
-      if (await bcrypt.compare(password, data.value)) {
+
+      const storedValue = data?.value?.trim() ?? '';
+      let valid = false;
+
+      if (storedValue.startsWith('$2a$') || storedValue.startsWith('$2b$') || storedValue.startsWith('$2y$')) {
+        valid = bcrypt.compareSync(normalizedPassword, storedValue);
+      } else if (storedValue) {
+        valid = normalizedPassword === storedValue;
+      }
+
+      if (!valid) {
+        const envPassword = String(import.meta.env.VITE_SYSTEM_PASSWORD ?? '').trim();
+        valid = !!envPassword && normalizedPassword === envPassword;
+
+        if (valid) {
+          const hashed = bcrypt.hashSync(normalizedPassword, 12);
+          await supabase.from('app_settings').update({ value: hashed }).eq('key', 'access_password');
+        }
+      }
+
+      if (valid) {
         setSession();
         setAuthenticated(true);
         return true;
       }
+
       return false;
     } catch {
       return false;

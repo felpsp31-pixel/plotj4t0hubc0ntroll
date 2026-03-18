@@ -57,6 +57,9 @@ const LoginPage = () => {
                   className="pl-9 text-base"
                   value={password}
                   onChange={(e) => { setPassword(e.target.value); setError(false); }}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
                   required
                   autoFocus
                 />

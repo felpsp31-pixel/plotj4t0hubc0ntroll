@@ -67,6 +67,7 @@ function loadFinanceiroClientes(): any[] {
 
 function saveFinanceiroClientes(list: any[]) {
   localStorage.setItem('financeiro_clientes', JSON.stringify(list));
+  window.dispatchEvent(new CustomEvent('financeiro_clientes_updated'));
 }
 
 function syncAddCliente(cliente: Cliente) {

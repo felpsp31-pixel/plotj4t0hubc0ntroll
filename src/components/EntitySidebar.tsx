@@ -4,18 +4,22 @@ import EntityAvatar from './EntityAvatar';
 import SettingsModal from './SettingsModal';
 import type { Entity, Invoice } from '@/types/finance';
 
+export type SidebarTab = 'clients' | 'suppliers';
+
 interface EntitySidebarProps {
   entities: Entity[];
   invoices: Invoice[];
   selectedId: string | null;
   onSelect: (id: string) => void;
   onOpenResumo: () => void;
+  activeTab?: SidebarTab;
+  onTabChange?: (tab: SidebarTab) => void;
 }
 
-type TabType = 'clients' | 'suppliers';
-
-const EntitySidebar = ({ entities, invoices, selectedId, onSelect, onOpenResumo }: EntitySidebarProps) => {
-  const [tab, setTab] = useState<TabType>('clients');
+const EntitySidebar = ({ entities, invoices, selectedId, onSelect, onOpenResumo, activeTab, onTabChange }: EntitySidebarProps) => {
+  const [internalTab, setInternalTab] = useState<SidebarTab>('clients');
+  const tab = activeTab ?? internalTab;
+  const setTab = onTabChange ?? setInternalTab;
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const filtered = entities.filter((e) =>

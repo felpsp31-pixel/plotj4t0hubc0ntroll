@@ -77,16 +77,16 @@ const ClientsTable = ({ entities, invoices }: ClientsTableProps) => {
             </ResponsiveContainer>
           </div>
 
-          <div className="flex-1 grid grid-cols-3 gap-4">
+          <div className="flex-1 grid grid-cols-3 gap-4 min-w-0 overflow-hidden">
             {statusTotals.map((item) => {
               const pct = totalForPercent > 0 ? ((item.value / totalForPercent) * 100).toFixed(1) : '0.0';
               return (
-                <div key={item.status} className="bg-secondary/50 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="h-3 w-3 rounded-full" style={{ backgroundColor: item.color }} />
-                    <span className="text-xs font-medium text-muted-foreground">{item.label}</span>
+                <div key={item.status} className="bg-secondary/50 rounded-lg p-3 min-w-0 overflow-hidden">
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                    <span className="text-xs font-medium text-muted-foreground truncate">{item.label}</span>
                   </div>
-                  <p className="text-lg font-bold text-foreground">{fmt(item.value)}</p>
+                  <p className="text-sm font-bold text-foreground truncate">{fmt(item.value)}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">{pct}%</p>
                 </div>
               );
@@ -109,10 +109,10 @@ const ClientsTable = ({ entities, invoices }: ClientsTableProps) => {
           <TableBody>
             {clientData.map((client) => (
               <TableRow key={client.id}>
-                <TableCell className="font-medium">{client.name}</TableCell>
-                <TableCell className="text-muted-foreground">{client.document ?? '—'}</TableCell>
+                <TableCell className="font-medium truncate max-w-[150px]">{client.name}</TableCell>
+                <TableCell className="text-muted-foreground truncate max-w-[120px]">{client.document ?? '—'}</TableCell>
                 <TableCell className="text-center">{client.invoiceCount}</TableCell>
-                <TableCell className="text-right font-semibold">{fmt(client.total)}</TableCell>
+                <TableCell className="text-right font-semibold text-sm whitespace-nowrap">{fmt(client.total)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

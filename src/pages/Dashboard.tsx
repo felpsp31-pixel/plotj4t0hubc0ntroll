@@ -109,7 +109,7 @@ const Dashboard = () => {
 
     const overdueToday = invoices.filter((inv) => inv.dueDate === todayStr && inv.status !== 'paid');
     overdueToday.forEach((inv) => {
-      const entity = MOCK_ENTITIES.find((e) => e.id === inv.entityId);
+      const entity = allEntities.find((e) => e.id === inv.entityId);
       if (entity) {
         toast.warning(`Atenção: Nota de ${entity.name} vence hoje!`, { duration: 5000 });
       }

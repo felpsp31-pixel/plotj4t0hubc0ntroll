@@ -26,6 +26,14 @@ const EmissaoReciboPage = () => {
 
   const total = lines.reduce((s, l) => s + l.total, 0);
 
+  const nextNumber = useMemo(() => {
+    const maxNum = recibos.reduce((max, rc) => {
+      const n = parseInt(rc.number, 10);
+      return isNaN(n) ? max : Math.max(max, n);
+    }, 0);
+    return String(maxNum + 1).padStart(4, '0');
+  }, [recibos]);
+
   const updateLine = (idx: number, field: string, value: string | number) => {
     setLines(prev => {
       const next = [...prev];
@@ -126,7 +134,12 @@ const EmissaoReciboPage = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-foreground">Emissão de Recibo</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-foreground">Emissão de Recibo</h1>
+        <span className="text-lg font-semibold text-primary">
+          Recibo Nº {saved && lastRecibo ? lastRecibo.number : nextNumber}
+        </span>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { LogOut, Receipt, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import ImportNotaFiscalDialog from '@/components/ImportNotaFiscalDialog';
-import { useMontantes } from '@/hooks/useMontantes';
+import { useRecibos } from '@/contexts/RecibosContext';
 import { useAuth } from '@/contexts/AuthContext';
 import EntitySidebar, { type SidebarTab } from '@/components/EntitySidebar';
 import EntityHeader from '@/components/EntityHeader';
@@ -11,8 +11,8 @@ import ClientsTable from '@/components/ClientsTable';
 import ExportResumoButton from '@/components/ExportResumoButton';
 import NewInvoiceDialog from '@/components/NewInvoiceDialog';
 import type { Entity } from '@/types/finance';
-import { useClientesFinanceiro } from '@/hooks/useClientesFinanceiro';
 import { useFinancialInvoices } from '@/hooks/useFinancialInvoices';
+import { useSuppliers } from '@/hooks/useSuppliers';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -21,52 +21,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-
 const MIN_SIDEBAR = 260;
 const MAX_SIDEBAR = 450;
 
 const Dashboard = () => {
   const { signOut } = useAuth();
-  const montantes = useMontantes();
-  const clientesRecibos = useClientesFinanceiro();
+  const { montantePorCliente, clientes } = useRecibos();
+  const { suppliers, addSupplier, updateSupplier, deleteSupplier } = useSuppliers();
   const isMobile = useIsMobile();
-  const totalOperacional = montantes.reduce((s, m) => s + m.total, 0);
-
-  // --- Supplier state (localStorage) ---
-  const [suppliers, setSuppliers] = useState<Entity[]>(() => {
-    try { return JSON.parse(localStorage.getItem('financeiro_suppliers') ?? '[]'); }
-    catch { return []; }
-  });
-
-  useEffect(() => {
-    localStorage.setItem('financeiro_suppliers', JSON.stringify(suppliers));
-  }, [suppliers]);
+  const totalOperacional = montantePorCliente.reduce((s, m) => s + m.total, 0);
 
   const [supplierDialogOpen, setSupplierDialogOpen] = useState(false);
   const [supplierForm, setSupplierForm] = useState({ name: '', document: '', phone: '', email: '' });
 
-  const handleAddSupplier = () => {
-    if (!supplierForm.name.trim()) { toast.warning('Nome obrigatório'); return; }
-    const newSupplier: Entity = {
-      id: crypto.randomUUID(),
-      name: supplierForm.name.trim(),
-      type: 'supplier',
-      document: supplierForm.document.trim() || undefined,
-      phone: supplierForm.phone.trim() || undefined,
-      email: supplierForm.email.trim() || undefined,
-      retainsISS: false,
-    };
-    setSuppliers(prev => [...prev, newSupplier]);
-    setSelectedId(newSupplier.id);
-    setSupplierForm({ name: '', document: '', phone: '', email: '' });
-    setSupplierDialogOpen(false);
-    toast.success('Fornecedor cadastrado com sucesso!');
-  };
-
   const allEntities = useMemo<Entity[]>(() => {
     const merged = [...suppliers];
     const existingDocs = new Set(suppliers.map(e => e.document).filter(Boolean));
-    for (const c of clientesRecibos) {
+    for (const c of clientes) {
       if (!existingDocs.has(c.cnpj)) {
         merged.push({
           id: c.id,
@@ -80,7 +51,7 @@ const Dashboard = () => {
       }
     }
     return merged;
-  }, [suppliers, clientesRecibos]);
+  }, [suppliers, clientes]);
 
   const { invoices, handleMarkPaid, handleDelete, handleUpdate, handleAdd } = useFinancialInvoices();
 
@@ -91,7 +62,6 @@ const Dashboard = () => {
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>('clients');
   const dragging = useRef(false);
 
-  // Collapse sidebar on mobile by default
   useEffect(() => {
     if (isMobile) setSidebarCollapsed(true);
   }, [isMobile]);
@@ -100,6 +70,24 @@ const Dashboard = () => {
   const entityInvoices = selectedId
     ? invoices.filter((inv) => inv.entityId === selectedId)
     : [];
+
+  const handleAddSupplier = async () => {
+    if (!supplierForm.name.trim()) { toast.warning('Nome obrigatório'); return; }
+    const newEntity = await addSupplier({
+      name: supplierForm.name.trim(),
+      type: 'supplier',
+      document: supplierForm.document.trim() || undefined,
+      phone: supplierForm.phone.trim() || undefined,
+      email: supplierForm.email.trim() || undefined,
+      retainsISS: false,
+    });
+    if (newEntity) {
+      setSelectedId(newEntity.id);
+      setSupplierForm({ name: '', document: '', phone: '', email: '' });
+      setSupplierDialogOpen(false);
+      toast.success('Fornecedor cadastrado com sucesso!');
+    }
+  };
 
   useEffect(() => {
     if (invoices.length === 0) return;
@@ -186,7 +174,6 @@ const Dashboard = () => {
         </>
       )}
 
-      {/* Mobile entity sidebar as sheet */}
       {isMobile && !sidebarCollapsed && (
         <Sheet open={!sidebarCollapsed} onOpenChange={(open) => setSidebarCollapsed(!open)}>
           <SheetContent side="left" className="w-full max-w-[300px] p-0">
@@ -225,39 +212,19 @@ const Dashboard = () => {
                 <div className="space-y-4 py-2">
                   <div>
                     <Label>Nome / Razão Social *</Label>
-                    <Input
-                      placeholder="Nome do fornecedor"
-                      value={supplierForm.name}
-                      onChange={e => setSupplierForm(p => ({ ...p, name: e.target.value }))}
-                      className="text-base mt-1"
-                    />
+                    <Input placeholder="Nome do fornecedor" value={supplierForm.name} onChange={e => setSupplierForm(p => ({ ...p, name: e.target.value }))} className="text-base mt-1" />
                   </div>
                   <div>
                     <Label>CNPJ</Label>
-                    <Input
-                      placeholder="00.000.000/0000-00"
-                      value={supplierForm.document}
-                      onChange={e => setSupplierForm(p => ({ ...p, document: e.target.value }))}
-                      className="text-base mt-1"
-                    />
+                    <Input placeholder="00.000.000/0000-00" value={supplierForm.document} onChange={e => setSupplierForm(p => ({ ...p, document: e.target.value }))} className="text-base mt-1" />
                   </div>
                   <div>
                     <Label>Telefone</Label>
-                    <Input
-                      placeholder="(00) 00000-0000"
-                      value={supplierForm.phone}
-                      onChange={e => setSupplierForm(p => ({ ...p, phone: e.target.value }))}
-                      className="text-base mt-1"
-                    />
+                    <Input placeholder="(00) 00000-0000" value={supplierForm.phone} onChange={e => setSupplierForm(p => ({ ...p, phone: e.target.value }))} className="text-base mt-1" />
                   </div>
                   <div>
                     <Label>E-mail</Label>
-                    <Input
-                      placeholder="email@fornecedor.com"
-                      value={supplierForm.email}
-                      onChange={e => setSupplierForm(p => ({ ...p, email: e.target.value }))}
-                      className="text-base mt-1"
-                    />
+                    <Input placeholder="email@fornecedor.com" value={supplierForm.email} onChange={e => setSupplierForm(p => ({ ...p, email: e.target.value }))} className="text-base mt-1" />
                   </div>
                   <Button className="w-full min-h-[44px]" onClick={handleAddSupplier}>
                     Cadastrar Fornecedor
@@ -275,10 +242,10 @@ const Dashboard = () => {
               <EntityHeader
                 entity={selectedEntity}
                 onUpdate={selectedEntity?.type === 'supplier' ? (data) => {
-                  setSuppliers(prev => prev.map(s => s.id === selectedEntity.id ? { ...s, ...data } : s));
+                  updateSupplier(selectedEntity.id, data);
                 } : undefined}
                 onDelete={selectedEntity?.type === 'supplier' ? () => {
-                  setSuppliers(prev => prev.filter(s => s.id !== selectedEntity.id));
+                  deleteSupplier(selectedEntity.id);
                   setSelectedId(null);
                   toast.success('Fornecedor removido.');
                 } : undefined}

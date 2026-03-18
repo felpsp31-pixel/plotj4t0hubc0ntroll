@@ -103,6 +103,7 @@ const Dashboard = () => {
     : [];
 
   useEffect(() => {
+    if (invoices.length === 0) return;
     const today = new Date();
     const todayStr = today.toISOString().slice(0, 10);
     const tomorrow = new Date(today);
@@ -137,8 +138,7 @@ const Dashboard = () => {
         );
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [invoices, allEntities]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -273,7 +273,17 @@ const Dashboard = () => {
         {selectedEntity ? (
           <>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-2 gap-2 sm:gap-4">
-              <EntityHeader entity={selectedEntity} />
+              <EntityHeader
+                entity={selectedEntity}
+                onUpdate={selectedEntity?.type === 'supplier' ? (data) => {
+                  setSuppliers(prev => prev.map(s => s.id === selectedEntity.id ? { ...s, ...data } : s));
+                } : undefined}
+                onDelete={selectedEntity?.type === 'supplier' ? () => {
+                  setSuppliers(prev => prev.filter(s => s.id !== selectedEntity.id));
+                  setSelectedId(null);
+                  toast.success('Fornecedor removido.');
+                } : undefined}
+              />
               <div className="flex items-center gap-2 flex-wrap">
                 <ImportNotaFiscalDialog />
                 <NewInvoiceDialog entityId={selectedEntity.id} onAdd={handleAdd} />

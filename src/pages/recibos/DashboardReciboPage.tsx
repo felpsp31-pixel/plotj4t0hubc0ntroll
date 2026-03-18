@@ -4,6 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FileText, Users } from 'lucide-react';
 
+const formatDate = (date: string) => {
+  if (!date) return '—';
+  const [y, m, d] = date.split('-');
+  return `${d}/${m}/${y}`;
+};
+
 const DashboardReciboPage = () => {
   const { recibos, clientes } = useRecibos();
 
@@ -41,7 +47,7 @@ const DashboardReciboPage = () => {
                 {last10.map(r => (
                   <TableRow key={r.id}>
                     <TableCell className="text-foreground">{r.number}</TableCell>
-                    <TableCell className="text-foreground">{r.date}</TableCell>
+                    <TableCell className="text-foreground">{formatDate(r.date)}</TableCell>
                     <TableCell className="text-foreground">{clientes.find(c => c.id === r.clienteId)?.name ?? '—'}</TableCell>
                     <TableCell className="text-foreground">{r.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
                   </TableRow>

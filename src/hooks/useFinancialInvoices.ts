@@ -4,6 +4,9 @@ import type { Invoice, Attachment } from '@/types/finance';
 import { MOCK_INVOICES } from '@/types/finance';
 import { toast } from 'sonner';
 
+const isDbId = (id: string) =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id);
+
 export function useFinancialInvoices() {
   const [invoices, setInvoices] = useState<Invoice[]>(MOCK_INVOICES);
   const [loading, setLoading] = useState(true);
@@ -49,7 +52,7 @@ export function useFinancialInvoices() {
       prev.map((inv) => inv.id === invoiceId ? { ...inv, status: 'paid' as const } : inv)
     );
 
-    if (invoiceId.includes('-')) {
+    if (isDbId(invoiceId)) {
       await supabase.from('financial_invoices').update({ status: 'paid' }).eq('id', invoiceId);
     }
 
@@ -60,7 +63,7 @@ export function useFinancialInvoices() {
           setInvoices((prev) =>
             prev.map((inv) => inv.id === invoiceId ? { ...inv, status: previousStatus } : inv)
           );
-          if (invoiceId.includes('-')) {
+          if (isDbId(invoiceId)) {
             await supabase.from('financial_invoices').update({ status: previousStatus }).eq('id', invoiceId);
           }
           toast.info('Ação desfeita.');
@@ -72,7 +75,7 @@ export function useFinancialInvoices() {
 
   const handleDelete = useCallback(async (invoiceId: string) => {
     setInvoices((prev) => prev.filter((inv) => inv.id !== invoiceId));
-    if (invoiceId.includes('-')) {
+    if (isDbId(invoiceId)) {
       await supabase.from('financial_invoices').delete().eq('id', invoiceId);
     }
     toast.success('Lançamento apagado.');
@@ -82,7 +85,7 @@ export function useFinancialInvoices() {
     setInvoices((prev) =>
       prev.map((inv) => inv.id === invoiceId ? { ...inv, ...data } : inv)
     );
-    if (invoiceId.includes('-')) {
+    if (isDbId(invoiceId)) {
       const dbData: Record<string, unknown> = {};
       if (data.description !== undefined) dbData.description = data.description;
       if (data.value !== undefined) dbData.value = data.value;
@@ -100,7 +103,6 @@ export function useFinancialInvoices() {
   const handleAdd = useCallback(async (invoice: Invoice) => {
     setInvoices((prev) => [...prev, invoice]);
 
-    // Look up entity_name from existing records
     const { data: entityData } = await supabase
       .from('financial_invoices')
       .select('entity_name')

@@ -9,6 +9,12 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import type { LinhaRecibo } from '@/types/recibos';
 
+const formatDate = (date: string) => {
+  if (!date) return '—';
+  const [y, m, d] = date.split('-');
+  return `${d}/${m}/${y}`;
+};
+
 const emptyLines = (): LinhaRecibo[] =>
   Array.from({ length: 10 }, () => ({ serviceCode: '', description: '', quantity: 0, unitPrice: 0, total: 0 }));
 
@@ -91,7 +97,7 @@ const EmissaoReciboPage = () => {
     doc.setFontSize(14);
     doc.text(`Recibo Nº ${r.number}`, 14, 50);
     doc.setFontSize(10);
-    doc.text(`Data: ${r.date}`, 14, 57);
+    doc.text(`Data: ${formatDate(r.date)}`, 14, 57);
     if (cliente) doc.text(`Cliente: ${cliente.name} — CNPJ: ${cliente.cnpj}`, 14, 63);
     if (solicitante) doc.text(`Solicitante: ${solicitante.name}`, 14, 69);
     if (obra) doc.text(`Obra: ${obra.name}`, 14, 75);

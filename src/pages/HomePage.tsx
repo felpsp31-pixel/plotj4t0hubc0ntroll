@@ -14,6 +14,8 @@ const HomePage = () => {
 
   const handleFinanceiroAuth = (e: React.FormEvent) => {
     e.preventDefault();
+    // AVISO: senha comparada no frontend via variável de ambiente.
+    // Para uso interno — não expor este sistema publicamente sem autenticação server-side.
     if (password === import.meta.env.VITE_FINANCIAL_PASSWORD) {
       sessionStorage.setItem('financial_auth', 'true');
       setModalOpen(false);

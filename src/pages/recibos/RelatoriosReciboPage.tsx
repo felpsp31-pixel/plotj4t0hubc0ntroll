@@ -11,6 +11,12 @@ import autoTable from 'jspdf-autotable';
 
 type SortKey = 'date-desc' | 'date-asc' | 'value-desc' | 'value-asc';
 
+const formatDate = (date: string) => {
+  if (!date) return '—';
+  const [y, m, d] = date.split('-');
+  return `${d}/${m}/${y}`;
+};
+
 const RelatoriosReciboPage = () => {
   const { recibos, clientes, empresaInfo } = useRecibos();
   const [clienteFilter, setClienteFilter] = useState('');
@@ -42,7 +48,7 @@ const RelatoriosReciboPage = () => {
     const header = 'Nº,Data,Cliente,Valor\n';
     const rows = sorted.map(r => {
       const nome = clientes.find(c => c.id === r.clienteId)?.name ?? '';
-      return `${r.number},${r.date},"${nome}",${r.total.toFixed(2)}`;
+      return `${r.number},${formatDate(r.date)},"${nome}",${r.total.toFixed(2)}`;
     }).join('\n');
     const blob = new Blob([header + rows], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -60,7 +66,7 @@ const RelatoriosReciboPage = () => {
       head: [['Nº', 'Data', 'Cliente', 'Valor']],
       body: sorted.map(r => [
         r.number,
-        r.date,
+        formatDate(r.date),
         clientes.find(c => c.id === r.clienteId)?.name ?? '',
         r.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
       ]),
@@ -119,7 +125,7 @@ const RelatoriosReciboPage = () => {
               {sorted.map(r => (
                 <TableRow key={r.id}>
                   <TableCell className="text-foreground">{r.number}</TableCell>
-                  <TableCell className="text-foreground">{r.date}</TableCell>
+                  <TableCell className="text-foreground">{formatDate(r.date)}</TableCell>
                   <TableCell className="text-foreground">{clientes.find(c => c.id === r.clienteId)?.name ?? '—'}</TableCell>
                   <TableCell className="text-foreground">{r.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
                 </TableRow>

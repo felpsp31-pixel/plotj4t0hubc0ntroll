@@ -29,12 +29,13 @@ const Dashboard = () => {
   const { signOut } = useAuth();
   const montantes = useMontantes();
   const clientesRecibos = useClientesFinanceiro();
+  const { entities: ownEntities, addEntity, deleteEntity, updateEntity: updateEntityFn } = useFinancialEntities();
   const isMobile = useIsMobile();
   const totalOperacional = montantes.reduce((s, m) => s + m.total, 0);
 
   const allEntities = useMemo<Entity[]>(() => {
-    const merged = [...MOCK_ENTITIES];
-    const existingDocs = new Set(MOCK_ENTITIES.map(e => e.document).filter(Boolean));
+    const merged = [...ownEntities];
+    const existingDocs = new Set(ownEntities.map(e => e.document).filter(Boolean));
     for (const c of clientesRecibos) {
       if (!existingDocs.has(c.cnpj)) {
         merged.push({
@@ -49,7 +50,7 @@ const Dashboard = () => {
       }
     }
     return merged;
-  }, [clientesRecibos]);
+  }, [ownEntities, clientesRecibos]);
 
   const { invoices, handleMarkPaid, handleDelete, handleUpdate, handleAdd } = useFinancialInvoices();
 

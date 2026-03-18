@@ -1,0 +1,225 @@
+import { useState, useMemo } from 'react';
+import { useRecibos } from '@/contexts/RecibosContext';
+import Combobox from '@/components/recibos/Combobox';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { toast } from 'sonner';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import type { LinhaRecibo } from '@/types/recibos';
+
+const emptyLines = (): LinhaRecibo[] =>
+  Array.from({ length: 10 }, () => ({ serviceCode: '', description: '', quantity: 0, unitPrice: 0, total: 0 }));
+
+const EmissaoReciboPage = () => {
+  const { clientes, solicitantes, obras, servicos, recibos, addRecibo, empresaInfo } = useRecibos();
+  const [clienteId, setClienteId] = useState('');
+  const [solicitanteId, setSolicitanteId] = useState('');
+  const [obraId, setObraId] = useState('');
+  const [lines, setLines] = useState<LinhaRecibo[]>(emptyLines());
+  const [saved, setSaved] = useState(false);
+  const [lastRecibo, setLastRecibo] = useState<typeof recibos[0] | null>(null);
+
+  const filteredSolicitantes = useMemo(() => solicitantes.filter(s => s.clienteId === clienteId), [solicitantes, clienteId]);
+  const filteredObras = useMemo(() => obras.filter(o => o.clienteId === clienteId), [obras, clienteId]);
+
+  const total = lines.reduce((s, l) => s + l.total, 0);
+
+  const updateLine = (idx: number, field: string, value: string | number) => {
+    setLines(prev => {
+      const next = [...prev];
+      const line = { ...next[idx] };
+      if (field === 'serviceCode') {
+        const svc = servicos.find(s => s.code === value);
+        line.serviceCode = value as string;
+        line.description = svc?.description ?? '';
+        line.unitPrice = svc?.unitPrice ?? 0;
+        line.total = line.quantity * line.unitPrice;
+      } else if (field === 'quantity') {
+        line.quantity = Number(value) || 0;
+        line.total = line.quantity * line.unitPrice;
+      }
+      next[idx] = line;
+      return next;
+    });
+  };
+
+  const handleSave = () => {
+    if (!clienteId) { toast.error('Selecione um cliente.'); return; }
+    const validLines = lines.filter(l => l.serviceCode && l.quantity > 0);
+    if (validLines.length === 0) { toast.error('Adicione ao menos um serviço.'); return; }
+    const recibo = addRecibo({
+      date: new Date().toISOString().slice(0, 10),
+      clienteId, solicitanteId, obraId,
+      lines: validLines,
+      total: validLines.reduce((s, l) => s + l.total, 0),
+    });
+    setLastRecibo(recibo);
+    setSaved(true);
+    toast.success(`Recibo ${recibo.number} salvo!`);
+  };
+
+  const handleNew = () => {
+    setClienteId(''); setSolicitanteId(''); setObraId('');
+    setLines(emptyLines()); setSaved(false); setLastRecibo(null);
+  };
+
+  const generatePdf = () => {
+    const r = lastRecibo;
+    if (!r) return;
+    const doc = new jsPDF();
+    const cliente = clientes.find(c => c.id === r.clienteId);
+    const solicitante = solicitantes.find(s => s.id === r.solicitanteId);
+    const obra = obras.find(o => o.id === r.obraId);
+
+    doc.setFontSize(16);
+    doc.text(empresaInfo.name, 14, 20);
+    doc.setFontSize(9);
+    doc.text(`CNPJ: ${empresaInfo.cnpj}`, 14, 27);
+    doc.text(empresaInfo.address, 14, 32);
+    doc.text(`Tel: ${empresaInfo.phone} | ${empresaInfo.email}`, 14, 37);
+
+    doc.setFontSize(14);
+    doc.text(`Recibo Nº ${r.number}`, 14, 50);
+    doc.setFontSize(10);
+    doc.text(`Data: ${r.date}`, 14, 57);
+    if (cliente) doc.text(`Cliente: ${cliente.name} — CNPJ: ${cliente.cnpj}`, 14, 63);
+    if (solicitante) doc.text(`Solicitante: ${solicitante.name}`, 14, 69);
+    if (obra) doc.text(`Obra: ${obra.name}`, 14, 75);
+
+    autoTable(doc, {
+      startY: 82,
+      head: [['Cód', 'Descrição', 'Qtd', 'Unitário', 'Total']],
+      body: r.lines.map(l => [
+        l.serviceCode,
+        l.description,
+        String(l.quantity),
+        l.unitPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+        l.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+      ]),
+    });
+
+    const finalY = (doc as any).lastAutoTable?.finalY ?? 120;
+    doc.setFontSize(12);
+    doc.text(`Total: ${r.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 14, finalY + 10);
+
+    return doc;
+  };
+
+  const handleExportPdf = () => {
+    const doc = generatePdf();
+    if (doc) doc.save(`recibo_${lastRecibo!.number}.pdf`);
+  };
+
+  const handlePrint = () => {
+    const doc = generatePdf();
+    if (doc) {
+      const blob = doc.output('blob');
+      const url = URL.createObjectURL(blob);
+      const w = window.open(url);
+      if (w) w.onload = () => { w.print(); URL.revokeObjectURL(url); };
+    }
+  };
+
+  const servicoOptions = servicos.map(s => ({ value: s.code, label: `${s.code} - ${s.description}` }));
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-foreground">Emissão de Recibo</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="text-sm font-medium text-foreground">Cliente</label>
+          <Combobox
+            options={clientes.map(c => ({ value: c.id, label: c.name }))}
+            value={clienteId}
+            onValueChange={v => { setClienteId(v); setSolicitanteId(''); setObraId(''); }}
+            placeholder="Selecione o cliente"
+            disabled={saved}
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-foreground">Solicitante</label>
+          <Combobox
+            options={filteredSolicitantes.map(s => ({ value: s.id, label: s.name }))}
+            value={solicitanteId}
+            onValueChange={setSolicitanteId}
+            placeholder="Selecione o solicitante"
+            disabled={saved || !clienteId}
+          />
+        </div>
+        <div>
+          <label className="text-sm font-medium text-foreground">Obra</label>
+          <Combobox
+            options={filteredObras.map(o => ({ value: o.id, label: o.name }))}
+            value={obraId}
+            onValueChange={setObraId}
+            placeholder="Selecione a obra"
+            disabled={saved || !clienteId}
+          />
+        </div>
+      </div>
+
+      <div className="border rounded-lg overflow-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[200px]">Serviço</TableHead>
+              <TableHead>Descrição</TableHead>
+              <TableHead className="w-[100px]">Qtd</TableHead>
+              <TableHead className="w-[130px]">Unitário</TableHead>
+              <TableHead className="w-[130px]">Total</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {lines.map((line, idx) => (
+              <TableRow key={idx}>
+                <TableCell>
+                  <Combobox
+                    options={servicoOptions}
+                    value={line.serviceCode}
+                    onValueChange={v => updateLine(idx, 'serviceCode', v)}
+                    placeholder="Código"
+                    disabled={saved}
+                  />
+                </TableCell>
+                <TableCell className="text-foreground">{line.description}</TableCell>
+                <TableCell>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={line.quantity || ''}
+                    onChange={e => updateLine(idx, 'quantity', e.target.value)}
+                    disabled={saved}
+                    className="w-20"
+                  />
+                </TableCell>
+                <TableCell className="text-foreground">
+                  {line.unitPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </TableCell>
+                <TableCell className="font-medium text-foreground">
+                  {line.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <p className="text-lg font-bold text-foreground">
+          Total: {total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+        </p>
+        <div className="flex gap-2">
+          <Button onClick={handleSave} disabled={saved}>Salvar Recibo</Button>
+          <Button variant="outline" onClick={handleNew}>Novo Recibo</Button>
+          {saved && <Button variant="secondary" onClick={handleExportPdf}>Exportar PDF</Button>}
+          {saved && <Button variant="secondary" onClick={handlePrint}>Imprimir</Button>}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default EmissaoReciboPage;

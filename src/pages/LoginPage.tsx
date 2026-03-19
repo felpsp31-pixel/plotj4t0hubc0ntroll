@@ -26,10 +26,20 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (!blocked) return;
-    const until = Date.now() + 600_000;
-    sessionStorage.setItem('login_blocked', 'true');
-    sessionStorage.setItem('login_blocked_until', String(until));
-    setRemainingTime(600);
+
+    const storedUntil = parseInt(sessionStorage.getItem('login_blocked_until') ?? '0', 10);
+    const isNewBlock = storedUntil === 0 || storedUntil <= Date.now();
+
+    if (isNewBlock) {
+      const until = Date.now() + 600_000;
+      sessionStorage.setItem('login_blocked', 'true');
+      sessionStorage.setItem('login_blocked_until', String(until));
+      setRemainingTime(600);
+    } else {
+      const diff = Math.ceil((storedUntil - Date.now()) / 1000);
+      setRemainingTime(diff > 0 ? diff : 0);
+    }
+
     const interval = setInterval(() => {
       setRemainingTime(prev => {
         if (prev <= 1) {
@@ -44,6 +54,7 @@ const LoginPage = () => {
         return prev - 1;
       });
     }, 1000);
+
     return () => clearInterval(interval);
   }, [blocked]);
 

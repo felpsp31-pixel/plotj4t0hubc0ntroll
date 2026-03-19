@@ -20,11 +20,19 @@ const formatDate = (date: string) => {
 };
 
 const RelatoriosReciboPage = () => {
-  const { recibos, clientes, empresaInfo, deleteRecibo } = useRecibos();
+  const { recibos, clientes, empresaInfo, deleteRecibo, loading } = useRecibos();
   const [clienteFilter, setClienteFilter] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [sort, setSort] = useState<SortKey>('date-desc');
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   const filtered = useMemo(() => {
     return recibos.filter(r => {

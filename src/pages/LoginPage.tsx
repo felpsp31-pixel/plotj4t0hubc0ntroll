@@ -12,9 +12,17 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [attempts, setAttempts] = useState(0);
-  const [blocked, setBlocked] = useState(false);
-  const [remainingTime, setRemainingTime] = useState(0);
+  const [attempts, setAttempts] = useState(() =>
+    parseInt(sessionStorage.getItem('login_attempts') ?? '0', 10)
+  );
+  const [blocked, setBlocked] = useState(() =>
+    sessionStorage.getItem('login_blocked') === 'true'
+  );
+  const [remainingTime, setRemainingTime] = useState(() => {
+    const until = parseInt(sessionStorage.getItem('login_blocked_until') ?? '0', 10);
+    const diff = Math.ceil((until - Date.now()) / 1000);
+    return diff > 0 ? diff : 0;
+  });
 
   useEffect(() => {
     if (!blocked) return;

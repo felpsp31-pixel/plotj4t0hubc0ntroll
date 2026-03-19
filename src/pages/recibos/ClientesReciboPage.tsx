@@ -45,6 +45,7 @@ const ClientesReciboPage = () => {
     clientes, addCliente, updateCliente, deleteCliente,
     solicitantes, addSolicitante, updateSolicitante, deleteSolicitante,
     obras, addObra, updateObra, deleteObra,
+    loading,
   } = useRecibos();
 
   const [cForm, setCForm] = useState({ name: '', cnpj: '', phone: '', email: '' });

@@ -103,7 +103,7 @@ const Dashboard = () => {
     overdueToday.forEach((inv) => {
       const entity = allEntities.find((e) => e.id === inv.entityId);
       if (entity) {
-        toast.warning(`Atenção: Nota de ${entity.name} vence hoje!`, { duration: 5000 });
+        toast.warning(`Atenção: Nota de ${entity.name} vence hoje!`, { duration: 5000, closeButton: true });
       }
     });
 

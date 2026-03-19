@@ -61,6 +61,7 @@ const Dashboard = () => {
   const [sidebarWidth, setSidebarWidth] = useState(300);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => isMobile);
   const [resumoOpen, setResumoOpen] = useState(false);
+  const [evolucaoOpen, setEvolucaoOpen] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>('clients');
   const dragging = useRef(false);
 

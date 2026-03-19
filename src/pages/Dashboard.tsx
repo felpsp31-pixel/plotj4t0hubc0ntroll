@@ -123,7 +123,7 @@ const Dashboard = () => {
         const formatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(inv.value);
         toast.warning(
           `Fornecedor "${entity.name}" tem título de ${formatted} vencendo amanhã!`,
-          { duration: 8000 }
+          { duration: 8000, closeButton: true }
         );
       }
     });

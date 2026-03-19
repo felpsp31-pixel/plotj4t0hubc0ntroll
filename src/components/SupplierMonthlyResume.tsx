@@ -37,6 +37,12 @@ const SupplierMonthlyResume = ({ entities, invoices }: Props) => {
 
   const [selectedMonth, setSelectedMonth] = useState(availableMonths[0] ?? '');
 
+  useEffect(() => {
+    if (availableMonths.length > 0 && !selectedMonth) {
+      setSelectedMonth(availableMonths[0]);
+    }
+  }, [availableMonths, selectedMonth]);
+
   const monthInvoices = useMemo(() => {
     if (!selectedMonth) return [];
     return invoices.filter(inv =>

@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -11,9 +12,36 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [blocked, setBlocked] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(0);
+
+  useEffect(() => {
+    if (!blocked) return;
+    setRemainingTime(600);
+    const interval = setInterval(() => {
+      setRemainingTime(prev => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setBlocked(false);
+          setAttempts(0);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [blocked]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (blocked) return;
     const normalizedPassword = password.trim();
     if (!normalizedPassword) return;
 
@@ -25,6 +53,12 @@ const LoginPage = () => {
         navigate('/');
       } else {
         setError(true);
+        const newAttempts = attempts + 1;
+        setAttempts(newAttempts);
+        if (newAttempts >= 3) {
+          setBlocked(true);
+          toast.error('Acesso bloqueado por 10 minutos após 3 tentativas incorretas.');
+        }
       }
     } catch {
       setError(true);
@@ -63,13 +97,21 @@ const LoginPage = () => {
                   spellCheck={false}
                   required
                   autoFocus
+                  disabled={blocked}
                 />
               </div>
-              {error && <p className="text-sm text-destructive">Senha incorreta</p>}
+              {error && !blocked && <p className="text-sm text-destructive">Senha incorreta</p>}
             </div>
-            <Button type="submit" className="w-full min-h-[44px]" disabled={loading}>
-              {loading ? 'Verificando...' : 'Entrar'}
+            <Button type="submit" className="w-full min-h-[44px]" disabled={loading || blocked}>
+              {blocked
+                ? `Bloqueado — aguarde ${formatTime(remainingTime)}`
+                : loading ? 'Verificando...' : 'Entrar'}
             </Button>
+            {blocked && (
+              <p className="text-sm text-destructive text-center">
+                Muitas tentativas incorretas. Tente novamente em {formatTime(remainingTime)}.
+              </p>
+            )}
           </form>
         </div>
       </div>

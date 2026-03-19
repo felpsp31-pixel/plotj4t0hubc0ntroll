@@ -9,6 +9,7 @@ import KanbanBoard from '@/components/KanbanBoard';
 import StatusSummaryCards from '@/components/StatusSummaryCards';
 import ClientsTable from '@/components/ClientsTable';
 import ExportResumoButton from '@/components/ExportResumoButton';
+import SupplierMonthlyResume from '@/components/SupplierMonthlyResume';
 import NewInvoiceDialog from '@/components/NewInvoiceDialog';
 import type { Entity } from '@/types/finance';
 import { useFinancialInvoices } from '@/hooks/useFinancialInvoices';
@@ -284,8 +285,9 @@ const Dashboard = () => {
             <SheetTitle>Resumo Financeiro</SheetTitle>
             <ExportResumoButton entities={allEntities} invoices={invoices} />
           </SheetHeader>
-          <div className="mt-4">
+          <div className="mt-4 space-y-6">
             <ClientsTable entities={allEntities} invoices={invoices} />
+            <SupplierMonthlyResume entities={allEntities} invoices={invoices} />
           </div>
         </SheetContent>
       </Sheet>

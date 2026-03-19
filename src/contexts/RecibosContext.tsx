@@ -341,7 +341,11 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
       lines: JSON.parse(JSON.stringify(newRecibo.lines)),
       total: newRecibo.total,
     }]).then(({ error }) => {
-      if (error) console.error('Error saving recibo:', error);
+      if (error) {
+        console.error('Error saving recibo:', error);
+        toast.error('Erro ao salvar recibo no servidor. Verifique sua conexão.');
+        setRecibos(p => p.filter(x => x.id !== newRecibo.id));
+      }
     });
 
     return newRecibo;

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Entity, Invoice, InvoiceStatus } from '@/types/finance';
@@ -36,6 +36,12 @@ const SupplierMonthlyResume = ({ entities, invoices }: Props) => {
   }, [invoices, supplierIds]);
 
   const [selectedMonth, setSelectedMonth] = useState(availableMonths[0] ?? '');
+
+  useEffect(() => {
+    if (availableMonths.length > 0 && !selectedMonth) {
+      setSelectedMonth(availableMonths[0]);
+    }
+  }, [availableMonths, selectedMonth]);
 
   const monthInvoices = useMemo(() => {
     if (!selectedMonth) return [];

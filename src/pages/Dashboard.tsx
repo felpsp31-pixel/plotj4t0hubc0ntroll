@@ -109,7 +109,7 @@ const Dashboard = () => {
 
     const overdue = invoices.filter((inv) => inv.status === 'overdue');
     if (overdue.length > 0) {
-      toast.warning(`${overdue.length} título(s) em atraso detectado(s).`, { duration: 5000 });
+      toast.warning(`${overdue.length} título(s) em atraso detectado(s).`, { duration: 5000, closeButton: true });
     }
 
     const supplierEntities = allEntities.filter((e) => e.type === 'supplier');

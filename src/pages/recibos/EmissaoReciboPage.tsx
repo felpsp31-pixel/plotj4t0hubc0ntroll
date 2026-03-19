@@ -138,6 +138,14 @@ const EmissaoReciboPage = () => {
 
   const servicoOptions = servicos.map(s => ({ value: s.code, label: `${s.code} - ${s.description}` }));
 
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2 h-full flex flex-col">
       <div className="flex items-center justify-between">

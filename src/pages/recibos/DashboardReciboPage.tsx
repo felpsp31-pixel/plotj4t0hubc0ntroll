@@ -11,9 +11,17 @@ const formatDate = (date: string) => {
 };
 
 const DashboardReciboPage = () => {
-  const { recibos, clientes } = useRecibos();
+  const { recibos, clientes, loading } = useRecibos();
 
   const last10 = [...recibos].sort((a, b) => Number(b.number) - Number(a.number)).slice(0, 10);
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   return (
     <RecibosAuthGuard>

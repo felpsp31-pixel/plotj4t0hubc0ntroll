@@ -69,6 +69,7 @@ const LoginPage = () => {
         setError(true);
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
+        sessionStorage.setItem('login_attempts', String(newAttempts));
         if (newAttempts >= 3) {
           setBlocked(true);
           toast.error('Acesso bloqueado por 10 minutos após 3 tentativas incorretas.');

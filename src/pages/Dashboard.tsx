@@ -9,6 +9,7 @@ import KanbanBoard from '@/components/KanbanBoard';
 import StatusSummaryCards from '@/components/StatusSummaryCards';
 import ClientsTable from '@/components/ClientsTable';
 import ExportResumoButton from '@/components/ExportResumoButton';
+import SupplierMonthlyResume from '@/components/SupplierMonthlyResume';
 import NewInvoiceDialog from '@/components/NewInvoiceDialog';
 import type { Entity } from '@/types/finance';
 import { useFinancialInvoices } from '@/hooks/useFinancialInvoices';

@@ -305,12 +305,11 @@ const Dashboard = () => {
 
       <Sheet open={evolucaoOpen} onOpenChange={setEvolucaoOpen}>
         <SheetContent side="left" className="w-full sm:w-[600px] sm:max-w-none overflow-y-auto">
-          <SheetHeader>
+          <SheetHeader className="flex flex-row items-center justify-between pr-8 flex-wrap gap-2 mb-4">
             <SheetTitle>Evolução Financeira</SheetTitle>
             <Button
               variant="ghost"
               size="sm"
-              className="w-fit"
               onClick={() => { setEvolucaoOpen(false); setResumoOpen(true); }}
             >
               ← Resumo

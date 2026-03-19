@@ -8,10 +8,18 @@ import { Plus, Pencil, Trash2, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ServicosReciboPage = () => {
-  const { servicos, addServico, updateServico, deleteServico } = useRecibos();
+  const { servicos, addServico, updateServico, deleteServico, loading } = useRecibos();
   const [form, setForm] = useState({ code: '', description: '', unitPrice: '' });
   const [editId, setEditId] = useState<string | null>(null);
   const [editData, setEditData] = useState({ code: '', description: '', unitPrice: '' });
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

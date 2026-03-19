@@ -116,7 +116,12 @@ const EvolucaoFinanceira = ({ entities, invoices }: Props) => {
       <ResponsiveContainer width="100%" height={280}>
         <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-          <XAxis dataKey="mes" tick={axisStyle} />
+          <XAxis
+            dataKey="mes"
+            tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
+            interval="preserveStartEnd"
+            tickLine={false}
+          />
           <YAxis
             tick={axisStyle}
             tickFormatter={(v: number) => v >= 1000 ? `${(v/1000).toFixed(0)}k` : String(v)}

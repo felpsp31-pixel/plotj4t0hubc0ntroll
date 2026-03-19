@@ -1,7 +1,7 @@
 import { Calendar, CheckCircle2, Trash2, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Invoice, Attachment } from "@/types/finance";
-import PdfUploadButton, { type ExtractedData } from "./PdfUploadButton";
+import PdfUploadButton from "./PdfUploadButton";
 import PdfAttachButton from "./PdfAttachButton";
 import FilePreviewModal from "./FilePreviewModal";
 import { useState } from "react";

@@ -26,6 +26,9 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (!blocked) return;
+    const until = Date.now() + 600_000;
+    sessionStorage.setItem('login_blocked', 'true');
+    sessionStorage.setItem('login_blocked_until', String(until));
     setRemainingTime(600);
     const interval = setInterval(() => {
       setRemainingTime(prev => {
@@ -33,6 +36,9 @@ const LoginPage = () => {
           clearInterval(interval);
           setBlocked(false);
           setAttempts(0);
+          sessionStorage.removeItem('login_blocked');
+          sessionStorage.removeItem('login_blocked_until');
+          sessionStorage.removeItem('login_attempts');
           return 0;
         }
         return prev - 1;

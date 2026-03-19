@@ -285,11 +285,39 @@ const Dashboard = () => {
         <SheetContent side="left" className="w-full sm:w-[600px] sm:max-w-none overflow-y-auto">
           <SheetHeader className="flex flex-row items-center justify-between pr-8">
             <SheetTitle>Resumo Financeiro</SheetTitle>
-            <ExportResumoButton entities={allEntities} invoices={invoices} />
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { setResumoOpen(false); setEvolucaoOpen(true); }}
+              >
+                Evolução
+              </Button>
+              <ExportResumoButton entities={allEntities} invoices={invoices} />
+            </div>
           </SheetHeader>
           <div className="mt-4 space-y-6">
             <ClientsTable entities={allEntities} invoices={invoices} />
             <SupplierMonthlyResume entities={allEntities} invoices={invoices} />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={evolucaoOpen} onOpenChange={setEvolucaoOpen}>
+        <SheetContent side="left" className="w-full sm:w-[600px] sm:max-w-none overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Evolução Financeira</SheetTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-fit"
+              onClick={() => { setEvolucaoOpen(false); setResumoOpen(true); }}
+            >
+              ← Resumo
+            </Button>
+          </SheetHeader>
+          <div className="mt-4">
+            <EvolucaoFinanceira entities={allEntities} invoices={invoices} />
           </div>
         </SheetContent>
       </Sheet>

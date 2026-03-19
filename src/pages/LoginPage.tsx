@@ -12,12 +12,23 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [attempts, setAttempts] = useState(0);
-  const [blocked, setBlocked] = useState(false);
-  const [remainingTime, setRemainingTime] = useState(0);
+  const [attempts, setAttempts] = useState(() =>
+    parseInt(sessionStorage.getItem('login_attempts') ?? '0', 10)
+  );
+  const [blocked, setBlocked] = useState(() =>
+    sessionStorage.getItem('login_blocked') === 'true'
+  );
+  const [remainingTime, setRemainingTime] = useState(() => {
+    const until = parseInt(sessionStorage.getItem('login_blocked_until') ?? '0', 10);
+    const diff = Math.ceil((until - Date.now()) / 1000);
+    return diff > 0 ? diff : 0;
+  });
 
   useEffect(() => {
     if (!blocked) return;
+    const until = Date.now() + 600_000;
+    sessionStorage.setItem('login_blocked', 'true');
+    sessionStorage.setItem('login_blocked_until', String(until));
     setRemainingTime(600);
     const interval = setInterval(() => {
       setRemainingTime(prev => {
@@ -25,6 +36,9 @@ const LoginPage = () => {
           clearInterval(interval);
           setBlocked(false);
           setAttempts(0);
+          sessionStorage.removeItem('login_blocked');
+          sessionStorage.removeItem('login_blocked_until');
+          sessionStorage.removeItem('login_attempts');
           return 0;
         }
         return prev - 1;
@@ -55,6 +69,7 @@ const LoginPage = () => {
         setError(true);
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
+        sessionStorage.setItem('login_attempts', String(newAttempts));
         if (newAttempts >= 3) {
           setBlocked(true);
           toast.error('Acesso bloqueado por 10 minutos após 3 tentativas incorretas.');

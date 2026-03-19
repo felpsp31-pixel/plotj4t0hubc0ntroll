@@ -45,6 +45,7 @@ const ClientesReciboPage = () => {
     clientes, addCliente, updateCliente, deleteCliente,
     solicitantes, addSolicitante, updateSolicitante, deleteSolicitante,
     obras, addObra, updateObra, deleteObra,
+    loading,
   } = useRecibos();
 
   const [cForm, setCForm] = useState({ name: '', cnpj: '', phone: '', email: '' });
@@ -78,6 +79,14 @@ const ClientesReciboPage = () => {
       </AlertDialogContent>
     </AlertDialog>
   );
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

@@ -19,7 +19,7 @@ const emptyLines = (): LinhaRecibo[] =>
   Array.from({ length: 10 }, () => ({ serviceCode: '', description: '', quantity: 0, unitPrice: 0, total: 0 }));
 
 const EmissaoReciboPage = () => {
-  const { clientes, solicitantes, obras, servicos, recibos, addRecibo, empresaInfo } = useRecibos();
+  const { clientes, solicitantes, obras, servicos, recibos, addRecibo, empresaInfo, loading } = useRecibos();
   const [clienteId, setClienteId] = useState('');
   const [solicitanteId, setSolicitanteId] = useState('');
   const [obraId, setObraId] = useState('');
@@ -137,6 +137,14 @@ const EmissaoReciboPage = () => {
   };
 
   const servicoOptions = servicos.map(s => ({ value: s.code, label: `${s.code} - ${s.description}` }));
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2 h-full flex flex-col">

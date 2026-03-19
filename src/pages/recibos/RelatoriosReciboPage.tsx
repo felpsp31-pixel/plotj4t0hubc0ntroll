@@ -26,14 +26,6 @@ const RelatoriosReciboPage = () => {
   const [endDate, setEndDate] = useState('');
   const [sort, setSort] = useState<SortKey>('date-desc');
 
-  if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
-
   const filtered = useMemo(() => {
     return recibos.filter(r => {
       if (clienteFilter && r.clienteId !== clienteFilter) return false;

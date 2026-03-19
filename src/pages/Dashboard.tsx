@@ -10,6 +10,7 @@ import StatusSummaryCards from '@/components/StatusSummaryCards';
 import ClientsTable from '@/components/ClientsTable';
 import ExportResumoButton from '@/components/ExportResumoButton';
 import SupplierMonthlyResume from '@/components/SupplierMonthlyResume';
+import EvolucaoFinanceira from '@/components/EvolucaoFinanceira';
 import NewInvoiceDialog from '@/components/NewInvoiceDialog';
 import type { Entity } from '@/types/finance';
 import { useFinancialInvoices } from '@/hooks/useFinancialInvoices';
@@ -60,6 +61,7 @@ const Dashboard = () => {
   const [sidebarWidth, setSidebarWidth] = useState(300);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => isMobile);
   const [resumoOpen, setResumoOpen] = useState(false);
+  const [evolucaoOpen, setEvolucaoOpen] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>('clients');
   const dragging = useRef(false);
 
@@ -102,13 +104,13 @@ const Dashboard = () => {
     overdueToday.forEach((inv) => {
       const entity = allEntities.find((e) => e.id === inv.entityId);
       if (entity) {
-        toast.warning(`Atenção: Nota de ${entity.name} vence hoje!`, { duration: 5000 });
+        toast.warning(`Atenção: Nota de ${entity.name} vence hoje!`, { duration: 5000, closeButton: true });
       }
     });
 
     const overdue = invoices.filter((inv) => inv.status === 'overdue');
     if (overdue.length > 0) {
-      toast.warning(`${overdue.length} título(s) em atraso detectado(s).`, { duration: 5000 });
+      toast.warning(`${overdue.length} título(s) em atraso detectado(s).`, { duration: 5000, closeButton: true });
     }
 
     const supplierEntities = allEntities.filter((e) => e.type === 'supplier');
@@ -122,7 +124,7 @@ const Dashboard = () => {
         const formatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(inv.value);
         toast.warning(
           `Fornecedor "${entity.name}" tem título de ${formatted} vencendo amanhã!`,
-          { duration: 8000 }
+          { duration: 8000, closeButton: true }
         );
       }
     });
@@ -283,11 +285,39 @@ const Dashboard = () => {
         <SheetContent side="left" className="w-full sm:w-[600px] sm:max-w-none overflow-y-auto">
           <SheetHeader className="flex flex-row items-center justify-between pr-8">
             <SheetTitle>Resumo Financeiro</SheetTitle>
-            <ExportResumoButton entities={allEntities} invoices={invoices} />
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => { setResumoOpen(false); setEvolucaoOpen(true); }}
+              >
+                Evolução
+              </Button>
+              <ExportResumoButton entities={allEntities} invoices={invoices} />
+            </div>
           </SheetHeader>
           <div className="mt-4 space-y-6">
             <ClientsTable entities={allEntities} invoices={invoices} />
             <SupplierMonthlyResume entities={allEntities} invoices={invoices} />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={evolucaoOpen} onOpenChange={setEvolucaoOpen}>
+        <SheetContent side="left" className="w-full sm:w-[600px] sm:max-w-none overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Evolução Financeira</SheetTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-fit"
+              onClick={() => { setEvolucaoOpen(false); setResumoOpen(true); }}
+            >
+              ← Resumo
+            </Button>
+          </SheetHeader>
+          <div className="mt-4">
+            <EvolucaoFinanceira entities={allEntities} invoices={invoices} />
           </div>
         </SheetContent>
       </Sheet>

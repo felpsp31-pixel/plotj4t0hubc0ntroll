@@ -57,20 +57,20 @@ const InvoiceCard = ({ invoice, onMarkPaid, onDelete, onUpdate }: InvoiceCardPro
       transition={{ duration: 0.15 }}
       className={`bg-card rounded-xl shadow-sm hover:shadow-md border border-border border-l-4 ${statusStyles[invoice.status]} p-4 transition-shadow duration-150`}
     >
-      <div className="flex items-start justify-between mb-3">
+      {/* Linha 1: Valor + Data de vencimento */}
+      <div className="flex items-center justify-between mb-2">
         <p className="text-base sm:text-lg font-semibold text-foreground truncate">{formatted}</p>
+        <span className="flex items-center gap-1 text-xs text-muted-foreground shrink-0 ml-2">
+          <Calendar className="h-3.5 w-3.5" />
+          {dueFormatted}
+        </span>
       </div>
 
+      {/* Linha 2: Descrição */}
       <p className="text-sm text-muted-foreground mb-2 truncate">{invoice.description}</p>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Calendar className="h-3.5 w-3.5" />
-            {dueFormatted}
-          </span>
-        </div>
-
+      {/* Linha 3: Botões de ação */}
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-2">
           {hasAttachments && (
             <button

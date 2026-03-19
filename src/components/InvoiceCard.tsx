@@ -58,7 +58,7 @@ const InvoiceCard = ({ invoice, onMarkPaid, onDelete, onUpdate }: InvoiceCardPro
       className={`bg-card rounded-xl shadow-sm hover:shadow-md border border-border border-l-4 ${statusStyles[invoice.status]} p-4 transition-shadow duration-150`}
     >
       <div className="flex items-start justify-between mb-3">
-        <p className="text-2xl font-semibold text-foreground">{formatted}</p>
+        <p className="text-base sm:text-lg font-semibold text-foreground truncate">{formatted}</p>
       </div>
 
       <p className="text-sm text-muted-foreground mb-2 truncate">{invoice.description}</p>

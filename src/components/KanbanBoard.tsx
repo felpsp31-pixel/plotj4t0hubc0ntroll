@@ -32,7 +32,7 @@ const KanbanBoard = ({ invoices, onMarkPaid, onDelete, onUpdate }: KanbanBoardPr
       {columns.map((col) => {
         const items = invoices.filter((inv) => inv.status === col.status);
         return (
-          <div key={col.status} className="flex flex-col min-h-0">
+          <div key={col.status} className="flex flex-col min-h-0 min-w-[260px] sm:min-w-0">
             <div className="flex items-center gap-2 mb-4 px-1">
               <div className={`h-2.5 w-2.5 rounded-full ${dotColors[col.status]}`} />
               <h3 className={`text-sm font-semibold ${columnHeaderColors[col.status]}`}>

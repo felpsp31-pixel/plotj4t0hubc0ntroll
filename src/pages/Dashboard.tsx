@@ -285,8 +285,9 @@ const Dashboard = () => {
             <SheetTitle>Resumo Financeiro</SheetTitle>
             <ExportResumoButton entities={allEntities} invoices={invoices} />
           </SheetHeader>
-          <div className="mt-4">
+          <div className="mt-4 space-y-6">
             <ClientsTable entities={allEntities} invoices={invoices} />
+            <SupplierMonthlyResume entities={allEntities} invoices={invoices} />
           </div>
         </SheetContent>
       </Sheet>

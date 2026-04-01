@@ -57,9 +57,9 @@ const ClientesReciboPage = () => {
   const [sEdit, setSEdit] = useState<string | null>(null);
   const [sEditData, setSEditData] = useState({ clienteId: '', name: '', phone: '' });
 
-  const [oForm, setOForm] = useState({ clienteId: '', name: '' });
+  const [oForm, setOForm] = useState({ clienteId: '', name: '', hasDelivery: false, deliveryValue: 0 });
   const [oEdit, setOEdit] = useState<string | null>(null);
-  const [oEditData, setOEditData] = useState({ clienteId: '', name: '' });
+  const [oEditData, setOEditData] = useState({ clienteId: '', name: '', hasDelivery: false, deliveryValue: 0 });
 
   const clienteOptions = clientes.map(c => ({ value: c.id, label: c.name }));
 

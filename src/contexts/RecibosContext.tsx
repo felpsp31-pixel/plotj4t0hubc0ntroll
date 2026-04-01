@@ -174,7 +174,7 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
           name: o.name,
         }));
         const { data } = await supabase.from('obras').insert(rows).select();
-        if (data) setObras(data.map(r => ({ id: r.id, clienteId: r.cliente_id, name: r.name })));
+        if (data) setObras(data.map(r => ({ id: r.id, clienteId: r.cliente_id, name: r.name, hasDelivery: false, deliveryValue: 0 })));
       }
 
       if (lsServicos.length > 0) {

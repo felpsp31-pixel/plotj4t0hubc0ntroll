@@ -17,6 +17,8 @@ export interface Obra {
   id: string;
   clienteId: string;
   name: string;
+  hasDelivery: boolean;
+  deliveryValue: number;
 }
 
 export interface Servico {

@@ -94,6 +94,8 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
 
         const dbObras: Obra[] = (obrRes.data || []).map(r => ({
           id: r.id, clienteId: r.cliente_id, name: r.name,
+          hasDelivery: (r as any).has_delivery ?? false,
+          deliveryValue: Number((r as any).delivery_value ?? 0),
         }));
         setObras(dbObras);
 
@@ -172,7 +174,7 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
           name: o.name,
         }));
         const { data } = await supabase.from('obras').insert(rows).select();
-        if (data) setObras(data.map(r => ({ id: r.id, clienteId: r.cliente_id, name: r.name })));
+        if (data) setObras(data.map(r => ({ id: r.id, clienteId: r.cliente_id, name: r.name, hasDelivery: false, deliveryValue: 0 })));
       }
 
       if (lsServicos.length > 0) {
@@ -280,9 +282,15 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
   const addObra = useCallback(async (o: Omit<Obra, 'id'>) => {
     const { data, error } = await supabase.from('obras').insert([{
       cliente_id: o.clienteId, name: o.name,
-    }]).select().single();
+      has_delivery: o.hasDelivery ?? false,
+      delivery_value: o.deliveryValue ?? 0,
+    } as any]).select().single();
     if (data && !error) {
-      setObras(p => [...p, { id: data.id, clienteId: data.cliente_id, name: data.name }]);
+      setObras(p => [...p, {
+        id: data.id, clienteId: data.cliente_id, name: data.name,
+        hasDelivery: (data as any).has_delivery ?? false,
+        deliveryValue: Number((data as any).delivery_value ?? 0),
+      }]);
     }
   }, []);
 
@@ -291,7 +299,9 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
     const dbData: Record<string, unknown> = {};
     if (o.name !== undefined) dbData.name = o.name;
     if (o.clienteId !== undefined) dbData.cliente_id = o.clienteId;
-    await supabase.from('obras').update(dbData).eq('id', id);
+    if (o.hasDelivery !== undefined) dbData.has_delivery = o.hasDelivery;
+    if (o.deliveryValue !== undefined) dbData.delivery_value = o.deliveryValue;
+    await supabase.from('obras').update(dbData as any).eq('id', id);
   }, []);
 
   const deleteObra = useCallback(async (id: string) => {

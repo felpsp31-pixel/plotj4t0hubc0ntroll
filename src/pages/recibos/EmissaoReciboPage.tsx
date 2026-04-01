@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRecibos } from '@/contexts/RecibosContext';
 import Combobox from '@/components/recibos/Combobox';
 import { Button } from '@/components/ui/button';

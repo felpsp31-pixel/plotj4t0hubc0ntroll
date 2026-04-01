@@ -94,6 +94,8 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
 
         const dbObras: Obra[] = (obrRes.data || []).map(r => ({
           id: r.id, clienteId: r.cliente_id, name: r.name,
+          hasDelivery: (r as any).has_delivery ?? false,
+          deliveryValue: Number((r as any).delivery_value ?? 0),
         }));
         setObras(dbObras);
 

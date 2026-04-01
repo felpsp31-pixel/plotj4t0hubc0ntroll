@@ -299,7 +299,9 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
     const dbData: Record<string, unknown> = {};
     if (o.name !== undefined) dbData.name = o.name;
     if (o.clienteId !== undefined) dbData.cliente_id = o.clienteId;
-    await supabase.from('obras').update(dbData).eq('id', id);
+    if (o.hasDelivery !== undefined) dbData.has_delivery = o.hasDelivery;
+    if (o.deliveryValue !== undefined) dbData.delivery_value = o.deliveryValue;
+    await supabase.from('obras').update(dbData as any).eq('id', id);
   }, []);
 
   const deleteObra = useCallback(async (id: string) => {

@@ -282,9 +282,15 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
   const addObra = useCallback(async (o: Omit<Obra, 'id'>) => {
     const { data, error } = await supabase.from('obras').insert([{
       cliente_id: o.clienteId, name: o.name,
-    }]).select().single();
+      has_delivery: o.hasDelivery ?? false,
+      delivery_value: o.deliveryValue ?? 0,
+    } as any]).select().single();
     if (data && !error) {
-      setObras(p => [...p, { id: data.id, clienteId: data.cliente_id, name: data.name }]);
+      setObras(p => [...p, {
+        id: data.id, clienteId: data.cliente_id, name: data.name,
+        hasDelivery: (data as any).has_delivery ?? false,
+        deliveryValue: Number((data as any).delivery_value ?? 0),
+      }]);
     }
   }, []);
 

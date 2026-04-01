@@ -200,16 +200,22 @@ export type Database = {
       obras: {
         Row: {
           cliente_id: string
+          delivery_value: number
+          has_delivery: boolean
           id: string
           name: string
         }
         Insert: {
           cliente_id: string
+          delivery_value?: number
+          has_delivery?: boolean
           id?: string
           name: string
         }
         Update: {
           cliente_id?: string
+          delivery_value?: number
+          has_delivery?: boolean
           id?: string
           name?: string
         }

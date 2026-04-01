@@ -30,6 +30,36 @@ const EmissaoReciboPage = () => {
   const filteredSolicitantes = useMemo(() => solicitantes.filter(s => s.clienteId === clienteId), [solicitantes, clienteId]);
   const filteredObras = useMemo(() => obras.filter(o => o.clienteId === clienteId), [obras, clienteId]);
 
+  // Auto-insert/remove delivery line when obra changes
+  useEffect(() => {
+    if (saved) return;
+    const obra = obras.find(o => o.id === obraId);
+    setLines(prev => {
+      // Remove any existing delivery line
+      const withoutDelivery = prev.filter(l => l.serviceCode !== 'ENTREGA');
+      if (obra?.hasDelivery && obra.deliveryValue > 0) {
+        // Add delivery line at the end (before empty lines)
+        const lastFilledIdx = withoutDelivery.reduce((last, l, i) => l.serviceCode ? i : last, -1);
+        const insertIdx = lastFilledIdx + 1;
+        const deliveryLine: LinhaRecibo = {
+          serviceCode: 'ENTREGA',
+          description: 'Entrega',
+          quantity: 1,
+          unitPrice: obra.deliveryValue,
+          total: obra.deliveryValue,
+        };
+        const result = [...withoutDelivery];
+        result.splice(insertIdx, 0, deliveryLine);
+        // Keep at least 10 lines
+        while (result.length < 10) result.push({ serviceCode: '', description: '', quantity: 0, unitPrice: 0, total: 0 });
+        return result;
+      }
+      // Ensure at least 10 lines
+      while (withoutDelivery.length < 10) withoutDelivery.push({ serviceCode: '', description: '', quantity: 0, unitPrice: 0, total: 0 });
+      return withoutDelivery;
+    });
+  }, [obraId, obras, saved]);
+
   const total = lines.reduce((s, l) => s + l.total, 0);
 
   const nextNumber = useMemo(() => {

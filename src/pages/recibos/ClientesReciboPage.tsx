@@ -200,18 +200,39 @@ const ClientesReciboPage = () => {
           </div>
         </TabsContent>
 
-        {/* OBRAS */}
         <TabsContent value="obras" className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <Combobox options={clienteOptions} value={oForm.clienteId} onValueChange={v => setOForm(p => ({ ...p, clienteId: v }))} placeholder="Cliente" />
             <Input placeholder="Nome da obra" value={oForm.name} onChange={e => setOForm(p => ({ ...p, name: e.target.value }))} className="text-base" />
           </div>
-          <Button size="sm" className="min-h-[44px] sm:min-h-0" onClick={() => { if (!oForm.clienteId || !oForm.name) { toast.error('Preencha cliente e nome'); return; } addObra(oForm); setOForm({ clienteId: '', name: '' }); toast.success('Obra adicionada'); }}>
+          <div className="flex items-center gap-3 flex-wrap">
+            <label className="text-sm font-medium text-foreground flex items-center gap-2">
+              Entrega?
+              <Switch checked={oForm.hasDelivery} onCheckedChange={v => setOForm(p => ({ ...p, hasDelivery: v, deliveryValue: v ? p.deliveryValue : 0 }))} />
+            </label>
+            {oForm.hasDelivery && (
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                placeholder="Valor da entrega"
+                value={oForm.deliveryValue || ''}
+                onChange={e => setOForm(p => ({ ...p, deliveryValue: Number(e.target.value) || 0 }))}
+                className="text-base w-40"
+              />
+            )}
+          </div>
+          <Button size="sm" className="min-h-[44px] sm:min-h-0" onClick={() => {
+            if (!oForm.clienteId || !oForm.name) { toast.error('Preencha cliente e nome'); return; }
+            addObra(oForm);
+            setOForm({ clienteId: '', name: '', hasDelivery: false, deliveryValue: 0 });
+            toast.success('Obra adicionada');
+          }}>
             <Plus className="h-4 w-4 mr-1" /> Adicionar
           </Button>
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader><TableRow><TableHead>Cliente</TableHead><TableHead>Obra</TableHead><TableHead className="w-24" /></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead>Cliente</TableHead><TableHead>Obra</TableHead><TableHead>Entrega</TableHead><TableHead className="w-24" /></TableRow></TableHeader>
               <TableBody>
                 {obras.map(o => {
                   const clienteName = clientes.find(c => c.id === o.clienteId)?.name ?? '—';
@@ -221,6 +242,21 @@ const ClientesReciboPage = () => {
                         <>
                           <TableCell><Combobox options={clienteOptions} value={oEditData.clienteId} onValueChange={v => setOEditData(p => ({ ...p, clienteId: v }))} placeholder="Cliente" /></TableCell>
                           <TableCell><Input value={oEditData.name} onChange={e => setOEditData(p => ({ ...p, name: e.target.value }))} className="text-base" /></TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Switch checked={oEditData.hasDelivery} onCheckedChange={v => setOEditData(p => ({ ...p, hasDelivery: v, deliveryValue: v ? p.deliveryValue : 0 }))} />
+                              {oEditData.hasDelivery && (
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  step="0.01"
+                                  value={oEditData.deliveryValue || ''}
+                                  onChange={e => setOEditData(p => ({ ...p, deliveryValue: Number(e.target.value) || 0 }))}
+                                  className="text-base w-24"
+                                />
+                              )}
+                            </div>
+                          </TableCell>
                           <TableCell className="flex gap-1">
                             <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]" onClick={() => { updateObra(o.id, oEditData); setOEdit(null); toast.success('Atualizado'); }}><Check className="h-4 w-4" /></Button>
                             <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]" onClick={() => setOEdit(null)}><X className="h-4 w-4" /></Button>
@@ -230,8 +266,13 @@ const ClientesReciboPage = () => {
                         <>
                           <TableCell className="text-foreground">{clienteName}</TableCell>
                           <TableCell className="text-foreground">{o.name}</TableCell>
+                          <TableCell className="text-foreground">
+                            {o.hasDelivery
+                              ? o.deliveryValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                              : '—'}
+                          </TableCell>
                           <TableCell className="flex gap-1">
-                            <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]" onClick={() => { setOEdit(o.id); setOEditData({ clienteId: o.clienteId, name: o.name }); }}><Pencil className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]" onClick={() => { setOEdit(o.id); setOEditData({ clienteId: o.clienteId, name: o.name, hasDelivery: o.hasDelivery, deliveryValue: o.deliveryValue }); }}><Pencil className="h-4 w-4" /></Button>
                             <DeleteButton onConfirm={() => { deleteObra(o.id); toast.success('Removida'); }} />
                           </TableCell>
                         </>

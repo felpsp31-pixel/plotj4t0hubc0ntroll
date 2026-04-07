@@ -9,8 +9,8 @@ const ThemeToggle = ({ expanded = true }: { expanded?: boolean }) => {
   return (
     <Button
       variant="ghost"
-      size={expanded ? "sm" : "icon"}
-      className={expanded ? "w-full justify-start gap-3 px-1 min-h-[44px] [&_svg]:size-5" : "min-h-[44px] min-w-[44px] [&_svg]:size-5"}
+      size="sm"
+      className="w-full justify-start gap-3 px-1 min-h-[44px] [&_svg]:size-5"
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
     >
       {isDark ? <Sun className="h-5 w-5 shrink-0" /> : <Moon className="h-5 w-5 shrink-0" />}

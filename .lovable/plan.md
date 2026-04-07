@@ -1,66 +1,63 @@
 
 
-# Plano: Campo "Entrega" em Obras + Alertas por E-mail
+# Plano: Modo claro/escuro + Serviços específicos por cliente
 
-## Parte 1 — Campo "Entrega" nas Obras
+## Parte 1 — Alternância entre modo claro e escuro
 
-### Resumo
-Cada obra ganha um toggle "Entrega" (sim/não). Se "Sim", aparece um campo de valor. Na **emissão do recibo**, quando a obra é selecionada, uma linha extra "Entrega" aparece automaticamente com o valor cadastrado. O usuário pode **remover ou manter** essa linha diretamente no recibo (não no cadastro).
+O projeto ja usa `next-themes` e `darkMode: "class"` no Tailwind. Tem variáveis CSS para `.dark` definidas no `index.css`. Falta apenas o `ThemeProvider` e um botão de alternância.
 
 ### Alterações
 
-**1. Migração no banco** — Adicionar colunas na tabela `obras`:
-- `has_delivery boolean NOT NULL DEFAULT false`
-- `delivery_value numeric NOT NULL DEFAULT 0`
+**1. `src/main.tsx`** — Envolver o `<App />` com `ThemeProvider` do `next-themes` (attribute="class", defaultTheme="dark", storageKey="theme").
 
-**2. Tipo `Obra`** (`src/types/recibos.ts`):
-- Adicionar `hasDelivery: boolean` e `deliveryValue: number`
+**2. `src/index.css`** — Adicionar variáveis para o modo claro (`:root` atual é escuro). Mover as variáveis atuais do `:root` para `.dark` e criar variáveis claras no `:root`.
 
-**3. RecibosContext** (`src/contexts/RecibosContext.tsx`):
-- Mapear `has_delivery` / `delivery_value` no fetch e nas funções `addObra` / `updateObra`
+**3. Botão de alternância** — Adicionar um botão Sun/Moon nos dois layouts:
+- `src/components/recibos/RecibosLayout.tsx` — No rodapé da sidebar, ao lado de "Configurações"
+- `src/components/FinanceiroLayout.tsx` — No header ou sidebar equivalente
+- `src/pages/HomePage.tsx` — Canto superior
 
-**4. Cadastro de Obras** (`src/pages/recibos/ClientesReciboPage.tsx`):
-- No formulário de nova obra: adicionar Switch "Entrega?" e Input de valor (visível se Sim)
-- Na tabela de obras: exibir coluna "Entrega" com valor formatado ou "—"
-- No modo edição: mesmo toggle + input
-- O valor é apenas cadastrado aqui; remoção se faz desmarcando o toggle
+## Parte 2 — Serviços específicos por cliente
 
-**5. Emissão do Recibo** (`src/pages/recibos/EmissaoReciboPage.tsx`):
-- Quando uma obra com `hasDelivery=true` é selecionada, inserir automaticamente uma linha extra com `serviceCode: 'ENTREGA'`, `description: 'Entrega'`, `quantity: 1`, `unitPrice: deliveryValue`
-- A linha aparece como qualquer outra linha na tabela — o usuário pode **remover** mudando o serviço para vazio ou zerando a quantidade, ou simplesmente mantê-la
-- Se a obra mudar para uma sem entrega, remover a linha automática de entrega
+Cada cliente poderá ter serviços com valores personalizados que só aparecem ao emitir recibos para aquele cliente.
 
----
+### Alterações
 
-## Parte 2 — Alertas de Vencimento por E-mail
+**1. Migração no banco** — Criar tabela `client_services`:
+- `id uuid PK default gen_random_uuid()`
+- `cliente_id uuid NOT NULL` (referência lógica a `clientes`)
+- `code text NOT NULL`
+- `description text NOT NULL`
+- `unit_price numeric NOT NULL DEFAULT 0`
+- RLS: ALL para anon/authenticated
 
-### Pré-requisito
-O projeto **não tem domínio de e-mail configurado**. Antes de implementar o envio, é necessário configurar um domínio de e-mail.
+**2. Tipo e contexto**:
+- `src/types/recibos.ts` — Adicionar tipo `ClientService` com `id, clienteId, code, description, unitPrice`
+- `src/contexts/RecibosContext.tsx` — Adicionar estado `clientServices`, fetch na inicialização, funções `addClientService`, `updateClientService`, `deleteClientService`
 
-### Passos
+**3. UI de cadastro** (`src/pages/recibos/ClientesReciboPage.tsx`):
+- Adicionar nova aba "Serviços do Cliente" no `Tabs` existente
+- Formulário com Combobox de cliente + código + descrição + valor unitário
+- Tabela listando serviços filtrados pelo cliente selecionado
+- CRUD completo (adicionar, editar, excluir)
 
-**1. Configurar domínio de e-mail** — O usuário precisará abrir o painel de configuração de e-mail e adicionar/verificar um domínio.
-
-**2. Edge Function** (`supabase/functions/check-due-invoices/index.ts`):
-- Consulta `financial_invoices` com `status = 'open'` e `due_date <= hoje`
-- Consulta `empresa_info` para obter o e-mail destino
-- Títulos vencendo hoje: envia e-mail listando-os
-- Títulos atrasados (`due_date < hoje`): envia e-mail separado e atualiza status para `overdue`
-- Usa a infraestrutura de e-mail transacional do projeto
-
-**3. Agendamento**: Configurar execução diária da Edge Function (ex: via `pg_cron` ou `pg_net`)
-
----
+**4. Emissão do recibo** (`src/pages/recibos/EmissaoReciboPage.tsx`):
+- Quando um cliente é selecionado, o Combobox de serviços nas linhas deve mostrar **tanto** os serviços globais **quanto** os serviços específicos daquele cliente
+- Serviços do cliente aparecem com indicação visual (ex: prefixo ou cor diferente)
+- O valor unitário usado é o do serviço específico do cliente (não o global)
 
 ## Resumo de arquivos
 
 | Arquivo | Ação |
 |---|---|
-| `supabase/migrations/` | Nova migração (`has_delivery`, `delivery_value`) |
-| `src/types/recibos.ts` | Adicionar campos ao tipo `Obra` |
-| `src/contexts/RecibosContext.tsx` | Mapear novos campos no CRUD |
-| `src/pages/recibos/ClientesReciboPage.tsx` | Toggle + input no cadastro de obras |
-| `src/pages/recibos/EmissaoReciboPage.tsx` | Linha automática removível de entrega |
-| `supabase/functions/check-due-invoices/index.ts` | Edge Function de alertas |
-| Configuração de e-mail | Domínio precisa ser configurado primeiro |
+| `src/main.tsx` | Adicionar ThemeProvider |
+| `src/index.css` | Reorganizar variáveis CSS (claro no :root, escuro em .dark) |
+| `src/components/recibos/RecibosLayout.tsx` | Botão Sun/Moon |
+| `src/components/FinanceiroLayout.tsx` | Botão Sun/Moon |
+| `src/pages/HomePage.tsx` | Botão Sun/Moon |
+| `supabase/migrations/` | Criar tabela `client_services` |
+| `src/types/recibos.ts` | Tipo `ClientService` |
+| `src/contexts/RecibosContext.tsx` | CRUD de `clientServices` |
+| `src/pages/recibos/ClientesReciboPage.tsx` | Nova aba "Serviços do Cliente" |
+| `src/pages/recibos/EmissaoReciboPage.tsx` | Mesclar serviços globais + do cliente no Combobox |
 

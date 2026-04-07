@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { Cliente, Solicitante, Obra, Servico, Recibo, EmpresaInfo } from '@/types/recibos';
+import type { Cliente, Solicitante, Obra, Servico, Recibo, EmpresaInfo, ClientService } from '@/types/recibos';
 import { toast } from 'sonner';
 
 interface MontanteCliente {
@@ -29,6 +29,10 @@ interface RecibosContextType {
   addServico: (s: Omit<Servico, 'id'>) => void;
   updateServico: (id: string, s: Partial<Servico>) => void;
   deleteServico: (id: string) => void;
+  clientServices: ClientService[];
+  addClientService: (s: Omit<ClientService, 'id'>) => void;
+  updateClientService: (id: string, s: Partial<ClientService>) => void;
+  deleteClientService: (id: string) => void;
   recibos: Recibo[];
   addRecibo: (r: Omit<Recibo, 'id' | 'number'>) => Recibo;
   deleteRecibo: (id: string) => void;
@@ -55,67 +59,62 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
   const [solicitantes, setSolicitantes] = useState<Solicitante[]>([]);
   const [obras, setObras] = useState<Obra[]>([]);
   const [servicos, setServicos] = useState<Servico[]>([]);
+  const [clientServices, setClientServices] = useState<ClientService[]>([]);
   const [recibos, setRecibos] = useState<Recibo[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // --- Load all data from DB on mount ---
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const [empRes, cliRes, solRes, obrRes, srvRes, recRes] = await Promise.all([
+        const [empRes, cliRes, solRes, obrRes, srvRes, recRes, csRes] = await Promise.all([
           supabase.from('empresa_info').select('*').limit(1).maybeSingle(),
           supabase.from('clientes').select('*').order('created_at'),
           supabase.from('solicitantes').select('*'),
           supabase.from('obras').select('*'),
           supabase.from('servicos').select('*'),
           supabase.from('recibos').select('*').order('created_at'),
+          supabase.from('client_services' as any).select('*'),
         ]);
 
         if (empRes.data) {
           setEmpresaInfoState({
-            name: empRes.data.name,
-            cnpj: empRes.data.cnpj,
-            address: empRes.data.address,
-            phone: empRes.data.phone,
-            email: empRes.data.email,
-            logo: empRes.data.logo,
+            name: empRes.data.name, cnpj: empRes.data.cnpj, address: empRes.data.address,
+            phone: empRes.data.phone, email: empRes.data.email, logo: empRes.data.logo,
           });
         }
 
-        const dbClientes: Cliente[] = (cliRes.data || []).map(r => ({
+        setClientes((cliRes.data || []).map((r: any) => ({
           id: r.id, name: r.name, cnpj: r.cnpj, phone: r.phone, email: r.email,
-        }));
-        setClientes(dbClientes);
+        })));
 
-        const dbSolicitantes: Solicitante[] = (solRes.data || []).map(r => ({
+        setSolicitantes((solRes.data || []).map((r: any) => ({
           id: r.id, clienteId: r.cliente_id, name: r.name, phone: r.phone,
-        }));
-        setSolicitantes(dbSolicitantes);
+        })));
 
-        const dbObras: Obra[] = (obrRes.data || []).map(r => ({
+        setObras((obrRes.data || []).map((r: any) => ({
           id: r.id, clienteId: r.cliente_id, name: r.name,
-          hasDelivery: (r as any).has_delivery ?? false,
-          deliveryValue: Number((r as any).delivery_value ?? 0),
-        }));
-        setObras(dbObras);
+          hasDelivery: r.has_delivery ?? false,
+          deliveryValue: Number(r.delivery_value ?? 0),
+        })));
 
-        const dbServicos: Servico[] = (srvRes.data || []).map(r => ({
+        setServicos((srvRes.data || []).map((r: any) => ({
           id: r.id, code: r.code, description: r.description, unitPrice: Number(r.unit_price),
-        }));
-        setServicos(dbServicos);
+        })));
 
-        const dbRecibos: Recibo[] = (recRes.data || []).map(r => ({
+        setClientServices((csRes.data || []).map((r: any) => ({
+          id: r.id, clienteId: r.cliente_id, code: r.code,
+          description: r.description, unitPrice: Number(r.unit_price),
+        })));
+
+        setRecibos((recRes.data || []).map((r: any) => ({
           id: r.id, number: r.number, date: r.date,
-          clienteId: r.cliente_id,
-          solicitanteId: r.solicitante_id || '',
+          clienteId: r.cliente_id, solicitanteId: r.solicitante_id || '',
           obraId: r.obra_id || '',
           lines: (r.lines as unknown as Recibo['lines']) || [],
           total: Number(r.total),
-        }));
-        setRecibos(dbRecibos);
+        })));
 
-        // --- One-time migration from localStorage ---
-        if (dbClientes.length === 0) {
+        if ((cliRes.data || []).length === 0) {
           await migrateFromLocalStorage();
         }
       } catch (err) {
@@ -124,7 +123,6 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
       }
     };
-
     fetchAll();
   }, []);
 
@@ -139,7 +137,6 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
 
       if (lsClientes.length === 0 && lsRecibos.length === 0) return;
 
-      // Map old IDs to new UUIDs
       const idMap = new Map<string, string>();
 
       if (lsEmpresa) {
@@ -188,14 +185,11 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
 
       if (lsRecibos.length > 0) {
         const rows = lsRecibos.map((r: any) => ({
-          id: crypto.randomUUID(),
-          number: r.number,
-          date: r.date,
+          id: crypto.randomUUID(), number: r.number, date: r.date,
           cliente_id: idMap.get(r.clienteId) || r.clienteId,
           solicitante_id: idMap.get(r.solicitanteId) || r.solicitanteId || null,
           obra_id: idMap.get(r.obraId) || r.obraId || null,
-          lines: r.lines || [],
-          total: r.total || 0,
+          lines: r.lines || [], total: r.total || 0,
         }));
         const { data } = await supabase.from('recibos').insert(rows).select();
         if (data) setRecibos(data.map(r => ({
@@ -213,12 +207,8 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
 
   const montantePorCliente = useMemo<MontanteCliente[]>(() => {
     return clientes.map(c => ({
-      clienteId: c.id,
-      clienteName: c.name,
-      cnpj: c.cnpj,
-      total: recibos
-        .filter(r => r.clienteId === c.id)
-        .reduce((sum, r) => sum + r.total, 0),
+      clienteId: c.id, clienteName: c.name, cnpj: c.cnpj,
+      total: recibos.filter(r => r.clienteId === c.id).reduce((sum, r) => sum + r.total, 0),
     }));
   }, [clientes, recibos]);
 
@@ -332,6 +322,32 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
     await supabase.from('servicos').delete().eq('id', id);
   }, []);
 
+  // --- Client Services CRUD ---
+  const addClientService = useCallback(async (s: Omit<ClientService, 'id'>) => {
+    const { data, error } = await supabase.from('client_services' as any).insert([{
+      cliente_id: s.clienteId, code: s.code, description: s.description, unit_price: s.unitPrice,
+    }]).select().single();
+    if (data && !error) {
+      const d = data as any;
+      setClientServices(p => [...p, { id: d.id, clienteId: d.cliente_id, code: d.code, description: d.description, unitPrice: Number(d.unit_price) }]);
+    }
+  }, []);
+
+  const updateClientService = useCallback(async (id: string, s: Partial<ClientService>) => {
+    setClientServices(p => p.map(x => x.id === id ? { ...x, ...s } : x));
+    const dbData: Record<string, unknown> = {};
+    if (s.code !== undefined) dbData.code = s.code;
+    if (s.description !== undefined) dbData.description = s.description;
+    if (s.unitPrice !== undefined) dbData.unit_price = s.unitPrice;
+    if (s.clienteId !== undefined) dbData.cliente_id = s.clienteId;
+    await supabase.from('client_services' as any).update(dbData).eq('id', id);
+  }, []);
+
+  const deleteClientService = useCallback(async (id: string) => {
+    setClientServices(p => p.filter(x => x.id !== id));
+    await supabase.from('client_services' as any).delete().eq('id', id);
+  }, []);
+
   const addRecibo = useCallback((r: Omit<Recibo, 'id' | 'number'>): Recibo => {
     const maxNum = recibos.reduce((max, rc) => {
       const n = parseInt(rc.number, 10);
@@ -340,11 +356,8 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
     const newRecibo: Recibo = { ...r, id: crypto.randomUUID(), number: String(maxNum + 1).padStart(4, '0') };
     setRecibos(p => [...p, newRecibo]);
 
-    // Persist async
     supabase.from('recibos').insert([{
-      id: newRecibo.id,
-      number: newRecibo.number,
-      date: newRecibo.date,
+      id: newRecibo.id, number: newRecibo.number, date: newRecibo.date,
       cliente_id: newRecibo.clienteId,
       solicitante_id: newRecibo.solicitanteId || null,
       obra_id: newRecibo.obraId || null,
@@ -373,6 +386,7 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
       solicitantes, addSolicitante, updateSolicitante, deleteSolicitante,
       obras, addObra, updateObra, deleteObra,
       servicos, addServico, updateServico, deleteServico,
+      clientServices, addClientService, updateClientService, deleteClientService,
       recibos, addRecibo, deleteRecibo,
       montantePorCliente,
       loading,

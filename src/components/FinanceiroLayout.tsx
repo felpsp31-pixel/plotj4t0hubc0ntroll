@@ -6,6 +6,7 @@ import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const FinanceiroLayout = () => {
   const navigate = useNavigate();
@@ -51,7 +52,8 @@ const FinanceiroLayout = () => {
           );
         })()}
       </nav>
-      <div className="border-t border-border px-3 py-2">
+      <div className="border-t border-border px-3 py-2 space-y-1">
+        <ThemeToggle expanded={expanded} />
         {expanded ? (
           <Button variant="ghost" className="w-full justify-start gap-3 px-1 text-destructive min-h-[44px]" onClick={() => { handleExit(); setMobileDrawerOpen(false); }}>
             <LogOut className="h-5 w-5 shrink-0" /> Sair do Financeiro

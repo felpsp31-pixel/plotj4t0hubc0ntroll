@@ -19,7 +19,7 @@ const emptyLines = (): LinhaRecibo[] =>
   Array.from({ length: 10 }, () => ({ serviceCode: '', description: '', quantity: 0, unitPrice: 0, total: 0 }));
 
 const EmissaoReciboPage = () => {
-  const { clientes, solicitantes, obras, servicos, recibos, addRecibo, empresaInfo, loading } = useRecibos();
+  const { clientes, solicitantes, obras, servicos, clientServices, recibos, addRecibo, empresaInfo, loading } = useRecibos();
   const [clienteId, setClienteId] = useState('');
   const [solicitanteId, setSolicitanteId] = useState('');
   const [obraId, setObraId] = useState('');
@@ -75,10 +75,19 @@ const EmissaoReciboPage = () => {
       const next = [...prev];
       const line = { ...next[idx] };
       if (field === 'serviceCode') {
-        const svc = servicos.find(s => s.code === value);
-        line.serviceCode = value as string;
-        line.description = svc?.description ?? '';
-        line.unitPrice = svc?.unitPrice ?? 0;
+        const val = value as string;
+        if (val.startsWith('CS:')) {
+          const csCode = val.slice(3);
+          const cs = clientSpecificServices.find(s => s.code === csCode);
+          line.serviceCode = val;
+          line.description = cs?.description ?? '';
+          line.unitPrice = cs?.unitPrice ?? 0;
+        } else {
+          const svc = servicos.find(s => s.code === val);
+          line.serviceCode = val;
+          line.description = svc?.description ?? '';
+          line.unitPrice = svc?.unitPrice ?? 0;
+        }
         line.total = line.quantity * line.unitPrice;
       } else if (field === 'quantity') {
         line.quantity = Number(value) || 0;
@@ -166,7 +175,14 @@ const EmissaoReciboPage = () => {
     }
   };
 
-  const servicoOptions = servicos.map(s => ({ value: s.code, label: `${s.code} - ${s.description}` }));
+  const clientSpecificServices = useMemo(() =>
+    clientServices.filter(cs => cs.clienteId === clienteId), [clientServices, clienteId]);
+
+  const servicoOptions = useMemo(() => {
+    const global = servicos.map(s => ({ value: s.code, label: `${s.code} - ${s.description}` }));
+    const specific = clientSpecificServices.map(cs => ({ value: `CS:${cs.code}`, label: `★ ${cs.code} - ${cs.description}` }));
+    return [...specific, ...global];
+  }, [servicos, clientSpecificServices]);
 
   if (loading) {
     return (

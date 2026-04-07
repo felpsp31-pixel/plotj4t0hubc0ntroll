@@ -32,6 +32,30 @@ export type Database = {
         }
         Relationships: []
       }
+      client_services: {
+        Row: {
+          cliente_id: string
+          code: string
+          description: string
+          id: string
+          unit_price: number
+        }
+        Insert: {
+          cliente_id: string
+          code: string
+          description: string
+          id?: string
+          unit_price?: number
+        }
+        Update: {
+          cliente_id?: string
+          code?: string
+          description?: string
+          id?: string
+          unit_price?: number
+        }
+        Relationships: []
+      }
       clientes: {
         Row: {
           cnpj: string

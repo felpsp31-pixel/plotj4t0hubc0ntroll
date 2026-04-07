@@ -166,7 +166,14 @@ const EmissaoReciboPage = () => {
     }
   };
 
-  const servicoOptions = servicos.map(s => ({ value: s.code, label: `${s.code} - ${s.description}` }));
+  const clientSpecificServices = useMemo(() =>
+    clientServices.filter(cs => cs.clienteId === clienteId), [clientServices, clienteId]);
+
+  const servicoOptions = useMemo(() => {
+    const global = servicos.map(s => ({ value: s.code, label: `${s.code} - ${s.description}` }));
+    const specific = clientSpecificServices.map(cs => ({ value: `CS:${cs.code}`, label: `★ ${cs.code} - ${cs.description}` }));
+    return [...specific, ...global];
+  }, [servicos, clientSpecificServices]);
 
   if (loading) {
     return (

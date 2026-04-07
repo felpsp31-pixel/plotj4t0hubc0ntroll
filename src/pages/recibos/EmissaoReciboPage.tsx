@@ -75,10 +75,19 @@ const EmissaoReciboPage = () => {
       const next = [...prev];
       const line = { ...next[idx] };
       if (field === 'serviceCode') {
-        const svc = servicos.find(s => s.code === value);
-        line.serviceCode = value as string;
-        line.description = svc?.description ?? '';
-        line.unitPrice = svc?.unitPrice ?? 0;
+        const val = value as string;
+        if (val.startsWith('CS:')) {
+          const csCode = val.slice(3);
+          const cs = clientSpecificServices.find(s => s.code === csCode);
+          line.serviceCode = val;
+          line.description = cs?.description ?? '';
+          line.unitPrice = cs?.unitPrice ?? 0;
+        } else {
+          const svc = servicos.find(s => s.code === val);
+          line.serviceCode = val;
+          line.description = svc?.description ?? '';
+          line.unitPrice = svc?.unitPrice ?? 0;
+        }
         line.total = line.quantity * line.unitPrice;
       } else if (field === 'quantity') {
         line.quantity = Number(value) || 0;

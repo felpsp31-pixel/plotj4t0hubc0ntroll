@@ -82,7 +82,8 @@ const RecibosLayout = () => {
           );
         })}
       </nav>
-      <div className="border-t border-border px-3 py-2">
+      <div className="border-t border-border px-3 py-2 space-y-1">
+        <ThemeToggle expanded={expanded} />
         {expanded ? (
           <Button variant="ghost" className="w-full justify-start gap-3 px-1 min-h-[44px]" onClick={() => { setForm(empresaInfo); setSettingsOpen(true); setMobileDrawerOpen(false); }}>
             <Settings className="h-5 w-5 shrink-0" /> Configurações

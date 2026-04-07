@@ -77,15 +77,18 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 sm:p-6 relative">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="absolute top-4 right-4 text-muted-foreground hover:text-foreground min-h-[44px]"
-        onClick={handleLogout}
-      >
-        <LogOut className="h-4 w-4 mr-2" />
-        Sair
-      </Button>
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <ThemeToggle expanded={false} />
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-muted-foreground hover:text-foreground min-h-[44px]"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Sair
+        </Button>
+      </div>
 
       <div className="flex flex-col items-center mb-10">
         <img

@@ -8,6 +8,65 @@
   :root {
     --font-sans: 'Inter', system-ui, sans-serif;
 
+    --background: 0 0% 98%;
+    --foreground: 220 20% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 15%;
+
+    --primary: 215 20% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 92%;
+    --secondary-foreground: 220 20% 20%;
+
+    --muted: 220 14% 94%;
+    --muted-foreground: 215 15% 45%;
+
+    --accent: 220 14% 92%;
+    --accent-foreground: 220 20% 18%;
+
+    --destructive: 347 77% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --open: 215 16% 47%;
+    --open-foreground: 0 0% 100%;
+
+    --border: 220 14% 85%;
+    --input: 220 14% 85%;
+    --ring: 215 20% 45%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 20% 20%;
+    --sidebar-primary: 215 20% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 93%;
+    --sidebar-accent-foreground: 220 20% 18%;
+    --sidebar-border: 220 14% 85%;
+    --sidebar-ring: 215 20% 45%;
+
+    --kanban-column: 220 14% 95%;
+    --kanban-column-foreground: 220 20% 18%;
+
+    --login-gradient-from: 220 20% 96%;
+    --login-gradient-to: 215 20% 92%;
+
+    --badge-iss: 226 70% 55%;
+    --badge-iss-foreground: 0 0% 100%;
+  }
+
+  .dark {
     --background: 220 20% 10%;
     --foreground: 210 25% 90%;
 
@@ -45,8 +104,6 @@
     --input: 220 14% 20%;
     --ring: 215 20% 55%;
 
-    --radius: 0.75rem;
-
     --sidebar-background: 220 18% 11%;
     --sidebar-foreground: 210 25% 88%;
     --sidebar-primary: 215 20% 55%;
@@ -64,40 +121,6 @@
 
     --badge-iss: 226 70% 55%;
     --badge-iss-foreground: 0 0% 100%;
-  }
-
-  .dark {
-    --background: 222 47% 5%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222 47% 8%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 215 16% 57%;
-    --primary-foreground: 222 47% 5%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 33% 17%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 347 77% 50%;
-    --destructive-foreground: 0 0% 100%;
-    --success: 160 84% 39%;
-    --success-foreground: 0 0% 100%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 213 27% 84%;
-    --kanban-column: 217 33% 12%;
-    --kanban-column-foreground: 210 40% 98%;
-    --sidebar-background: 222 47% 8%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 215 16% 57%;
-    --sidebar-primary-foreground: 222 47% 5%;
-    --sidebar-accent: 217 33% 17%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 215 16% 57%;
   }
 }
 

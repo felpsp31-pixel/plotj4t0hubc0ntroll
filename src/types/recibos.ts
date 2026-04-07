@@ -28,6 +28,14 @@ export interface Servico {
   unitPrice: number;
 }
 
+export interface ClientService {
+  id: string;
+  clienteId: string;
+  code: string;
+  description: string;
+  unitPrice: number;
+}
+
 export interface LinhaRecibo {
   serviceCode: string;
   description: string;

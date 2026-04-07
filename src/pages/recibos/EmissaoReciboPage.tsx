@@ -19,7 +19,7 @@ const emptyLines = (): LinhaRecibo[] =>
   Array.from({ length: 10 }, () => ({ serviceCode: '', description: '', quantity: 0, unitPrice: 0, total: 0 }));
 
 const EmissaoReciboPage = () => {
-  const { clientes, solicitantes, obras, servicos, recibos, addRecibo, empresaInfo, loading } = useRecibos();
+  const { clientes, solicitantes, obras, servicos, clientServices, recibos, addRecibo, empresaInfo, loading } = useRecibos();
   const [clienteId, setClienteId] = useState('');
   const [solicitanteId, setSolicitanteId] = useState('');
   const [obraId, setObraId] = useState('');

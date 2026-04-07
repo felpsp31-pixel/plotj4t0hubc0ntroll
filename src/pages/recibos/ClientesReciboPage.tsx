@@ -97,7 +97,7 @@ const ClientesReciboPage = () => {
           <TabsTrigger value="clientes">Clientes</TabsTrigger>
           <TabsTrigger value="solicitantes">Solicitantes</TabsTrigger>
           <TabsTrigger value="obras">Obras</TabsTrigger>
-          <TabsTrigger value="servicos-cliente">Serviços do Cliente</TabsTrigger>
+          
         </TabsList>
 
         {/* CLIENTES */}

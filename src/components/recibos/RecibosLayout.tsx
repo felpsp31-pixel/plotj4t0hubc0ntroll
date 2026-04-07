@@ -12,6 +12,7 @@ import { useRecibos } from '@/contexts/RecibosContext';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import ThemeToggle from '@/components/ThemeToggle';
 
 const links = [
   { to: '/recibos', label: 'Recibos', icon: FileText, end: true },

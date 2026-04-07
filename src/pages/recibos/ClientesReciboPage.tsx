@@ -46,7 +46,6 @@ const ClientesReciboPage = () => {
     clientes, addCliente, updateCliente, deleteCliente,
     solicitantes, addSolicitante, updateSolicitante, deleteSolicitante,
     obras, addObra, updateObra, deleteObra,
-    clientServices, addClientService, updateClientService, deleteClientService,
     loading,
   } = useRecibos();
 
@@ -62,18 +61,7 @@ const ClientesReciboPage = () => {
   const [oEdit, setOEdit] = useState<string | null>(null);
   const [oEditData, setOEditData] = useState({ clienteId: '', name: '', hasDelivery: false, deliveryValue: 0 });
 
-  // Client services state
-  const [csFilterClienteId, setCsFilterClienteId] = useState('');
-  const [csForm, setCsForm] = useState({ clienteId: '', code: '', description: '', unitPrice: 0 });
-  const [csEdit, setCsEdit] = useState<string | null>(null);
-  const [csEditData, setCsEditData] = useState({ code: '', description: '', unitPrice: 0 });
-
   const clienteOptions = clientes.map(c => ({ value: c.id, label: c.name }));
-
-  const filteredClientServices = useMemo(() =>
-    csFilterClienteId ? clientServices.filter(cs => cs.clienteId === csFilterClienteId) : clientServices,
-    [clientServices, csFilterClienteId]
-  );
 
   const DeleteButton = ({ onConfirm }: { onConfirm: () => void }) => (
     <AlertDialog>

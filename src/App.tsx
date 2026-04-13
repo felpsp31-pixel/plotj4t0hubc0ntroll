@@ -19,6 +19,7 @@ import ClientesReciboPage from "./pages/recibos/ClientesReciboPage";
 import ServicosReciboPage from "./pages/recibos/ServicosReciboPage";
 import DashboardReciboPage from "./pages/recibos/DashboardReciboPage";
 import RelatoriosReciboPage from "./pages/recibos/RelatoriosReciboPage";
+import DemandasPage from "./pages/recibos/DemandasPage";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
                   <Route path="servicos" element={<ServicosReciboPage />} />
                   <Route path="dashboard" element={<DashboardReciboPage />} />
                   <Route path="relatorios" element={<RelatoriosReciboPage />} />
+                  <Route path="demandas" element={<DemandasPage />} />
                 </Route>
 
                 {/* Financial module */}

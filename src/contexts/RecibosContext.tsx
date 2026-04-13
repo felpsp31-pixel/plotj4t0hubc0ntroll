@@ -295,6 +295,7 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
     if (o.clienteId !== undefined) dbData.cliente_id = o.clienteId;
     if (o.hasDelivery !== undefined) dbData.has_delivery = o.hasDelivery;
     if (o.deliveryValue !== undefined) dbData.delivery_value = o.deliveryValue;
+    if (o.exemptionValue !== undefined) dbData.exemption_value = o.exemptionValue;
     await supabase.from('obras').update(dbData as any).eq('id', id);
   }, []);
 

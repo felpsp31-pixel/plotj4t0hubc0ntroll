@@ -57,9 +57,9 @@ const ClientesReciboPage = () => {
   const [sEdit, setSEdit] = useState<string | null>(null);
   const [sEditData, setSEditData] = useState({ clienteId: '', name: '', phone: '' });
 
-  const [oForm, setOForm] = useState({ clienteId: '', name: '', hasDelivery: false, deliveryValue: 0 });
+  const [oForm, setOForm] = useState({ clienteId: '', name: '', hasDelivery: false, deliveryValue: 0, exemptionValue: 0 });
   const [oEdit, setOEdit] = useState<string | null>(null);
-  const [oEditData, setOEditData] = useState({ clienteId: '', name: '', hasDelivery: false, deliveryValue: 0 });
+  const [oEditData, setOEditData] = useState({ clienteId: '', name: '', hasDelivery: false, deliveryValue: 0, exemptionValue: 0 });
 
   const clienteOptions = clientes.map(c => ({ value: c.id, label: c.name }));
 
@@ -210,17 +210,25 @@ const ClientesReciboPage = () => {
           <div className="flex items-center gap-3 flex-wrap">
             <label className="text-sm font-medium text-foreground flex items-center gap-2">
               Entrega?
-              <Switch checked={oForm.hasDelivery} onCheckedChange={v => setOForm(p => ({ ...p, hasDelivery: v, deliveryValue: v ? p.deliveryValue : 0 }))} />
+              <Switch checked={oForm.hasDelivery} onCheckedChange={v => setOForm(p => ({ ...p, hasDelivery: v, deliveryValue: v ? p.deliveryValue : 0, exemptionValue: v ? p.exemptionValue : 0 }))} />
             </label>
             {oForm.hasDelivery && (
-              <Input type="number" min={0} step="0.01" placeholder="Valor da entrega"
-                value={oForm.deliveryValue || ''} onChange={e => setOForm(p => ({ ...p, deliveryValue: Number(e.target.value) || 0 }))}
-                className="text-base w-40" />
+              <>
+                <Input type="number" min={0} step="0.01" placeholder="Valor da entrega"
+                  value={oForm.deliveryValue || ''} onChange={e => setOForm(p => ({ ...p, deliveryValue: Number(e.target.value) || 0 }))}
+                  className="text-base w-40" />
+                <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                  Isenção a partir de:
+                  <Input type="number" min={0} step="0.01" placeholder="Valor de isenção"
+                    value={oForm.exemptionValue || ''} onChange={e => setOForm(p => ({ ...p, exemptionValue: Number(e.target.value) || 0 }))}
+                    className="text-base w-40" />
+                </label>
+              </>
             )}
           </div>
           <Button size="sm" className="min-h-[44px] sm:min-h-0" onClick={() => {
             if (!oForm.clienteId || !oForm.name) { toast.error('Preencha cliente e nome'); return; }
-            addObra(oForm); setOForm({ clienteId: '', name: '', hasDelivery: false, deliveryValue: 0 }); toast.success('Obra adicionada');
+            addObra(oForm); setOForm({ clienteId: '', name: '', hasDelivery: false, deliveryValue: 0, exemptionValue: 0 }); toast.success('Obra adicionada');
           }}>
             <Plus className="h-4 w-4 mr-1" /> Adicionar
           </Button>

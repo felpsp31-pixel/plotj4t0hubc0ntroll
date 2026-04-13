@@ -315,6 +315,7 @@ export type Database = {
         Row: {
           cliente_id: string
           delivery_value: number
+          exemption_value: number
           has_delivery: boolean
           id: string
           name: string
@@ -322,6 +323,7 @@ export type Database = {
         Insert: {
           cliente_id: string
           delivery_value?: number
+          exemption_value?: number
           has_delivery?: boolean
           id?: string
           name: string
@@ -329,6 +331,7 @@ export type Database = {
         Update: {
           cliente_id?: string
           delivery_value?: number
+          exemption_value?: number
           has_delivery?: boolean
           id?: string
           name?: string

@@ -19,6 +19,7 @@ export interface Obra {
   name: string;
   hasDelivery: boolean;
   deliveryValue: number;
+  exemptionValue: number;
 }
 
 export interface Servico {

@@ -57,9 +57,9 @@ const ClientesReciboPage = () => {
   const [sEdit, setSEdit] = useState<string | null>(null);
   const [sEditData, setSEditData] = useState({ clienteId: '', name: '', phone: '' });
 
-  const [oForm, setOForm] = useState({ clienteId: '', name: '', hasDelivery: false, deliveryValue: 0 });
+  const [oForm, setOForm] = useState({ clienteId: '', name: '', hasDelivery: false, deliveryValue: 0, exemptionValue: 0 });
   const [oEdit, setOEdit] = useState<string | null>(null);
-  const [oEditData, setOEditData] = useState({ clienteId: '', name: '', hasDelivery: false, deliveryValue: 0 });
+  const [oEditData, setOEditData] = useState({ clienteId: '', name: '', hasDelivery: false, deliveryValue: 0, exemptionValue: 0 });
 
   const clienteOptions = clientes.map(c => ({ value: c.id, label: c.name }));
 
@@ -210,17 +210,25 @@ const ClientesReciboPage = () => {
           <div className="flex items-center gap-3 flex-wrap">
             <label className="text-sm font-medium text-foreground flex items-center gap-2">
               Entrega?
-              <Switch checked={oForm.hasDelivery} onCheckedChange={v => setOForm(p => ({ ...p, hasDelivery: v, deliveryValue: v ? p.deliveryValue : 0 }))} />
+              <Switch checked={oForm.hasDelivery} onCheckedChange={v => setOForm(p => ({ ...p, hasDelivery: v, deliveryValue: v ? p.deliveryValue : 0, exemptionValue: v ? p.exemptionValue : 0 }))} />
             </label>
             {oForm.hasDelivery && (
-              <Input type="number" min={0} step="0.01" placeholder="Valor da entrega"
-                value={oForm.deliveryValue || ''} onChange={e => setOForm(p => ({ ...p, deliveryValue: Number(e.target.value) || 0 }))}
-                className="text-base w-40" />
+              <>
+                <Input type="number" min={0} step="0.01" placeholder="Valor da entrega"
+                  value={oForm.deliveryValue || ''} onChange={e => setOForm(p => ({ ...p, deliveryValue: Number(e.target.value) || 0 }))}
+                  className="text-base w-40" />
+                <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                  Isenção a partir de:
+                  <Input type="number" min={0} step="0.01" placeholder="Valor de isenção"
+                    value={oForm.exemptionValue || ''} onChange={e => setOForm(p => ({ ...p, exemptionValue: Number(e.target.value) || 0 }))}
+                    className="text-base w-40" />
+                </label>
+              </>
             )}
           </div>
           <Button size="sm" className="min-h-[44px] sm:min-h-0" onClick={() => {
             if (!oForm.clienteId || !oForm.name) { toast.error('Preencha cliente e nome'); return; }
-            addObra(oForm); setOForm({ clienteId: '', name: '', hasDelivery: false, deliveryValue: 0 }); toast.success('Obra adicionada');
+            addObra(oForm); setOForm({ clienteId: '', name: '', hasDelivery: false, deliveryValue: 0, exemptionValue: 0 }); toast.success('Obra adicionada');
           }}>
             <Plus className="h-4 w-4 mr-1" /> Adicionar
           </Button>
@@ -237,11 +245,15 @@ const ClientesReciboPage = () => {
                           <TableCell><Combobox options={clienteOptions} value={oEditData.clienteId} onValueChange={v => setOEditData(p => ({ ...p, clienteId: v }))} placeholder="Cliente" /></TableCell>
                           <TableCell><Input value={oEditData.name} onChange={e => setOEditData(p => ({ ...p, name: e.target.value }))} className="text-base" /></TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Switch checked={oEditData.hasDelivery} onCheckedChange={v => setOEditData(p => ({ ...p, hasDelivery: v, deliveryValue: v ? p.deliveryValue : 0 }))} />
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Switch checked={oEditData.hasDelivery} onCheckedChange={v => setOEditData(p => ({ ...p, hasDelivery: v, deliveryValue: v ? p.deliveryValue : 0, exemptionValue: v ? p.exemptionValue : 0 }))} />
                               {oEditData.hasDelivery && (
-                                <Input type="number" min={0} step="0.01" value={oEditData.deliveryValue || ''}
-                                  onChange={e => setOEditData(p => ({ ...p, deliveryValue: Number(e.target.value) || 0 }))} className="text-base w-24" />
+                                <>
+                                  <Input type="number" min={0} step="0.01" value={oEditData.deliveryValue || ''} placeholder="Entrega"
+                                    onChange={e => setOEditData(p => ({ ...p, deliveryValue: Number(e.target.value) || 0 }))} className="text-base w-24" />
+                                  <Input type="number" min={0} step="0.01" value={oEditData.exemptionValue || ''} placeholder="Isenção"
+                                    onChange={e => setOEditData(p => ({ ...p, exemptionValue: Number(e.target.value) || 0 }))} className="text-base w-24" />
+                                </>
                               )}
                             </div>
                           </TableCell>
@@ -255,10 +267,17 @@ const ClientesReciboPage = () => {
                           <TableCell className="text-foreground">{clienteName}</TableCell>
                           <TableCell className="text-foreground">{o.name}</TableCell>
                           <TableCell className="text-foreground">
-                            {o.hasDelivery ? o.deliveryValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '—'}
+                            {o.hasDelivery ? (
+                              <span>
+                                {o.deliveryValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                {o.exemptionValue > 0 && (
+                                  <span className="text-xs text-muted-foreground ml-1">(isento acima de {o.exemptionValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})</span>
+                                )}
+                              </span>
+                            ) : '—'}
                           </TableCell>
                           <TableCell className="flex gap-1">
-                            <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]" onClick={() => { setOEdit(o.id); setOEditData({ clienteId: o.clienteId, name: o.name, hasDelivery: o.hasDelivery, deliveryValue: o.deliveryValue }); }}><Pencil className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]" onClick={() => { setOEdit(o.id); setOEditData({ clienteId: o.clienteId, name: o.name, hasDelivery: o.hasDelivery, deliveryValue: o.deliveryValue, exemptionValue: o.exemptionValue }); }}><Pencil className="h-4 w-4" /></Button>
                             <DeleteButton onConfirm={() => { deleteObra(o.id); toast.success('Removida'); }} />
                           </TableCell>
                         </>

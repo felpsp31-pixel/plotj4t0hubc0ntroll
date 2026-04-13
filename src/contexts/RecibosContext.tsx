@@ -95,6 +95,7 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
           id: r.id, clienteId: r.cliente_id, name: r.name,
           hasDelivery: r.has_delivery ?? false,
           deliveryValue: Number(r.delivery_value ?? 0),
+          exemptionValue: Number(r.exemption_value ?? 0),
         })));
 
         setServicos((srvRes.data || []).map((r: any) => ({
@@ -172,7 +173,7 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
           name: o.name,
         }));
         const { data } = await supabase.from('obras').insert(rows).select();
-        if (data) setObras(data.map(r => ({ id: r.id, clienteId: r.cliente_id, name: r.name, hasDelivery: false, deliveryValue: 0 })));
+        if (data) setObras(data.map(r => ({ id: r.id, clienteId: r.cliente_id, name: r.name, hasDelivery: false, deliveryValue: 0, exemptionValue: 0 })));
       }
 
       if (lsServicos.length > 0) {
@@ -275,12 +276,14 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
       cliente_id: o.clienteId, name: o.name,
       has_delivery: o.hasDelivery ?? false,
       delivery_value: o.deliveryValue ?? 0,
+      exemption_value: o.exemptionValue ?? 0,
     } as any]).select().single();
     if (data && !error) {
       setObras(p => [...p, {
         id: data.id, clienteId: data.cliente_id, name: data.name,
         hasDelivery: (data as any).has_delivery ?? false,
         deliveryValue: Number((data as any).delivery_value ?? 0),
+        exemptionValue: Number((data as any).exemption_value ?? 0),
       }]);
     }
   }, []);
@@ -292,6 +295,7 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
     if (o.clienteId !== undefined) dbData.cliente_id = o.clienteId;
     if (o.hasDelivery !== undefined) dbData.has_delivery = o.hasDelivery;
     if (o.deliveryValue !== undefined) dbData.delivery_value = o.deliveryValue;
+    if (o.exemptionValue !== undefined) dbData.exemption_value = o.exemptionValue;
     await supabase.from('obras').update(dbData as any).eq('id', id);
   }, []);
 

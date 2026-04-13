@@ -761,7 +761,34 @@ const DemandasPage = () => {
               <div><Label>Email</Label><Input value={email} onChange={e => setEmail(e.target.value)} className="text-base" /></div>
             </div>
 
-            {/* Serviço - select or type */}
+            {/* Obra e Solicitante - só para clientes cadastrados */}
+            {selectedClienteId && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Obra</Label>
+                  <Select value={demandaObraId} onValueChange={setDemandaObraId}>
+                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                    <SelectContent>
+                      {obrasAll.filter(o => o.cliente_id === selectedClienteId).map(o => (
+                        <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Solicitante</Label>
+                  <Select value={demandaSolicitanteId} onValueChange={setDemandaSolicitanteId}>
+                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                    <SelectContent>
+                      {solicitantesAll.filter(s => s.cliente_id === selectedClienteId).map(s => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-1">
               <Label>Serviço</Label>
               <div className="relative">

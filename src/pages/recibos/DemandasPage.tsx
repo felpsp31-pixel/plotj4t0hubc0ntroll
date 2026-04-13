@@ -142,6 +142,32 @@ const DemandasPage = () => {
   const [activePageIndex, setActivePageIndex] = useState(0);
   const [completedPageIndex, setCompletedPageIndex] = useState(0);
 
+  // Filters
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterResponsavel, setFilterResponsavel] = useState('');
+  const [filterCliente, setFilterCliente] = useState('');
+  const [appliedFilterResp, setAppliedFilterResp] = useState('');
+  const [appliedFilterCliente, setAppliedFilterCliente] = useState('');
+  const filtersActive = !!(appliedFilterResp || appliedFilterCliente);
+
+  const applyFilters = () => {
+    setAppliedFilterResp(filterResponsavel);
+    setAppliedFilterCliente(filterCliente);
+    setFilterOpen(false);
+    setActivePageIndex(0);
+    setCompletedPageIndex(0);
+  };
+
+  const clearFilters = () => {
+    setFilterResponsavel('');
+    setFilterCliente('');
+    setAppliedFilterResp('');
+    setAppliedFilterCliente('');
+    setFilterOpen(false);
+    setActivePageIndex(0);
+    setCompletedPageIndex(0);
+  };
+
   const filteredClientes = useMemo(() => {
     if (!clienteSearch.trim()) return clientes;
     return clientes.filter(c => c.name.toLowerCase().includes(clienteSearch.toLowerCase()));

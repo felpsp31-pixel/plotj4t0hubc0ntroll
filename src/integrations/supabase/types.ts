@@ -83,6 +83,60 @@ export type Database = {
         }
         Relationships: []
       }
+      demandas: {
+        Row: {
+          cliente_id: string | null
+          cliente_nome: string
+          created_at: string
+          email: string
+          id: string
+          prazo: string | null
+          responsavel_id: string | null
+          servico: string
+          status: string
+          telefone: string
+        }
+        Insert: {
+          cliente_id?: string | null
+          cliente_nome: string
+          created_at?: string
+          email?: string
+          id?: string
+          prazo?: string | null
+          responsavel_id?: string | null
+          servico?: string
+          status?: string
+          telefone?: string
+        }
+        Update: {
+          cliente_id?: string | null
+          cliente_nome?: string
+          created_at?: string
+          email?: string
+          id?: string
+          prazo?: string | null
+          responsavel_id?: string | null
+          servico?: string
+          status?: string
+          telefone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demandas_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "demandas_responsavel_id_fkey"
+            columns: ["responsavel_id"]
+            isOneToOne: false
+            referencedRelation: "responsaveis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       empresa_info: {
         Row: {
           address: string
@@ -310,6 +364,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      responsaveis: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
       }
       servicos: {
         Row: {

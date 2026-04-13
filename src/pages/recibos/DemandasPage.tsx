@@ -29,6 +29,8 @@ interface Demanda {
   prazo: string | null;
   responsavel_id: string | null;
   status: string;
+  prioridade: string;
+  canal: string;
   created_at: string;
 }
 
@@ -61,6 +63,22 @@ const statusLabels: Record<string, string> = {
   concluido: 'Concluído',
 };
 
+const prioridadeColors: Record<string, string> = {
+  baixa: 'bg-green-500/15 text-green-700 dark:text-green-400',
+  media: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400',
+  alta: 'bg-orange-500/15 text-orange-700 dark:text-orange-400',
+  urgente: 'bg-red-500/15 text-red-700 dark:text-red-400',
+};
+
+const prioridadeLabels: Record<string, string> = {
+  baixa: 'Baixa',
+  media: 'Média',
+  alta: 'Alta',
+  urgente: 'Urgente',
+};
+
+const canalOptions = ['WhatsApp', 'Email', 'Telefone', 'Presencial'];
+
 const DemandasPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -81,8 +99,11 @@ const DemandasPage = () => {
   const [email, setEmail] = useState('');
   const [servico, setServico] = useState('');
   const [prazo, setPrazo] = useState<Date | undefined>();
+  const [prazoHora, setPrazoHora] = useState('12:00');
   const [responsavelId, setResponsavelId] = useState('');
   const [status, setStatus] = useState('pendente');
+  const [prioridade, setPrioridade] = useState('media');
+  const [canal, setCanal] = useState('');
 
   // Mini-modal state
   const [newServicoOpen, setNewServicoOpen] = useState(false);
@@ -124,8 +145,11 @@ const DemandasPage = () => {
     setEmail('');
     setServico('');
     setPrazo(undefined);
+    setPrazoHora('12:00');
     setResponsavelId('');
     setStatus('pendente');
+    setPrioridade('media');
+    setCanal('');
   };
 
   const openAdd = () => { resetForm(); setDialogOpen(true); };
@@ -138,9 +162,18 @@ const DemandasPage = () => {
     setTelefone(d.telefone);
     setEmail(d.email);
     setServico(d.servico);
-    setPrazo(d.prazo ? new Date(d.prazo + 'T00:00:00') : undefined);
+    if (d.prazo) {
+      const dt = new Date(d.prazo);
+      setPrazo(dt);
+      setPrazoHora(format(dt, 'HH:mm'));
+    } else {
+      setPrazo(undefined);
+      setPrazoHora('12:00');
+    }
     setResponsavelId(d.responsavel_id || '');
     setStatus(d.status);
+    setPrioridade(d.prioridade || 'media');
+    setCanal(d.canal || '');
     setDialogOpen(true);
   };
 
@@ -164,15 +197,25 @@ const DemandasPage = () => {
     if (!nome.trim()) { toast.error('Informe o cliente'); return; }
     if (!servico) { toast.error('Selecione o serviço'); return; }
 
+    let prazoISO: string | null = null;
+    if (prazo) {
+      const [hh, mm] = prazoHora.split(':').map(Number);
+      const dt = new Date(prazo);
+      dt.setHours(hh, mm, 0, 0);
+      prazoISO = dt.toISOString();
+    }
+
     const payload = {
       cliente_id: selectedClienteId,
       cliente_nome: nome,
       telefone,
       email,
       servico,
-      prazo: prazo ? format(prazo, 'yyyy-MM-dd') : null,
+      prazo: prazoISO,
       responsavel_id: responsavelId || null,
       status,
+      prioridade,
+      canal,
     };
 
     if (editingId) {
@@ -252,13 +295,17 @@ const DemandasPage = () => {
                     <p className="font-medium text-foreground">{d.cliente_nome}</p>
                     <p className="text-xs text-muted-foreground">{d.servico}</p>
                   </div>
-                  <Badge className={cn('text-xs', statusColors[d.status])}>{statusLabels[d.status] || d.status}</Badge>
+                  <div className="flex gap-1 flex-wrap">
+                    <Badge className={cn('text-xs', statusColors[d.status])}>{statusLabels[d.status] || d.status}</Badge>
+                    <Badge className={cn('text-xs', prioridadeColors[d.prioridade])}>{prioridadeLabels[d.prioridade] || d.prioridade}</Badge>
+                  </div>
                 </div>
                 <div className="text-xs text-muted-foreground space-y-0.5">
                   {d.telefone && <p>📞 {d.telefone}</p>}
                   {d.email && <p>✉️ {d.email}</p>}
-                  {d.prazo && <p>📅 {format(new Date(d.prazo + 'T00:00:00'), 'dd/MM/yyyy')}</p>}
+                  {d.prazo && <p>📅 {format(new Date(d.prazo), 'dd/MM/yyyy HH:mm')}</p>}
                   <p>👤 {getResponsavelName(d.responsavel_id)}</p>
+                  {d.canal && <p>📢 {d.canal}</p>}
                 </div>
                 <div className="flex gap-1 pt-1">
                   <Button variant="ghost" size="sm" onClick={() => openEdit(d)}><Edit className="h-4 w-4" /></Button>
@@ -278,6 +325,8 @@ const DemandasPage = () => {
                 <TableHead>Prazo</TableHead>
                 <TableHead>Responsável</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Prioridade</TableHead>
+                <TableHead>Canal</TableHead>
                 <TableHead className="w-20">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -288,11 +337,15 @@ const DemandasPage = () => {
                   <TableCell>{d.telefone || '—'}</TableCell>
                   <TableCell>{d.email || '—'}</TableCell>
                   <TableCell>{d.servico}</TableCell>
-                  <TableCell>{d.prazo ? format(new Date(d.prazo + 'T00:00:00'), 'dd/MM/yyyy') : '—'}</TableCell>
+                  <TableCell>{d.prazo ? format(new Date(d.prazo), 'dd/MM/yyyy HH:mm') : '—'}</TableCell>
                   <TableCell>{getResponsavelName(d.responsavel_id)}</TableCell>
                   <TableCell>
                     <Badge className={cn('text-xs', statusColors[d.status])}>{statusLabels[d.status] || d.status}</Badge>
                   </TableCell>
+                  <TableCell>
+                    <Badge className={cn('text-xs', prioridadeColors[d.prioridade])}>{prioridadeLabels[d.prioridade] || d.prioridade}</Badge>
+                  </TableCell>
+                  <TableCell>{d.canal || '—'}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => openEdit(d)}><Edit className="h-4 w-4" /></Button>
@@ -416,33 +469,61 @@ const DemandasPage = () => {
             {/* Prazo */}
             <div className="space-y-1">
               <Label>Prazo</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className={cn('w-full justify-start text-left font-normal', !prazo && 'text-muted-foreground')}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {prazo ? format(prazo, 'dd/MM/yyyy') : 'Selecionar data'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={prazo} onSelect={setPrazo} locale={ptBR} className="p-3 pointer-events-auto" />
-                </PopoverContent>
-              </Popover>
+              <div className="flex gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className={cn('flex-1 justify-start text-left font-normal', !prazo && 'text-muted-foreground')}>
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {prazo ? format(prazo, 'dd/MM/yyyy') : 'Data'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={prazo} onSelect={setPrazo} locale={ptBR} className="p-3 pointer-events-auto" />
+                  </PopoverContent>
+                </Popover>
+                <Input type="time" value={prazoHora} onChange={e => setPrazoHora(e.target.value)} className="w-28 text-base" />
+              </div>
             </div>
 
-            {/* Status (only on edit) */}
-            {editingId && (
-              <div className="space-y-1">
-                <Label>Status</Label>
-                <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pendente">Pendente</SelectItem>
-                    <SelectItem value="em_andamento">Em andamento</SelectItem>
-                    <SelectItem value="concluido">Concluído</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+            {/* Status */}
+            <div className="space-y-1">
+              <Label>Status</Label>
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pendente">Pendente</SelectItem>
+                  <SelectItem value="em_andamento">Em andamento</SelectItem>
+                  <SelectItem value="concluido">Concluído</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Prioridade */}
+            <div className="space-y-1">
+              <Label>Prioridade</Label>
+              <Select value={prioridade} onValueChange={setPrioridade}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="baixa">Baixa</SelectItem>
+                  <SelectItem value="media">Média</SelectItem>
+                  <SelectItem value="alta">Alta</SelectItem>
+                  <SelectItem value="urgente">Urgente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Canal */}
+            <div className="space-y-1">
+              <Label>Canal</Label>
+              <Select value={canal} onValueChange={setCanal}>
+                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                <SelectContent>
+                  {canalOptions.map(c => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             <Button className="w-full min-h-[44px]" onClick={handleSave}>
               {editingId ? 'Atualizar' : 'Salvar'}

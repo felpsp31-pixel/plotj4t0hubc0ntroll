@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, CalendarIcon, Search, Trash2, Edit, ArrowLeft, CheckCircle2, AlertTriangle, FileText } from 'lucide-react';
+import { Plus, CalendarIcon, Search, Trash2, Edit, ArrowLeft, CheckCircle2, AlertTriangle, FileText, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -55,13 +55,29 @@ interface Servico {
 const statusColors: Record<string, string> = {
   pendente: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400',
   em_andamento: 'bg-blue-500/15 text-blue-700 dark:text-blue-400',
+  em_atraso: 'bg-red-500/15 text-red-700 dark:text-red-400',
   concluido: 'bg-green-500/15 text-green-700 dark:text-green-400',
 };
 
 const statusLabels: Record<string, string> = {
   pendente: 'Pendente',
   em_andamento: 'Em andamento',
+  em_atraso: 'Em atraso',
   concluido: 'Concluído',
+};
+
+const statusOrder: Record<string, number> = {
+  em_atraso: 0,
+  pendente: 1,
+  em_andamento: 2,
+  concluido: 3,
+};
+
+const prioridadeOrder: Record<string, number> = {
+  urgente: 0,
+  alta: 1,
+  media: 2,
+  baixa: 3,
 };
 
 const prioridadeColors: Record<string, string> = {
@@ -133,6 +149,51 @@ const DemandasPage = () => {
     if (!servico.trim()) return servicos;
     return servicos.filter(s => s.description.toLowerCase().includes(servico.toLowerCase()));
   }, [servicos, servico]);
+
+  // Sorting
+  const [sortField, setSortField] = useState<'prazo' | 'prioridade' | null>(null);
+  const [sortAsc, setSortAsc] = useState(false);
+
+  const toggleSort = (field: 'prazo' | 'prioridade') => {
+    if (sortField === field) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortField(field);
+      setSortAsc(false);
+    }
+  };
+
+  // Compute effective status (mark overdue as em_atraso)
+  const getEffectiveStatus = (d: Demanda) => {
+    if (d.status === 'concluido') return 'concluido';
+    if (d.prazo && new Date(d.prazo).getTime() < Date.now()) return 'em_atraso';
+    return d.status;
+  };
+
+  const sortedDemandas = useMemo(() => {
+    const withStatus = demandas.map(d => ({ ...d, _effectiveStatus: getEffectiveStatus(d) }));
+    
+    return withStatus.sort((a, b) => {
+      // First sort by status order (concluido always last)
+      const sa = statusOrder[a._effectiveStatus] ?? 2;
+      const sb = statusOrder[b._effectiveStatus] ?? 2;
+      if (sa !== sb) return sa - sb;
+
+      // Then by sort field if set
+      if (sortField === 'prazo') {
+        const pa = a.prazo ? new Date(a.prazo).getTime() : Infinity;
+        const pb = b.prazo ? new Date(b.prazo).getTime() : Infinity;
+        return sortAsc ? pa - pb : pb - pa;
+      }
+      if (sortField === 'prioridade') {
+        const pa = prioridadeOrder[a.prioridade] ?? 2;
+        const pb = prioridadeOrder[b.prioridade] ?? 2;
+        return sortAsc ? pb - pa : pa - pb;
+      }
+
+      return 0;
+    });
+  }, [demandas, sortField, sortAsc]);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -323,13 +384,13 @@ const DemandasPage = () => {
           <p className="text-muted-foreground text-sm p-4">Nenhuma demanda cadastrada.</p>
         ) : isMobile ? (
           <div className="space-y-3">
-            {demandas.map(d => {
-              const alert = getDeadlineAlert(d.prazo, d.status);
+            {sortedDemandas.map(d => {
+              const es = d._effectiveStatus;
               return (
-              <div key={d.id} className={cn("border border-border rounded-lg p-3 space-y-2 bg-card", getRowClass(d))}>
+              <div key={d.id} className={cn("border border-border rounded-lg p-3 space-y-2 bg-card", getRowClass(d), es === 'concluido' && 'opacity-60')}>
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-2">
-                    {d.status !== 'concluido' && (
+                    {es !== 'concluido' && (
                       <button onClick={() => { setConfirmCompleteId(d.id); setConfirmCompleteOpen(true); }} className="text-muted-foreground hover:text-green-600 transition-colors">
                         <CheckCircle2 className="h-5 w-5" />
                       </button>
@@ -340,8 +401,7 @@ const DemandasPage = () => {
                     </div>
                   </div>
                   <div className="flex gap-1 flex-wrap">
-                    {alert && <AlertTriangle className={cn("h-4 w-4", alert === 'overdue' ? 'text-red-500' : 'text-yellow-500')} />}
-                    <Badge className={cn('text-xs', statusColors[d.status])}>{statusLabels[d.status] || d.status}</Badge>
+                    <Badge className={cn('text-xs', statusColors[es])}>{statusLabels[es] || es}</Badge>
                     <Badge className={cn('text-xs', prioridadeColors[d.prioridade])}>{prioridadeLabels[d.prioridade] || d.prioridade}</Badge>
                   </div>
                 </div>
@@ -361,54 +421,65 @@ const DemandasPage = () => {
             })}
           </div>
         ) : (
-          <Table>
+          <Table className="border border-border">
             <TableHeader>
-              <TableRow>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Telefone</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Serviço</TableHead>
-                <TableHead>Prazo</TableHead>
-                <TableHead>Responsável</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Prioridade</TableHead>
-                <TableHead>Canal</TableHead>
+              <TableRow className="border-b border-border">
+                <TableHead className="border-r border-border">Cliente</TableHead>
+                <TableHead className="border-r border-border">Telefone</TableHead>
+                <TableHead className="border-r border-border">Email</TableHead>
+                <TableHead className="border-r border-border">Serviço</TableHead>
+                <TableHead className="border-r border-border cursor-pointer select-none" onClick={() => toggleSort('prazo')}>
+                  <div className="flex items-center gap-1">
+                    Prazo
+                    {sortField === 'prazo' ? (sortAsc ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />) : <ArrowUp className="h-3.5 w-3.5 text-muted-foreground/40" />}
+                  </div>
+                </TableHead>
+                <TableHead className="border-r border-border">Responsável</TableHead>
+                <TableHead className="border-r border-border">Status</TableHead>
+                <TableHead className="border-r border-border cursor-pointer select-none" onClick={() => toggleSort('prioridade')}>
+                  <div className="flex items-center gap-1">
+                    Prioridade
+                    {sortField === 'prioridade' ? (sortAsc ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />) : <ArrowUp className="h-3.5 w-3.5 text-muted-foreground/40" />}
+                  </div>
+                </TableHead>
+                <TableHead className="border-r border-border">Canal</TableHead>
                 <TableHead className="w-20">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {demandas.map(d => {
+              {sortedDemandas.map(d => {
+                const es = d._effectiveStatus;
                 const alert = getDeadlineAlert(d.prazo, d.status);
                 return (
-                <TableRow key={d.id} className={getRowClass(d)}>
-                  <TableCell className="font-medium">
+                <TableRow key={d.id} className={cn("border-b border-border", getRowClass(d), es === 'concluido' && 'opacity-60')}>
+                  <TableCell className="font-medium border-r border-border">
                     <div className="flex items-center gap-2">
-                      {d.status !== 'concluido' && (
+                      {es !== 'concluido' && (
                         <button onClick={() => { setConfirmCompleteId(d.id); setConfirmCompleteOpen(true); }} className="text-muted-foreground hover:text-green-600 transition-colors" title="Concluir tarefa">
                           <CheckCircle2 className="h-5 w-5" />
                         </button>
                       )}
-                      {d.status === 'concluido' && <CheckCircle2 className="h-5 w-5 text-green-600" />}
+                      {es === 'concluido' && <CheckCircle2 className="h-5 w-5 text-green-600" />}
                       {d.cliente_nome}
                     </div>
                   </TableCell>
-                  <TableCell>{d.telefone || '—'}</TableCell>
-                  <TableCell>{d.email || '—'}</TableCell>
-                  <TableCell>{d.servico}</TableCell>
-                  <TableCell>
+                  <TableCell className="border-r border-border">{d.telefone || '—'}</TableCell>
+                  <TableCell className="border-r border-border">{d.email || '—'}</TableCell>
+                  <TableCell className="border-r border-border">{d.servico}</TableCell>
+                  <TableCell className="border-r border-border">
                     <div className="flex items-center gap-1">
                       {alert && <AlertTriangle className={cn("h-4 w-4 shrink-0", alert === 'overdue' ? 'text-red-500' : 'text-yellow-500')} />}
                       {d.prazo ? format(new Date(d.prazo), 'dd/MM/yyyy HH:mm') : '—'}
                     </div>
                   </TableCell>
-                  <TableCell>{getResponsavelName(d.responsavel_id)}</TableCell>
-                  <TableCell>
-                    <Badge className={cn('text-xs', statusColors[d.status])}>{statusLabels[d.status] || d.status}</Badge>
+                  <TableCell className="border-r border-border">{getResponsavelName(d.responsavel_id)}</TableCell>
+                  <TableCell className="border-r border-border">
+                    <Badge className={cn('text-xs', statusColors[es])}>{statusLabels[es] || es}</Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="border-r border-border">
                     <Badge className={cn('text-xs', prioridadeColors[d.prioridade])}>{prioridadeLabels[d.prioridade] || d.prioridade}</Badge>
                   </TableCell>
-                  <TableCell>{d.canal || '—'}</TableCell>
+                  <TableCell className="border-r border-border">{d.canal || '—'}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => openEdit(d)}><Edit className="h-4 w-4" /></Button>

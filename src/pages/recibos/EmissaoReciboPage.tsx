@@ -3,6 +3,7 @@ import { useRecibos } from '@/contexts/RecibosContext';
 import Combobox from '@/components/recibos/Combobox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
@@ -116,7 +117,7 @@ const EmissaoReciboPage = () => {
 
   const handleNew = () => {
     setClienteId(''); setSolicitanteId(''); setObraId('');
-    setLines(emptyLines()); setSaved(false); setLastRecibo(null);
+    setLines(emptyLines()); setSaved(false); setLastRecibo(null); setIsPago(false);
   };
 
   const generatePdf = () => {
@@ -157,6 +158,20 @@ const EmissaoReciboPage = () => {
     const finalY = (doc as any).lastAutoTable?.finalY ?? 120;
     doc.setFontSize(12);
     doc.text(`Total: ${r.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 14, finalY + 10);
+
+    if (isPago) {
+      // "PAGO" stamp in red
+      doc.setFontSize(36);
+      doc.setTextColor(220, 38, 38);
+      doc.text('PAGO', 140, finalY + 15);
+      doc.setTextColor(0, 0, 0);
+    } else {
+      // Signature line
+      const signY = finalY + 30;
+      doc.setFontSize(10);
+      doc.text('Ass:', 14, signY);
+      doc.line(30, signY, 120, signY);
+    }
 
     return doc;
   };
@@ -258,9 +273,15 @@ const EmissaoReciboPage = () => {
       </div>
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-1 gap-2">
-        <p className="text-sm font-bold text-foreground">
-          Total: {total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-        </p>
+        <div className="flex items-center gap-4">
+          <p className="text-sm font-bold text-foreground">
+            Total: {total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+          </p>
+          <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
+            <Checkbox checked={isPago} onCheckedChange={(v) => setIsPago(!!v)} disabled={saved} />
+            Pago
+          </label>
+        </div>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" className="min-h-[44px] sm:min-h-0" onClick={handleSave} disabled={saved}>Salvar Recibo</Button>
           <Button size="sm" variant="outline" className="min-h-[44px] sm:min-h-0" onClick={handleNew}>Novo Recibo</Button>

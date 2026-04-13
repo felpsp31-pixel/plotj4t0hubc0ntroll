@@ -117,10 +117,12 @@ export type Database = {
           descricao: string
           email: string
           id: string
+          obra_id: string | null
           prazo: string | null
           prioridade: string
           responsavel_id: string | null
           servico: string
+          solicitante_id: string | null
           status: string
           telefone: string
         }
@@ -133,10 +135,12 @@ export type Database = {
           descricao?: string
           email?: string
           id?: string
+          obra_id?: string | null
           prazo?: string | null
           prioridade?: string
           responsavel_id?: string | null
           servico?: string
+          solicitante_id?: string | null
           status?: string
           telefone?: string
         }
@@ -149,10 +153,12 @@ export type Database = {
           descricao?: string
           email?: string
           id?: string
+          obra_id?: string | null
           prazo?: string | null
           prioridade?: string
           responsavel_id?: string | null
           servico?: string
+          solicitante_id?: string | null
           status?: string
           telefone?: string
         }
@@ -165,10 +171,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "demandas_obra_id_fkey"
+            columns: ["obra_id"]
+            isOneToOne: false
+            referencedRelation: "obras"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "demandas_responsavel_id_fkey"
             columns: ["responsavel_id"]
             isOneToOne: false
             referencedRelation: "responsaveis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "demandas_solicitante_id_fkey"
+            columns: ["solicitante_id"]
+            isOneToOne: false
+            referencedRelation: "solicitantes"
             referencedColumns: ["id"]
           },
         ]

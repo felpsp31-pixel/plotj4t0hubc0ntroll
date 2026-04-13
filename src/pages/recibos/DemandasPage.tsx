@@ -35,6 +35,8 @@ interface Demanda {
   canal: string;
   created_at: string;
   concluido_at: string | null;
+  obra_id: string | null;
+  solicitante_id: string | null;
 }
 
 interface Responsavel {
@@ -328,6 +330,8 @@ const DemandasPage = () => {
     setStatus(d.status);
     setPrioridade(d.prioridade || 'media');
     setCanal(d.canal || '');
+    setDemandaObraId(d.obra_id || '');
+    setDemandaSolicitanteId(d.solicitante_id || '');
     setDialogOpen(true);
   };
 
@@ -375,6 +379,8 @@ const DemandasPage = () => {
       status,
       prioridade,
       canal,
+      obra_id: selectedClienteId ? (demandaObraId || null) : null,
+      solicitante_id: selectedClienteId ? (demandaSolicitanteId || null) : null,
     };
 
     if (editingId) {
@@ -951,7 +957,13 @@ const DemandasPage = () => {
               const demanda = demandas.find(d => d.cliente_nome === completedDemandaCliente);
               const clienteRegistrado = clientes.find(c => c.name.toLowerCase() === completedDemandaCliente?.toLowerCase());
               setShowReciboButton(false);
-              navigate('/recibos', { state: { clienteNome: completedDemandaCliente, clienteId: clienteRegistrado?.id || demanda?.cliente_id || null, isAvulso: !clienteRegistrado } });
+              navigate('/recibos', { state: {
+                clienteNome: completedDemandaCliente,
+                clienteId: clienteRegistrado?.id || demanda?.cliente_id || null,
+                isAvulso: !clienteRegistrado,
+                obraId: (demanda as any)?.obra_id || null,
+                solicitanteId: (demanda as any)?.solicitante_id || null,
+              } });
             }}>
               <FileText className="h-4 w-4" /> Emitir Recibo
             </Button>

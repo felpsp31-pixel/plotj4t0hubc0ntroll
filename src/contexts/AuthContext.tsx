@@ -63,9 +63,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [authenticated, signOut]);
 
   useEffect(() => {
-    const session = getSession();
-    setAuthenticated(!!session);
-    setLoading(false);
+    const restore = async () => {
+      const session = getSession();
+      if (session) {
+        try {
+          const { supabase } = await import('@/integrations/supabase/client');
+          const { data } = await supabase.auth.getSession();
+          if (!data.session) {
+            await supabase.auth.signInAnonymously();
+          }
+        } catch { /* ignore */ }
+      }
+      setAuthenticated(!!session);
+      setLoading(false);
+    };
+    restore();
   }, []);
 
   useEffect(() => {

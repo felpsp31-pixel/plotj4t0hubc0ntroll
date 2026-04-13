@@ -242,6 +242,7 @@ const DemandasPage = () => {
     setTelefone(d.telefone);
     setEmail(d.email);
     setServico(d.servico);
+    setDescricao(d.descricao || '');
     if (d.prazo) {
       const dt = new Date(d.prazo);
       setPrazo(dt);

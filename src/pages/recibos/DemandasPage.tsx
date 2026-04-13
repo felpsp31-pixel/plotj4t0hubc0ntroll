@@ -450,6 +450,7 @@ const DemandasPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 };

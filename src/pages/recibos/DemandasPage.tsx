@@ -469,33 +469,61 @@ const DemandasPage = () => {
             {/* Prazo */}
             <div className="space-y-1">
               <Label>Prazo</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className={cn('w-full justify-start text-left font-normal', !prazo && 'text-muted-foreground')}>
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {prazo ? format(prazo, 'dd/MM/yyyy') : 'Selecionar data'}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={prazo} onSelect={setPrazo} locale={ptBR} className="p-3 pointer-events-auto" />
-                </PopoverContent>
-              </Popover>
+              <div className="flex gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className={cn('flex-1 justify-start text-left font-normal', !prazo && 'text-muted-foreground')}>
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {prazo ? format(prazo, 'dd/MM/yyyy') : 'Data'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar mode="single" selected={prazo} onSelect={setPrazo} locale={ptBR} className="p-3 pointer-events-auto" />
+                  </PopoverContent>
+                </Popover>
+                <Input type="time" value={prazoHora} onChange={e => setPrazoHora(e.target.value)} className="w-28 text-base" />
+              </div>
             </div>
 
-            {/* Status (only on edit) */}
-            {editingId && (
-              <div className="space-y-1">
-                <Label>Status</Label>
-                <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pendente">Pendente</SelectItem>
-                    <SelectItem value="em_andamento">Em andamento</SelectItem>
-                    <SelectItem value="concluido">Concluído</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+            {/* Status */}
+            <div className="space-y-1">
+              <Label>Status</Label>
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pendente">Pendente</SelectItem>
+                  <SelectItem value="em_andamento">Em andamento</SelectItem>
+                  <SelectItem value="concluido">Concluído</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Prioridade */}
+            <div className="space-y-1">
+              <Label>Prioridade</Label>
+              <Select value={prioridade} onValueChange={setPrioridade}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="baixa">Baixa</SelectItem>
+                  <SelectItem value="media">Média</SelectItem>
+                  <SelectItem value="alta">Alta</SelectItem>
+                  <SelectItem value="urgente">Urgente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Canal */}
+            <div className="space-y-1">
+              <Label>Canal</Label>
+              <Select value={canal} onValueChange={setCanal}>
+                <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                <SelectContent>
+                  {canalOptions.map(c => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             <Button className="w-full min-h-[44px]" onClick={handleSave}>
               {editingId ? 'Atualizar' : 'Salvar'}

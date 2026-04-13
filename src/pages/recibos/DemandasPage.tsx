@@ -142,7 +142,7 @@ const DemandasPage = () => {
 
   // Post-completion recibo dialog
   const [showReciboButton, setShowReciboButton] = useState(false);
-  const [completedDemandaCliente, setCompletedDemandaCliente] = useState<string | null>(null);
+  const [completedDemandaData, setCompletedDemandaData] = useState<Demanda | null>(null);
 
   // Pagination
   const [activePageIndex, setActivePageIndex] = useState(0);

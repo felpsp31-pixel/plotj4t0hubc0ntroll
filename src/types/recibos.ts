@@ -49,6 +49,7 @@ export interface Recibo {
   number: string;
   date: string;
   clienteId: string;
+  clienteAvulso?: string;
   solicitanteId: string;
   obraId: string;
   lines: LinhaRecibo[];

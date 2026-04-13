@@ -4,7 +4,7 @@ import EntityAvatar from './EntityAvatar';
 import SettingsModal from './SettingsModal';
 import type { Entity, Invoice } from '@/types/finance';
 
-export type SidebarTab = 'clients' | 'suppliers';
+export type SidebarTab = 'clients' | 'suppliers' | 'casual';
 
 interface EntitySidebarProps {
   entities: Entity[];
@@ -23,7 +23,7 @@ const EntitySidebar = ({ entities, invoices, selectedId, onSelect, onOpenResumo,
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const filtered = entities.filter((e) =>
-    tab === 'clients' ? e.type === 'client' : e.type === 'supplier'
+    tab === 'clients' ? e.type === 'client' : tab === 'suppliers' ? e.type === 'supplier' : e.type === 'casual'
   );
 
   const hasOverdue = (entityId: string) =>
@@ -45,7 +45,7 @@ const EntitySidebar = ({ entities, invoices, selectedId, onSelect, onOpenResumo,
         <div className="flex bg-secondary rounded-lg p-1 gap-1">
           <button
             onClick={() => setTab('clients')}
-            className={`flex-1 text-sm font-medium py-2 rounded-md transition-all duration-150 ${
+            className={`flex-1 text-xs font-medium py-2 rounded-md transition-all duration-150 ${
               tab === 'clients'
                 ? 'bg-card text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
@@ -55,13 +55,23 @@ const EntitySidebar = ({ entities, invoices, selectedId, onSelect, onOpenResumo,
           </button>
           <button
             onClick={() => setTab('suppliers')}
-            className={`flex-1 text-sm font-medium py-2 rounded-md transition-all duration-150 ${
+            className={`flex-1 text-xs font-medium py-2 rounded-md transition-all duration-150 ${
               tab === 'suppliers'
                 ? 'bg-card text-foreground shadow-sm'
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             Fornecedores
+          </button>
+          <button
+            onClick={() => setTab('casual')}
+            className={`flex-1 text-xs font-medium py-2 rounded-md transition-all duration-150 ${
+              tab === 'casual'
+                ? 'bg-card text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            Avulsos
           </button>
         </div>
       </div>

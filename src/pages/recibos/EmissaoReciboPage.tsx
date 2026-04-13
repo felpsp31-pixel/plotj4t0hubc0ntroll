@@ -22,12 +22,20 @@ const emptyLines = (): LinhaRecibo[] =>
 const EmissaoReciboPage = () => {
   const { clientes, solicitantes, obras, servicos, clientServices, recibos, addRecibo, empresaInfo, loading } = useRecibos();
   const [clienteId, setClienteId] = useState('');
+  const [clienteAvulso, setClienteAvulso] = useState('');
+  const [clienteSearch, setClienteSearch] = useState('');
+  const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
   const [solicitanteId, setSolicitanteId] = useState('');
   const [obraId, setObraId] = useState('');
   const [lines, setLines] = useState<LinhaRecibo[]>(emptyLines());
   const [saved, setSaved] = useState(false);
   const [lastRecibo, setLastRecibo] = useState<typeof recibos[0] | null>(null);
   const [isPago, setIsPago] = useState(false);
+
+  const filteredClienteOptions = useMemo(() => {
+    if (!clienteSearch.trim()) return clientes;
+    return clientes.filter(c => c.name.toLowerCase().includes(clienteSearch.toLowerCase()));
+  }, [clientes, clienteSearch]);
 
   const filteredSolicitantes = useMemo(() => solicitantes.filter(s => s.clienteId === clienteId), [solicitantes, clienteId]);
   const filteredObras = useMemo(() => obras.filter(o => o.clienteId === clienteId), [obras, clienteId]);
@@ -101,12 +109,14 @@ const EmissaoReciboPage = () => {
   };
 
   const handleSave = () => {
-    if (!clienteId) { toast.error('Selecione um cliente.'); return; }
+    if (!clienteId && !clienteAvulso.trim()) { toast.error('Selecione ou digite um cliente.'); return; }
     const validLines = lines.filter(l => l.serviceCode && l.quantity > 0);
     if (validLines.length === 0) { toast.error('Adicione ao menos um serviço.'); return; }
     const recibo = addRecibo({
       date: new Date().toISOString().slice(0, 10),
-      clienteId, solicitanteId, obraId,
+      clienteId: clienteId || '',
+      clienteAvulso: clienteId ? undefined : clienteAvulso.trim(),
+      solicitanteId, obraId,
       lines: validLines,
       total: validLines.reduce((s, l) => s + l.total, 0),
     });
@@ -116,7 +126,7 @@ const EmissaoReciboPage = () => {
   };
 
   const handleNew = () => {
-    setClienteId(''); setSolicitanteId(''); setObraId('');
+    setClienteId(''); setClienteAvulso(''); setClienteSearch(''); setSolicitanteId(''); setObraId('');
     setLines(emptyLines()); setSaved(false); setLastRecibo(null); setIsPago(false);
   };
 
@@ -139,7 +149,9 @@ const EmissaoReciboPage = () => {
     doc.text(`Recibo Nº ${r.number}`, 14, 50);
     doc.setFontSize(10);
     doc.text(`Data: ${formatDate(r.date)}`, 14, 57);
-    if (cliente) doc.text(`Cliente: ${cliente.name} — CNPJ: ${cliente.cnpj}`, 14, 63);
+    const clienteName = cliente?.name || r.clienteAvulso || 'Cliente Avulso';
+    const clienteCnpj = cliente?.cnpj;
+    doc.text(`Cliente: ${clienteName}${clienteCnpj ? ` — CNPJ: ${clienteCnpj}` : ''}`, 14, 63);
     if (solicitante) doc.text(`Solicitante: ${solicitante.name}`, 14, 69);
     if (obra) doc.text(`Obra: ${obra.name}`, 14, 75);
 
@@ -225,9 +237,51 @@ const EmissaoReciboPage = () => {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div>
+        <div className="relative">
           <label className="text-xs font-medium text-foreground">Cliente</label>
-          <Combobox options={clientes.map(c => ({ value: c.id, label: c.name }))} value={clienteId} onValueChange={v => { setClienteId(v); setSolicitanteId(''); setObraId(''); }} placeholder="Selecione" disabled={saved} />
+          <Input
+            placeholder="Buscar ou digitar cliente avulso..."
+            value={clienteSearch}
+            onChange={e => {
+              setClienteSearch(e.target.value);
+              setClientDropdownOpen(true);
+              // If typed text doesn't match a selected client, treat as avulso
+              setClienteAvulso(e.target.value);
+              setClienteId('');
+              setSolicitanteId('');
+              setObraId('');
+            }}
+            onFocus={() => setClientDropdownOpen(true)}
+            onBlur={() => setTimeout(() => setClientDropdownOpen(false), 200)}
+            disabled={saved}
+            className="h-7 text-xs"
+          />
+          {clientDropdownOpen && clienteSearch.trim() && !saved && (
+            <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-md max-h-48 overflow-y-auto">
+              {filteredClienteOptions.map(c => (
+                <button
+                  key={c.id}
+                  className="w-full text-left px-3 py-1.5 text-xs hover:bg-accent transition-colors"
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={() => {
+                    setClienteId(c.id);
+                    setClienteAvulso('');
+                    setClienteSearch(c.name);
+                    setClientDropdownOpen(false);
+                    setSolicitanteId('');
+                    setObraId('');
+                  }}
+                >
+                  {c.name}
+                </button>
+              ))}
+              {filteredClienteOptions.length === 0 && (
+                <div className="px-3 py-1.5 text-xs text-muted-foreground">
+                  Usar "{clienteSearch}" como avulso
+                </div>
+              )}
+            </div>
+          )}
         </div>
         <div>
           <label className="text-xs font-medium text-foreground">Solicitante</label>

@@ -108,7 +108,8 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
 
         setRecibos((recRes.data || []).map((r: any) => ({
           id: r.id, number: r.number, date: r.date,
-          clienteId: r.cliente_id, solicitanteId: r.solicitante_id || '',
+          clienteId: r.cliente_id, clienteAvulso: r.cliente_avulso || undefined,
+          solicitanteId: r.solicitante_id || '',
           obraId: r.obra_id || '',
           lines: (r.lines as unknown as Recibo['lines']) || [],
           total: Number(r.total),
@@ -356,14 +357,22 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
     const newRecibo: Recibo = { ...r, id: crypto.randomUUID(), number: String(maxNum + 1).padStart(4, '0') };
     setRecibos(p => [...p, newRecibo]);
 
+    // If avulso client, save to clientes_avulsos
+    if (r.clienteAvulso && !r.clienteId) {
+      supabase.from('clientes_avulsos' as any).insert([{ name: r.clienteAvulso }]).then(({ error }) => {
+        if (error) console.error('Error saving avulso client:', error);
+      });
+    }
+
     supabase.from('recibos').insert([{
       id: newRecibo.id, number: newRecibo.number, date: newRecibo.date,
-      cliente_id: newRecibo.clienteId,
+      cliente_id: newRecibo.clienteId || null,
+      cliente_avulso: newRecibo.clienteAvulso || null,
       solicitante_id: newRecibo.solicitanteId || null,
       obra_id: newRecibo.obraId || null,
       lines: JSON.parse(JSON.stringify(newRecibo.lines)),
       total: newRecibo.total,
-    }]).then(({ error }) => {
+    } as any]).then(({ error }) => {
       if (error) {
         console.error('Error saving recibo:', error);
         toast.error('Erro ao salvar recibo no servidor. Verifique sua conexão.');

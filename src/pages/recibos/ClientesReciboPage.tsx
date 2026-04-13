@@ -245,11 +245,15 @@ const ClientesReciboPage = () => {
                           <TableCell><Combobox options={clienteOptions} value={oEditData.clienteId} onValueChange={v => setOEditData(p => ({ ...p, clienteId: v }))} placeholder="Cliente" /></TableCell>
                           <TableCell><Input value={oEditData.name} onChange={e => setOEditData(p => ({ ...p, name: e.target.value }))} className="text-base" /></TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Switch checked={oEditData.hasDelivery} onCheckedChange={v => setOEditData(p => ({ ...p, hasDelivery: v, deliveryValue: v ? p.deliveryValue : 0 }))} />
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Switch checked={oEditData.hasDelivery} onCheckedChange={v => setOEditData(p => ({ ...p, hasDelivery: v, deliveryValue: v ? p.deliveryValue : 0, exemptionValue: v ? p.exemptionValue : 0 }))} />
                               {oEditData.hasDelivery && (
-                                <Input type="number" min={0} step="0.01" value={oEditData.deliveryValue || ''}
-                                  onChange={e => setOEditData(p => ({ ...p, deliveryValue: Number(e.target.value) || 0 }))} className="text-base w-24" />
+                                <>
+                                  <Input type="number" min={0} step="0.01" value={oEditData.deliveryValue || ''} placeholder="Entrega"
+                                    onChange={e => setOEditData(p => ({ ...p, deliveryValue: Number(e.target.value) || 0 }))} className="text-base w-24" />
+                                  <Input type="number" min={0} step="0.01" value={oEditData.exemptionValue || ''} placeholder="Isenção"
+                                    onChange={e => setOEditData(p => ({ ...p, exemptionValue: Number(e.target.value) || 0 }))} className="text-base w-24" />
+                                </>
                               )}
                             </div>
                           </TableCell>
@@ -263,10 +267,17 @@ const ClientesReciboPage = () => {
                           <TableCell className="text-foreground">{clienteName}</TableCell>
                           <TableCell className="text-foreground">{o.name}</TableCell>
                           <TableCell className="text-foreground">
-                            {o.hasDelivery ? o.deliveryValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '—'}
+                            {o.hasDelivery ? (
+                              <span>
+                                {o.deliveryValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                {o.exemptionValue > 0 && (
+                                  <span className="text-xs text-muted-foreground ml-1">(isento acima de {o.exemptionValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })})</span>
+                                )}
+                              </span>
+                            ) : '—'}
                           </TableCell>
                           <TableCell className="flex gap-1">
-                            <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]" onClick={() => { setOEdit(o.id); setOEditData({ clienteId: o.clienteId, name: o.name, hasDelivery: o.hasDelivery, deliveryValue: o.deliveryValue }); }}><Pencil className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" className="min-h-[44px] min-w-[44px]" onClick={() => { setOEdit(o.id); setOEditData({ clienteId: o.clienteId, name: o.name, hasDelivery: o.hasDelivery, deliveryValue: o.deliveryValue, exemptionValue: o.exemptionValue }); }}><Pencil className="h-4 w-4" /></Button>
                             <DeleteButton onConfirm={() => { deleteObra(o.id); toast.success('Removida'); }} />
                           </TableCell>
                         </>

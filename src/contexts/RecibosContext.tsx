@@ -95,6 +95,7 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
           id: r.id, clienteId: r.cliente_id, name: r.name,
           hasDelivery: r.has_delivery ?? false,
           deliveryValue: Number(r.delivery_value ?? 0),
+          exemptionValue: Number(r.exemption_value ?? 0),
         })));
 
         setServicos((srvRes.data || []).map((r: any) => ({
@@ -172,7 +173,7 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
           name: o.name,
         }));
         const { data } = await supabase.from('obras').insert(rows).select();
-        if (data) setObras(data.map(r => ({ id: r.id, clienteId: r.cliente_id, name: r.name, hasDelivery: false, deliveryValue: 0 })));
+        if (data) setObras(data.map(r => ({ id: r.id, clienteId: r.cliente_id, name: r.name, hasDelivery: false, deliveryValue: 0, exemptionValue: 0 })));
       }
 
       if (lsServicos.length > 0) {

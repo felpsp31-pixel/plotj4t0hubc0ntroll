@@ -292,6 +292,7 @@ const DemandasPage = () => {
       telefone,
       email,
       servico,
+      descricao,
       prazo: prazoISO,
       responsavel_id: responsavelId || null,
       status,

@@ -54,7 +54,8 @@ const HomePage = () => {
       }
 
       if (valid) {
-        sessionStorage.setItem('financial_auth', 'true');
+        const token = btoa(`financial:${Date.now()}:${Math.random().toString(36).slice(2)}`);
+        sessionStorage.setItem('financial_auth', token);
         setModalOpen(false);
         navigate('/financeiro');
       } else {

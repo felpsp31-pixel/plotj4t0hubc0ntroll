@@ -1,14 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Invoice, Attachment } from '@/types/finance';
-import { MOCK_INVOICES } from '@/types/finance';
 import { toast } from 'sonner';
 
 const isDbId = (id: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id);
 
 export function useFinancialInvoices() {
-  const [invoices, setInvoices] = useState<Invoice[]>(MOCK_INVOICES);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchInvoices = useCallback(async () => {
@@ -33,11 +32,8 @@ export function useFinancialInvoices() {
       attachments: (row.attachments as unknown as Attachment[]) || [],
     }));
 
-    const mockIds = new Set(MOCK_INVOICES.map((m) => m.id));
-    const combined = [...MOCK_INVOICES, ...dbInvoices.filter((d) => !mockIds.has(d.id))];
-
     const today = new Date().toISOString().slice(0, 10);
-    const withOverdue = combined.map(inv =>
+    const withOverdue = dbInvoices.map(inv =>
       inv.status === 'open' && inv.dueDate < today
         ? { ...inv, status: 'overdue' as const }
         : inv

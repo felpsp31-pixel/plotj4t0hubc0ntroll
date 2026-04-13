@@ -267,16 +267,20 @@ const DemandasPage = () => {
     const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
     await supabase.from('demandas').delete().eq('status', 'concluido').lt('concluido_at', cutoff);
 
-    const [dRes, rRes, cRes, sRes] = await Promise.all([
+    const [dRes, rRes, cRes, sRes, oRes, solRes] = await Promise.all([
       supabase.from('demandas').select('*').order('created_at', { ascending: false }),
       supabase.from('responsaveis').select('*').order('name'),
       supabase.from('clientes').select('*').order('name'),
       supabase.from('servicos').select('id, description').order('description'),
+      supabase.from('obras').select('id, name, cliente_id').order('name'),
+      supabase.from('solicitantes').select('id, name, cliente_id').order('name'),
     ]);
     if (dRes.data) setDemandas(dRes.data);
     if (rRes.data) setResponsaveis(rRes.data);
     if (cRes.data) setClientes(cRes.data);
     if (sRes.data) setServicos(sRes.data);
+    if (oRes.data) setObrasAll(oRes.data);
+    if (solRes.data) setSolicitantesAll(solRes.data);
     setLoading(false);
   };
 

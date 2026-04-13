@@ -40,15 +40,21 @@ const EmissaoReciboPage = () => {
   const filteredSolicitantes = useMemo(() => solicitantes.filter(s => s.clienteId === clienteId), [solicitantes, clienteId]);
   const filteredObras = useMemo(() => obras.filter(o => o.clienteId === clienteId), [obras, clienteId]);
 
-  // Auto-insert/remove delivery line when obra changes
+  // Auto-insert/remove delivery line when obra changes or subtotal crosses exemption threshold
   useEffect(() => {
     if (saved) return;
     const obra = obras.find(o => o.id === obraId);
     setLines(prev => {
       // Remove any existing delivery line
       const withoutDelivery = prev.filter(l => l.serviceCode !== 'ENTREGA');
-      if (obra?.hasDelivery && obra.deliveryValue > 0) {
-        // Add delivery line at the end (before empty lines)
+      
+      // Calculate subtotal without delivery
+      const subtotal = withoutDelivery.reduce((s, l) => s + l.total, 0);
+      
+      const shouldAddDelivery = obra?.hasDelivery && obra.deliveryValue > 0 &&
+        !(obra.exemptionValue > 0 && subtotal >= obra.exemptionValue);
+      
+      if (shouldAddDelivery) {
         const lastFilledIdx = withoutDelivery.reduce((last, l, i) => l.serviceCode ? i : last, -1);
         const insertIdx = lastFilledIdx + 1;
         const deliveryLine: LinhaRecibo = {
@@ -60,7 +66,6 @@ const EmissaoReciboPage = () => {
         };
         const result = [...withoutDelivery];
         result.splice(insertIdx, 0, deliveryLine);
-        // Keep at least 10 lines
         while (result.length < 10) result.push({ serviceCode: '', description: '', quantity: 0, unitPrice: 0, total: 0 });
         return result;
       }

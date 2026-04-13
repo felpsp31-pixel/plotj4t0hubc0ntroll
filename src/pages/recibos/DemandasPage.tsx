@@ -117,6 +117,7 @@ const DemandasPage = () => {
   const [telefone, setTelefone] = useState('');
   const [email, setEmail] = useState('');
   const [servico, setServico] = useState('');
+  const [descricao, setDescricao] = useState('');
   const [prazo, setPrazo] = useState<Date | undefined>();
   const [prazoHora, setPrazoHora] = useState('12:00');
   const [responsavelId, setResponsavelId] = useState('');

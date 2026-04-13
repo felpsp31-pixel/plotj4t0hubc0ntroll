@@ -100,6 +100,8 @@ const DemandasPage = () => {
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [servicos, setServicos] = useState<Servico[]>([]);
+  const [obrasAll, setObrasAll] = useState<{ id: string; name: string; cliente_id: string }[]>([]);
+  const [solicitantesAll, setSolicitantesAll] = useState<{ id: string; name: string; cliente_id: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -119,6 +121,8 @@ const DemandasPage = () => {
   const [status, setStatus] = useState('pendente');
   const [prioridade, setPrioridade] = useState('media');
   const [canal, setCanal] = useState('');
+  const [demandaObraId, setDemandaObraId] = useState('');
+  const [demandaSolicitanteId, setDemandaSolicitanteId] = useState('');
 
   // Mini-modal state
   const [newResponsavelOpen, setNewResponsavelOpen] = useState(false);

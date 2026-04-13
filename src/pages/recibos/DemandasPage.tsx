@@ -452,6 +452,45 @@ const DemandasPage = () => {
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle expanded={false} />
+          <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative min-h-[40px] min-w-[40px]">
+                <Filter className="h-4 w-4" />
+                {filtersActive && (
+                  <span
+                    className="absolute -top-1 -right-1 flex items-center justify-center h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[10px] cursor-pointer"
+                    onClick={(e) => { e.stopPropagation(); clearFilters(); }}
+                  >
+                    <X className="h-3 w-3" />
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 space-y-3" align="end">
+              <p className="text-sm font-medium text-foreground">Filtros</p>
+              <div>
+                <Label className="text-xs">Responsável</Label>
+                <Select value={filterResponsavel} onValueChange={setFilterResponsavel}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
+                  <SelectContent>
+                    {responsaveis.map(r => (
+                      <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs">Cliente</Label>
+                <Input
+                  placeholder="Nome do cliente"
+                  value={filterCliente}
+                  onChange={e => setFilterCliente(e.target.value)}
+                  className="h-8 text-xs"
+                />
+              </div>
+              <Button size="sm" className="w-full" onClick={applyFilters}>Filtrar</Button>
+            </PopoverContent>
+          </Popover>
           {isMobile ? (
             <Button onClick={openAdd} size="icon" className="min-h-[40px] min-w-[40px]">
               <Plus className="h-5 w-5" />

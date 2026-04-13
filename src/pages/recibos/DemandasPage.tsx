@@ -150,6 +150,51 @@ const DemandasPage = () => {
     return servicos.filter(s => s.description.toLowerCase().includes(servico.toLowerCase()));
   }, [servicos, servico]);
 
+  // Sorting
+  const [sortField, setSortField] = useState<'prazo' | 'prioridade' | null>(null);
+  const [sortAsc, setSortAsc] = useState(false);
+
+  const toggleSort = (field: 'prazo' | 'prioridade') => {
+    if (sortField === field) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortField(field);
+      setSortAsc(false);
+    }
+  };
+
+  // Compute effective status (mark overdue as em_atraso)
+  const getEffectiveStatus = (d: Demanda) => {
+    if (d.status === 'concluido') return 'concluido';
+    if (d.prazo && new Date(d.prazo).getTime() < Date.now()) return 'em_atraso';
+    return d.status;
+  };
+
+  const sortedDemandas = useMemo(() => {
+    const withStatus = demandas.map(d => ({ ...d, _effectiveStatus: getEffectiveStatus(d) }));
+    
+    return withStatus.sort((a, b) => {
+      // First sort by status order (concluido always last)
+      const sa = statusOrder[a._effectiveStatus] ?? 2;
+      const sb = statusOrder[b._effectiveStatus] ?? 2;
+      if (sa !== sb) return sa - sb;
+
+      // Then by sort field if set
+      if (sortField === 'prazo') {
+        const pa = a.prazo ? new Date(a.prazo).getTime() : Infinity;
+        const pb = b.prazo ? new Date(b.prazo).getTime() : Infinity;
+        return sortAsc ? pa - pb : pb - pa;
+      }
+      if (sortField === 'prioridade') {
+        const pa = prioridadeOrder[a.prioridade] ?? 2;
+        const pb = prioridadeOrder[b.prioridade] ?? 2;
+        return sortAsc ? pb - pa : pa - pb;
+      }
+
+      return 0;
+    });
+  }, [demandas, sortField, sortAsc]);
+
   const fetchAll = async () => {
     setLoading(true);
     const [dRes, rRes, cRes, sRes] = await Promise.all([

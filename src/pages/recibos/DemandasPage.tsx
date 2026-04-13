@@ -4,14 +4,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, CalendarIcon, Search, Trash2, Edit, ArrowLeft } from 'lucide-react';
+import { Plus, CalendarIcon, Search, Trash2, Edit, ArrowLeft, CheckCircle2, AlertTriangle, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -113,6 +114,14 @@ const DemandasPage = () => {
 
   // Client search
   const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
+
+  // Confirm complete dialog
+  const [confirmCompleteOpen, setConfirmCompleteOpen] = useState(false);
+  const [confirmCompleteId, setConfirmCompleteId] = useState<string | null>(null);
+
+  // Post-completion recibo dialog
+  const [showReciboButton, setShowReciboButton] = useState(false);
+  const [completedDemandaCliente, setCompletedDemandaCliente] = useState<string | null>(null);
 
   const filteredClientes = useMemo(() => {
     if (!clienteSearch.trim()) return clientes;
@@ -262,6 +271,36 @@ const DemandasPage = () => {
 
   const getResponsavelName = (id: string | null) => responsaveis.find(r => r.id === id)?.name || '—';
 
+  const getDeadlineAlert = (prazo: string | null, status: string) => {
+    if (!prazo || status === 'concluido') return null;
+    const now = new Date();
+    const deadline = new Date(prazo);
+    const diffMs = deadline.getTime() - now.getTime();
+    if (diffMs < 0) return 'overdue';
+    if (diffMs <= 60 * 60 * 1000) return 'warning';
+    return null;
+  };
+
+  const getRowClass = (d: Demanda) => {
+    const alert = getDeadlineAlert(d.prazo, d.status);
+    if (alert === 'overdue') return 'bg-red-500/10 border-l-4 border-l-red-500';
+    if (alert === 'warning') return 'bg-yellow-500/10 border-l-4 border-l-yellow-500';
+    return '';
+  };
+
+  const handleConfirmComplete = async () => {
+    if (!confirmCompleteId) return;
+    const demanda = demandas.find(d => d.id === confirmCompleteId);
+    const { error } = await supabase.from('demandas').update({ status: 'concluido' }).eq('id', confirmCompleteId);
+    if (error) { toast.error('Erro ao concluir'); return; }
+    toast.success('Demanda concluída!');
+    setConfirmCompleteOpen(false);
+    setConfirmCompleteId(null);
+    setCompletedDemandaCliente(demanda?.cliente_nome || null);
+    setShowReciboButton(true);
+    fetchAll();
+  };
+
   return (
     <div className="h-screen flex flex-col bg-background p-4">
       <div className="flex items-center justify-between mb-4">
@@ -288,14 +327,24 @@ const DemandasPage = () => {
           <p className="text-muted-foreground text-sm p-4">Nenhuma demanda cadastrada.</p>
         ) : isMobile ? (
           <div className="space-y-3">
-            {demandas.map(d => (
-              <div key={d.id} className="border border-border rounded-lg p-3 space-y-2 bg-card">
+            {demandas.map(d => {
+              const alert = getDeadlineAlert(d.prazo, d.status);
+              return (
+              <div key={d.id} className={cn("border border-border rounded-lg p-3 space-y-2 bg-card", getRowClass(d))}>
                 <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium text-foreground">{d.cliente_nome}</p>
-                    <p className="text-xs text-muted-foreground">{d.servico}</p>
+                  <div className="flex items-center gap-2">
+                    {d.status !== 'concluido' && (
+                      <button onClick={() => { setConfirmCompleteId(d.id); setConfirmCompleteOpen(true); }} className="text-muted-foreground hover:text-green-600 transition-colors">
+                        <CheckCircle2 className="h-5 w-5" />
+                      </button>
+                    )}
+                    <div>
+                      <p className="font-medium text-foreground">{d.cliente_nome}</p>
+                      <p className="text-xs text-muted-foreground">{d.servico}</p>
+                    </div>
                   </div>
                   <div className="flex gap-1 flex-wrap">
+                    {alert && <AlertTriangle className={cn("h-4 w-4", alert === 'overdue' ? 'text-red-500' : 'text-yellow-500')} />}
                     <Badge className={cn('text-xs', statusColors[d.status])}>{statusLabels[d.status] || d.status}</Badge>
                     <Badge className={cn('text-xs', prioridadeColors[d.prioridade])}>{prioridadeLabels[d.prioridade] || d.prioridade}</Badge>
                   </div>
@@ -312,7 +361,8 @@ const DemandasPage = () => {
                   <Button variant="ghost" size="sm" onClick={() => handleDelete(d.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <Table>
@@ -331,13 +381,30 @@ const DemandasPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {demandas.map(d => (
-                <TableRow key={d.id}>
-                  <TableCell className="font-medium">{d.cliente_nome}</TableCell>
+              {demandas.map(d => {
+                const alert = getDeadlineAlert(d.prazo, d.status);
+                return (
+                <TableRow key={d.id} className={getRowClass(d)}>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      {d.status !== 'concluido' && (
+                        <button onClick={() => { setConfirmCompleteId(d.id); setConfirmCompleteOpen(true); }} className="text-muted-foreground hover:text-green-600 transition-colors" title="Concluir tarefa">
+                          <CheckCircle2 className="h-5 w-5" />
+                        </button>
+                      )}
+                      {d.status === 'concluido' && <CheckCircle2 className="h-5 w-5 text-green-600" />}
+                      {d.cliente_nome}
+                    </div>
+                  </TableCell>
                   <TableCell>{d.telefone || '—'}</TableCell>
                   <TableCell>{d.email || '—'}</TableCell>
                   <TableCell>{d.servico}</TableCell>
-                  <TableCell>{d.prazo ? format(new Date(d.prazo), 'dd/MM/yyyy HH:mm') : '—'}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      {alert && <AlertTriangle className={cn("h-4 w-4 shrink-0", alert === 'overdue' ? 'text-red-500' : 'text-yellow-500')} />}
+                      {d.prazo ? format(new Date(d.prazo), 'dd/MM/yyyy HH:mm') : '—'}
+                    </div>
+                  </TableCell>
                   <TableCell>{getResponsavelName(d.responsavel_id)}</TableCell>
                   <TableCell>
                     <Badge className={cn('text-xs', statusColors[d.status])}>{statusLabels[d.status] || d.status}</Badge>
@@ -353,7 +420,8 @@ const DemandasPage = () => {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         )}
@@ -527,6 +595,40 @@ const DemandasPage = () => {
 
             <Button className="w-full min-h-[44px]" onClick={handleSave}>
               {editingId ? 'Atualizar' : 'Salvar'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Complete Dialog */}
+      <AlertDialog open={confirmCompleteOpen} onOpenChange={setConfirmCompleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Concluir tarefa?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deseja marcar esta demanda como concluída?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setConfirmCompleteOpen(false); setConfirmCompleteId(null); }}>Não</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmComplete}>Sim</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Emitir Recibo overlay */}
+      <Dialog open={showReciboButton} onOpenChange={setShowReciboButton}>
+        <DialogContent className="sm:max-w-sm text-center">
+          <DialogHeader>
+            <DialogTitle>Demanda concluída!</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground mb-4">Deseja emitir um recibo para esta demanda?</p>
+          <div className="flex flex-col gap-2">
+            <Button className="w-full gap-2" onClick={() => { setShowReciboButton(false); navigate('/recibos/emissao'); }}>
+              <FileText className="h-4 w-4" /> Emitir Recibo
+            </Button>
+            <Button variant="outline" className="w-full" onClick={() => setShowReciboButton(false)}>
+              Fechar
             </Button>
           </div>
         </DialogContent>

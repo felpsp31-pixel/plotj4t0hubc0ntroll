@@ -756,6 +756,7 @@ const DemandasPage = () => {
                   value={servico}
                   onChange={e => { setServico(e.target.value); setServicoDropdownOpen(true); }}
                   onFocus={() => setServicoDropdownOpen(true)}
+                  onBlur={() => setTimeout(() => setServicoDropdownOpen(false), 150)}
                   className="text-base"
                 />
                 {servicoDropdownOpen && servico.trim() && (

@@ -88,7 +88,9 @@ export type Database = {
           canal: string
           cliente_id: string | null
           cliente_nome: string
+          concluido_at: string | null
           created_at: string
+          descricao: string
           email: string
           id: string
           prazo: string | null
@@ -102,7 +104,9 @@ export type Database = {
           canal?: string
           cliente_id?: string | null
           cliente_nome: string
+          concluido_at?: string | null
           created_at?: string
+          descricao?: string
           email?: string
           id?: string
           prazo?: string | null
@@ -116,7 +120,9 @@ export type Database = {
           canal?: string
           cliente_id?: string | null
           cliente_nome?: string
+          concluido_at?: string | null
           created_at?: string
+          descricao?: string
           email?: string
           id?: string
           prazo?: string | null

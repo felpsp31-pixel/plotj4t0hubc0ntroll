@@ -906,7 +906,12 @@ const DemandasPage = () => {
           </DialogHeader>
           <p className="text-sm text-muted-foreground mb-4">Deseja emitir um recibo para esta demanda?</p>
           <div className="flex flex-col gap-2">
-            <Button className="w-full gap-2" onClick={() => { setShowReciboButton(false); navigate('/recibos'); }}>
+            <Button className="w-full gap-2" onClick={() => {
+              const demanda = demandas.find(d => d.cliente_nome === completedDemandaCliente);
+              const clienteRegistrado = clientes.find(c => c.name.toLowerCase() === completedDemandaCliente?.toLowerCase());
+              setShowReciboButton(false);
+              navigate('/recibos', { state: { clienteNome: completedDemandaCliente, clienteId: clienteRegistrado?.id || demanda?.cliente_id || null, isAvulso: !clienteRegistrado } });
+            }}>
               <FileText className="h-4 w-4" /> Emitir Recibo
             </Button>
             <Button variant="outline" className="w-full" onClick={() => setShowReciboButton(false)}>

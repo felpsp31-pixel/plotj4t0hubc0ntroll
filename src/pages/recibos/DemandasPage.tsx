@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, CalendarIcon, Search, Trash2, Edit, ArrowLeft, CheckCircle2, AlertTriangle, FileText, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, CalendarIcon, Search, Trash2, Edit, ArrowLeft, CheckCircle2, AlertTriangle, FileText, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, Filter, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -142,6 +142,32 @@ const DemandasPage = () => {
   const [activePageIndex, setActivePageIndex] = useState(0);
   const [completedPageIndex, setCompletedPageIndex] = useState(0);
 
+  // Filters
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [filterResponsavel, setFilterResponsavel] = useState('');
+  const [filterCliente, setFilterCliente] = useState('');
+  const [appliedFilterResp, setAppliedFilterResp] = useState('');
+  const [appliedFilterCliente, setAppliedFilterCliente] = useState('');
+  const filtersActive = !!(appliedFilterResp || appliedFilterCliente);
+
+  const applyFilters = () => {
+    setAppliedFilterResp(filterResponsavel);
+    setAppliedFilterCliente(filterCliente);
+    setFilterOpen(false);
+    setActivePageIndex(0);
+    setCompletedPageIndex(0);
+  };
+
+  const clearFilters = () => {
+    setFilterResponsavel('');
+    setFilterCliente('');
+    setAppliedFilterResp('');
+    setAppliedFilterCliente('');
+    setFilterOpen(false);
+    setActivePageIndex(0);
+    setCompletedPageIndex(0);
+  };
+
   const filteredClientes = useMemo(() => {
     if (!clienteSearch.trim()) return clientes;
     return clientes.filter(c => c.name.toLowerCase().includes(clienteSearch.toLowerCase()));
@@ -172,12 +198,25 @@ const DemandasPage = () => {
     return d.status;
   };
 
+  const applyFilterToDemandas = (list: (Demanda & { _effectiveStatus: string })[]) => {
+    let filtered = list;
+    if (appliedFilterResp) {
+      filtered = filtered.filter(d => d.responsavel_id === appliedFilterResp);
+    }
+    if (appliedFilterCliente) {
+      filtered = filtered.filter(d => d.cliente_nome.toLowerCase().includes(appliedFilterCliente.toLowerCase()));
+    }
+    return filtered;
+  };
+
   const activeDemandas = useMemo(() => {
     const active = demandas
       .map(d => ({ ...d, _effectiveStatus: getEffectiveStatus(d) }))
       .filter(d => d._effectiveStatus !== 'concluido');
 
-    return active.sort((a, b) => {
+    const filtered = applyFilterToDemandas(active);
+
+    return filtered.sort((a, b) => {
       if (sortField === 'prazo') {
         const pa = a.prazo ? new Date(a.prazo).getTime() : Infinity;
         const pb = b.prazo ? new Date(b.prazo).getTime() : Infinity;
@@ -190,10 +229,10 @@ const DemandasPage = () => {
       }
       return 0;
     });
-  }, [demandas, sortField, sortAsc]);
+  }, [demandas, sortField, sortAsc, appliedFilterResp, appliedFilterCliente]);
 
   const completedDemandas = useMemo(() => {
-    return demandas
+    const completed = demandas
       .map(d => ({ ...d, _effectiveStatus: getEffectiveStatus(d) }))
       .filter(d => d._effectiveStatus === 'concluido')
       .sort((a, b) => {
@@ -201,7 +240,8 @@ const DemandasPage = () => {
         const cb = b.concluido_at ? new Date(b.concluido_at).getTime() : 0;
         return cb - ca;
       });
-  }, [demandas]);
+    return applyFilterToDemandas(completed);
+  }, [demandas, appliedFilterResp, appliedFilterCliente]);
 
   // Paginated slices
   const activeTotal = activeDemandas.length;
@@ -412,6 +452,45 @@ const DemandasPage = () => {
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle expanded={false} />
+          <Popover open={filterOpen} onOpenChange={setFilterOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative min-h-[40px] min-w-[40px]">
+                <Filter className="h-4 w-4" />
+                {filtersActive && (
+                  <span
+                    className="absolute -top-1 -right-1 flex items-center justify-center h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[10px] cursor-pointer"
+                    onClick={(e) => { e.stopPropagation(); clearFilters(); }}
+                  >
+                    <X className="h-3 w-3" />
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 space-y-3" align="end">
+              <p className="text-sm font-medium text-foreground">Filtros</p>
+              <div>
+                <Label className="text-xs">Responsável</Label>
+                <Select value={filterResponsavel} onValueChange={setFilterResponsavel}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
+                  <SelectContent>
+                    {responsaveis.map(r => (
+                      <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs">Cliente</Label>
+                <Input
+                  placeholder="Nome do cliente"
+                  value={filterCliente}
+                  onChange={e => setFilterCliente(e.target.value)}
+                  className="h-8 text-xs"
+                />
+              </div>
+              <Button size="sm" className="w-full" onClick={applyFilters}>Filtrar</Button>
+            </PopoverContent>
+          </Popover>
           {isMobile ? (
             <Button onClick={openAdd} size="icon" className="min-h-[40px] min-w-[40px]">
               <Plus className="h-5 w-5" />

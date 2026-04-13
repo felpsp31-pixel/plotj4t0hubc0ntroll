@@ -3,7 +3,6 @@ import { Lock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
-import bcrypt from 'bcryptjs';
 
 const RecibosAuthGuard = ({ children }: { children: ReactNode }) => {
   const [authed, setAuthed] = useState(() => {
@@ -30,37 +29,16 @@ const RecibosAuthGuard = ({ children }: { children: ReactNode }) => {
 
     setLoading(true);
     try {
-      const { data } = await supabase
-        .from('app_settings')
-        .select('value')
-        .eq('key', 'reports_password')
-        .single();
+      const { data, error: fnError } = await supabase.functions.invoke('validate-password', {
+        body: { password: trimmed, type: 'reports_password' },
+      });
 
-      const stored = data?.value?.trim() ?? '';
-      let valid = false;
-
-      if (stored.startsWith('$2a$') || stored.startsWith('$2b$') || stored.startsWith('$2y$')) {
-        valid = bcrypt.compareSync(trimmed, stored);
-      } else if (stored && stored !== 'PLACEHOLDER') {
-        valid = trimmed === stored;
-      }
-
-      if (!valid) {
-        const envPass = String(import.meta.env.VITE_REPORTS_PASSWORD ?? '').trim();
-        valid = !!envPass && trimmed === envPass;
-
-        if (valid) {
-          const hashed = bcrypt.hashSync(trimmed, 12);
-          await supabase.from('app_settings').update({ value: hashed }).eq('key', 'reports_password');
-        }
-      }
-
-      if (valid) {
+      if (fnError || !data?.valid) {
+        setError(true);
+      } else {
         const token = btoa(`recibos:${Date.now()}:${Math.random().toString(36).slice(2)}`);
         sessionStorage.setItem('recibos_auth', token);
         setAuthed(true);
-      } else {
-        setError(true);
       }
     } catch {
       setError(true);

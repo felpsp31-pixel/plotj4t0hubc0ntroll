@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useRef, useCallback, type ReactNode } from 'react';
-import bcrypt from 'bcryptjs';
+import { supabase } from '@/integrations/supabase/client';
 
 const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours
 const SESSION_KEY = 'app_session';
@@ -49,7 +49,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem(SESSION_KEY);
     setAuthenticated(false);
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
       await supabase.auth.signOut();
     } catch { /* ignore */ }
   }, []);
@@ -96,40 +95,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const normalizedPassword = password.trim();
       if (!normalizedPassword) return false;
 
-      const { supabase } = await import('@/integrations/supabase/client');
-      const { data } = await supabase
-        .from('app_settings')
-        .select('value')
-        .eq('key', 'access_password')
-        .single();
+      const { data, error } = await supabase.functions.invoke('validate-password', {
+        body: { password: normalizedPassword, type: 'access_password' },
+      });
 
-      const storedValue = data?.value?.trim() ?? '';
-      let valid = false;
+      if (error || !data?.valid) return false;
 
-      if (storedValue.startsWith('$2a$') || storedValue.startsWith('$2b$') || storedValue.startsWith('$2y$')) {
-        valid = bcrypt.compareSync(normalizedPassword, storedValue);
-      } else if (storedValue) {
-        valid = normalizedPassword === storedValue;
-      }
-
-      if (!valid) {
-        const envPassword = String(import.meta.env.VITE_SYSTEM_PASSWORD ?? '').trim();
-        valid = !!envPassword && normalizedPassword === envPassword;
-
-        if (valid) {
-          const hashed = bcrypt.hashSync(normalizedPassword, 12);
-          await supabase.from('app_settings').update({ value: hashed }).eq('key', 'access_password');
-        }
-      }
-
-      if (valid) {
-        await supabase.auth.signInAnonymously();
-        setSession();
-        setAuthenticated(true);
-        return true;
-      }
-
-      return false;
+      await supabase.auth.signInAnonymously();
+      setSession();
+      setAuthenticated(true);
+      return true;
     } catch {
       return false;
     }

@@ -55,13 +55,29 @@ interface Servico {
 const statusColors: Record<string, string> = {
   pendente: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400',
   em_andamento: 'bg-blue-500/15 text-blue-700 dark:text-blue-400',
+  em_atraso: 'bg-red-500/15 text-red-700 dark:text-red-400',
   concluido: 'bg-green-500/15 text-green-700 dark:text-green-400',
 };
 
 const statusLabels: Record<string, string> = {
   pendente: 'Pendente',
   em_andamento: 'Em andamento',
+  em_atraso: 'Em atraso',
   concluido: 'Concluído',
+};
+
+const statusOrder: Record<string, number> = {
+  em_atraso: 0,
+  pendente: 1,
+  em_andamento: 2,
+  concluido: 3,
+};
+
+const prioridadeOrder: Record<string, number> = {
+  urgente: 0,
+  alta: 1,
+  media: 2,
+  baixa: 3,
 };
 
 const prioridadeColors: Record<string, string> = {

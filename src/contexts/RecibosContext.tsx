@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import type { Cliente, Solicitante, Obra, Servico, Recibo, EmpresaInfo, ClientService } from '@/types/recibos';
 import { toast } from 'sonner';
 
@@ -54,6 +55,7 @@ const defaultEmpresa: EmpresaInfo = {
 };
 
 export const RecibosProvider = ({ children }: { children: ReactNode }) => {
+  const { authenticated } = useAuth();
   const [empresaInfo, setEmpresaInfoState] = useState<EmpresaInfo>(defaultEmpresa);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [solicitantes, setSolicitantes] = useState<Solicitante[]>([]);
@@ -64,7 +66,12 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!authenticated) {
+      setLoading(false);
+      return;
+    }
     const fetchAll = async () => {
+      setLoading(true);
       try {
         const [empRes, cliRes, solRes, obrRes, srvRes, recRes, csRes] = await Promise.all([
           supabase.from('empresa_info').select('*').limit(1).maybeSingle(),
@@ -126,7 +133,7 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
       }
     };
     fetchAll();
-  }, []);
+  }, [authenticated]);
 
   const migrateFromLocalStorage = async () => {
     try {

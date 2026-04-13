@@ -354,7 +354,7 @@ const DemandasPage = () => {
   const handleConfirmComplete = async () => {
     if (!confirmCompleteId) return;
     const demanda = demandas.find(d => d.id === confirmCompleteId);
-    const { error } = await supabase.from('demandas').update({ status: 'concluido' }).eq('id', confirmCompleteId);
+    const { error } = await supabase.from('demandas').update({ status: 'concluido', concluido_at: new Date().toISOString() }).eq('id', confirmCompleteId);
     if (error) { toast.error('Erro ao concluir'); return; }
     toast.success('Demanda concluída!');
     setConfirmCompleteOpen(false);

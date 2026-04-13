@@ -200,6 +200,11 @@ const DemandasPage = () => {
 
   const fetchAll = async () => {
     setLoading(true);
+
+    // Auto-delete demandas concluídas há mais de 48h
+    const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+    await supabase.from('demandas').delete().eq('status', 'concluido').lt('concluido_at', cutoff);
+
     const [dRes, rRes, cRes, sRes] = await Promise.all([
       supabase.from('demandas').select('*').order('created_at', { ascending: false }),
       supabase.from('responsaveis').select('*').order('name'),

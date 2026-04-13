@@ -327,14 +327,24 @@ const DemandasPage = () => {
           <p className="text-muted-foreground text-sm p-4">Nenhuma demanda cadastrada.</p>
         ) : isMobile ? (
           <div className="space-y-3">
-            {demandas.map(d => (
-              <div key={d.id} className="border border-border rounded-lg p-3 space-y-2 bg-card">
+            {demandas.map(d => {
+              const alert = getDeadlineAlert(d.prazo, d.status);
+              return (
+              <div key={d.id} className={cn("border border-border rounded-lg p-3 space-y-2 bg-card", getRowClass(d))}>
                 <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium text-foreground">{d.cliente_nome}</p>
-                    <p className="text-xs text-muted-foreground">{d.servico}</p>
+                  <div className="flex items-center gap-2">
+                    {d.status !== 'concluido' && (
+                      <button onClick={() => { setConfirmCompleteId(d.id); setConfirmCompleteOpen(true); }} className="text-muted-foreground hover:text-green-600 transition-colors">
+                        <CheckCircle2 className="h-5 w-5" />
+                      </button>
+                    )}
+                    <div>
+                      <p className="font-medium text-foreground">{d.cliente_nome}</p>
+                      <p className="text-xs text-muted-foreground">{d.servico}</p>
+                    </div>
                   </div>
                   <div className="flex gap-1 flex-wrap">
+                    {alert && <AlertTriangle className={cn("h-4 w-4", alert === 'overdue' ? 'text-red-500' : 'text-yellow-500')} />}
                     <Badge className={cn('text-xs', statusColors[d.status])}>{statusLabels[d.status] || d.status}</Badge>
                     <Badge className={cn('text-xs', prioridadeColors[d.prioridade])}>{prioridadeLabels[d.prioridade] || d.prioridade}</Badge>
                   </div>
@@ -351,7 +361,8 @@ const DemandasPage = () => {
                   <Button variant="ghost" size="sm" onClick={() => handleDelete(d.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <Table>

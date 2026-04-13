@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileText, Lock, LogOut } from 'lucide-react';
+import { FileText, Lock, LogOut, ClipboardList } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -97,7 +97,18 @@ const HomePage = () => {
           className="h-16 sm:h-24 w-auto object-contain"
         />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl w-full">
+        <Card className="flex flex-col items-center text-center">
+          <CardHeader>
+            <ClipboardList className="mx-auto h-10 w-10 text-primary" />
+            <CardTitle className="text-lg">Demandas</CardTitle>
+            <CardDescription>Gestão de demandas, prazos e responsáveis</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full min-h-[44px]" onClick={() => navigate('/demandas')}>Acessar</Button>
+          </CardContent>
+        </Card>
+
         <Card className="flex flex-col items-center text-center">
           <CardHeader>
             <FileText className="mx-auto h-10 w-10 text-primary" />

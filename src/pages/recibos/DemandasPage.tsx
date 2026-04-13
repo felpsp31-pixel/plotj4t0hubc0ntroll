@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,12 +11,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, CalendarIcon, Search, Trash2, Edit } from 'lucide-react';
+import { Plus, CalendarIcon, Search, Trash2, Edit, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import ThemeToggle from '@/components/ThemeToggle';
 
 interface Demanda {
   id: string;
@@ -60,6 +62,7 @@ const statusLabels: Record<string, string> = {
 };
 
 const DemandasPage = () => {
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [demandas, setDemandas] = useState<Demanda[]>([]);
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
@@ -217,13 +220,23 @@ const DemandasPage = () => {
   const getResponsavelName = (id: string | null) => responsaveis.find(r => r.id === id)?.name || '—';
 
   return (
-    <div className="flex flex-col h-full gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-foreground">Demandas</h1>
-        <Button onClick={openAdd} className="gap-2 min-h-[44px]">
-          <Plus className="h-4 w-4" /> Adicionar Demanda
-        </Button>
+    <div className="h-screen flex flex-col bg-background p-4">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="min-h-[44px] min-w-[44px]">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-xl font-bold text-foreground">Demandas</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <ThemeToggle expanded={false} />
+          <Button onClick={openAdd} className="gap-2 min-h-[44px]">
+            <Plus className="h-4 w-4" /> Adicionar Demanda
+          </Button>
+        </div>
       </div>
+
+      <div className="flex flex-col flex-1 overflow-hidden gap-4">
 
       <ScrollArea className="flex-1">
         {loading ? (
@@ -437,6 +450,7 @@ const DemandasPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 };

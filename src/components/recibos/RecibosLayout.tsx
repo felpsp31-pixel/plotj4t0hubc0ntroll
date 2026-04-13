@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { FileText, Users, Wrench, BarChart3, FileBarChart, Settings, ArrowLeft, Menu, ClipboardList } from 'lucide-react';
+import { FileText, Users, Wrench, BarChart3, FileBarChart, Settings, ArrowLeft, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,6 @@ const links = [
   { to: '/recibos/servicos', label: 'Serviços', icon: Wrench, end: false },
   { to: '/recibos/dashboard', label: 'Dashboard', icon: BarChart3, end: false },
   { to: '/recibos/relatorios', label: 'Relatórios', icon: FileBarChart, end: false },
-  { to: '/recibos/demandas', label: 'Demandas', icon: ClipboardList, end: false },
 ];
 
 const RecibosLayout = () => {

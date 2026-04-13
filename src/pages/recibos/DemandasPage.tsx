@@ -954,15 +954,14 @@ const DemandasPage = () => {
           <p className="text-sm text-muted-foreground mb-4">Deseja emitir um recibo para esta demanda?</p>
           <div className="flex flex-col gap-2">
             <Button className="w-full gap-2" onClick={() => {
-              const demanda = demandas.find(d => d.cliente_nome === completedDemandaCliente);
-              const clienteRegistrado = clientes.find(c => c.name.toLowerCase() === completedDemandaCliente?.toLowerCase());
+              const clienteRegistrado = clientes.find(c => c.name.toLowerCase() === completedDemandaData?.cliente_nome?.toLowerCase());
               setShowReciboButton(false);
               navigate('/recibos', { state: {
-                clienteNome: completedDemandaCliente,
-                clienteId: clienteRegistrado?.id || demanda?.cliente_id || null,
+                clienteNome: completedDemandaData?.cliente_nome,
+                clienteId: clienteRegistrado?.id || completedDemandaData?.cliente_id || null,
                 isAvulso: !clienteRegistrado,
-                obraId: (demanda as any)?.obra_id || null,
-                solicitanteId: (demanda as any)?.solicitante_id || null,
+                obraId: completedDemandaData?.obra_id || null,
+                solicitanteId: completedDemandaData?.solicitante_id || null,
               } });
             }}>
               <FileText className="h-4 w-4" /> Emitir Recibo

@@ -330,6 +330,8 @@ const DemandasPage = () => {
     setStatus(d.status);
     setPrioridade(d.prioridade || 'media');
     setCanal(d.canal || '');
+    setDemandaObraId(d.obra_id || '');
+    setDemandaSolicitanteId(d.solicitante_id || '');
     setDialogOpen(true);
   };
 

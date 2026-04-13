@@ -198,12 +198,25 @@ const DemandasPage = () => {
     return d.status;
   };
 
+  const applyFilterToDemandas = (list: (Demanda & { _effectiveStatus: string })[]) => {
+    let filtered = list;
+    if (appliedFilterResp) {
+      filtered = filtered.filter(d => d.responsavel_id === appliedFilterResp);
+    }
+    if (appliedFilterCliente) {
+      filtered = filtered.filter(d => d.cliente_nome.toLowerCase().includes(appliedFilterCliente.toLowerCase()));
+    }
+    return filtered;
+  };
+
   const activeDemandas = useMemo(() => {
     const active = demandas
       .map(d => ({ ...d, _effectiveStatus: getEffectiveStatus(d) }))
       .filter(d => d._effectiveStatus !== 'concluido');
 
-    return active.sort((a, b) => {
+    const filtered = applyFilterToDemandas(active);
+
+    return filtered.sort((a, b) => {
       if (sortField === 'prazo') {
         const pa = a.prazo ? new Date(a.prazo).getTime() : Infinity;
         const pb = b.prazo ? new Date(b.prazo).getTime() : Infinity;
@@ -216,10 +229,10 @@ const DemandasPage = () => {
       }
       return 0;
     });
-  }, [demandas, sortField, sortAsc]);
+  }, [demandas, sortField, sortAsc, appliedFilterResp, appliedFilterCliente]);
 
   const completedDemandas = useMemo(() => {
-    return demandas
+    const completed = demandas
       .map(d => ({ ...d, _effectiveStatus: getEffectiveStatus(d) }))
       .filter(d => d._effectiveStatus === 'concluido')
       .sort((a, b) => {
@@ -227,7 +240,8 @@ const DemandasPage = () => {
         const cb = b.concluido_at ? new Date(b.concluido_at).getTime() : 0;
         return cb - ca;
       });
-  }, [demandas]);
+    return applyFilterToDemandas(completed);
+  }, [demandas, appliedFilterResp, appliedFilterCliente]);
 
   // Paginated slices
   const activeTotal = activeDemandas.length;

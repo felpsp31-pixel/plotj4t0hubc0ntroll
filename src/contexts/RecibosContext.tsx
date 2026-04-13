@@ -366,7 +366,7 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
 
     supabase.from('recibos').insert([{
       id: newRecibo.id, number: newRecibo.number, date: newRecibo.date,
-      cliente_id: newRecibo.clienteId || '00000000-0000-0000-0000-000000000000',
+      cliente_id: newRecibo.clienteId || null,
       cliente_avulso: newRecibo.clienteAvulso || null,
       solicitante_id: newRecibo.solicitanteId || null,
       obra_id: newRecibo.obraId || null,

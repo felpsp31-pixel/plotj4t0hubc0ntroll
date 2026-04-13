@@ -346,7 +346,7 @@ export type Database = {
       recibos: {
         Row: {
           cliente_avulso: string | null
-          cliente_id: string
+          cliente_id: string | null
           created_at: string
           date: string
           id: string
@@ -358,7 +358,7 @@ export type Database = {
         }
         Insert: {
           cliente_avulso?: string | null
-          cliente_id: string
+          cliente_id?: string | null
           created_at?: string
           date?: string
           id?: string
@@ -370,7 +370,7 @@ export type Database = {
         }
         Update: {
           cliente_avulso?: string | null
-          cliente_id?: string
+          cliente_id?: string | null
           created_at?: string
           date?: string
           id?: string

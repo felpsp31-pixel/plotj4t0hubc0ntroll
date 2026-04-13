@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
-import bcrypt from 'bcryptjs';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import ThemeToggle from '@/components/ThemeToggle';
 
@@ -25,41 +25,17 @@ const HomePage = () => {
 
     setLoading(true);
     try {
-      // Try database first
-      const { data } = await supabase
-        .from('app_settings')
-        .select('value')
-        .eq('key', 'financial_password')
-        .single();
+      const { data, error } = await supabase.functions.invoke('validate-password', {
+        body: { password: trimmed, type: 'financial_password' },
+      });
 
-      const stored = data?.value?.trim() ?? '';
-      let valid = false;
-
-      if (stored.startsWith('$2a$') || stored.startsWith('$2b$') || stored.startsWith('$2y$')) {
-        valid = bcrypt.compareSync(trimmed, stored);
-      } else if (stored && stored !== 'PLACEHOLDER') {
-        valid = trimmed === stored;
-      }
-
-      // Fallback to env var
-      if (!valid) {
-        const envPass = String(import.meta.env.VITE_FINANCIAL_PASSWORD ?? '').trim();
-        valid = !!envPass && trimmed === envPass;
-
-        // Auto-hash into DB for future use
-        if (valid) {
-          const hashed = bcrypt.hashSync(trimmed, 12);
-          await supabase.from('app_settings').update({ value: hashed }).eq('key', 'financial_password');
-        }
-      }
-
-      if (valid) {
+      if (error || !data?.valid) {
+        setError(true);
+      } else {
         const token = btoa(`financial:${Date.now()}:${Math.random().toString(36).slice(2)}`);
         sessionStorage.setItem('financial_auth', token);
         setModalOpen(false);
         navigate('/financeiro');
-      } else {
-        setError(true);
       }
     } catch {
       setError(true);

@@ -49,7 +49,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem(SESSION_KEY);
     setAuthenticated(false);
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
       await supabase.auth.signOut();
     } catch { /* ignore */ }
   }, []);

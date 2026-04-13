@@ -107,13 +107,14 @@ const DemandasPage = () => {
   const [canal, setCanal] = useState('');
 
   // Mini-modal state
-  const [newServicoOpen, setNewServicoOpen] = useState(false);
-  const [newServicoName, setNewServicoName] = useState('');
   const [newResponsavelOpen, setNewResponsavelOpen] = useState(false);
   const [newResponsavelName, setNewResponsavelName] = useState('');
 
   // Client search
   const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
+
+  // Serviço search
+  const [servicoDropdownOpen, setServicoDropdownOpen] = useState(false);
 
   // Confirm complete dialog
   const [confirmCompleteOpen, setConfirmCompleteOpen] = useState(false);
@@ -127,6 +128,11 @@ const DemandasPage = () => {
     if (!clienteSearch.trim()) return clientes;
     return clientes.filter(c => c.name.toLowerCase().includes(clienteSearch.toLowerCase()));
   }, [clientes, clienteSearch]);
+
+  const filteredServicos = useMemo(() => {
+    if (!servico.trim()) return servicos;
+    return servicos.filter(s => s.description.toLowerCase().includes(servico.toLowerCase()));
+  }, [servicos, servico]);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -247,16 +253,6 @@ const DemandasPage = () => {
     fetchAll();
   };
 
-  const addServico = async () => {
-    if (!newServicoName.trim()) return;
-    const { error } = await supabase.from('servicos').insert({ description: newServicoName.trim() });
-    if (error) { toast.error('Erro ao adicionar serviço'); return; }
-    toast.success('Serviço adicionado');
-    setNewServicoName('');
-    setNewServicoOpen(false);
-    const { data } = await supabase.from('servicos').select('id, description').order('description');
-    if (data) setServicos(data);
-  };
 
   const addResponsavel = async () => {
     if (!newResponsavelName.trim()) return;
@@ -480,30 +476,34 @@ const DemandasPage = () => {
               <div><Label>Email</Label><Input value={email} onChange={e => setEmail(e.target.value)} className="text-base" /></div>
             </div>
 
-            {/* Serviço + add */}
+            {/* Serviço - select or type */}
             <div className="space-y-1">
               <Label>Serviço</Label>
-              <div className="flex gap-2">
-                <Select value={servico} onValueChange={setServico}>
-                  <SelectTrigger className="flex-1"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                  <SelectContent>
-                    {servicos.map(s => (
-                      <SelectItem key={s.id} value={s.description}>{s.description}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Dialog open={newServicoOpen} onOpenChange={setNewServicoOpen}>
-                  <Button variant="outline" size="icon" className="shrink-0" onClick={() => setNewServicoOpen(true)}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  <DialogContent className="sm:max-w-sm" onClick={e => e.stopPropagation()}>
-                    <DialogHeader><DialogTitle>Novo Serviço</DialogTitle></DialogHeader>
-                    <div className="space-y-3">
-                      <Input placeholder="Nome do serviço" value={newServicoName} onChange={e => setNewServicoName(e.target.value)} className="text-base" />
-                      <Button className="w-full" onClick={addServico}>Salvar</Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+              <div className="relative">
+                <Input
+                  placeholder="Buscar serviço ou digitar avulso..."
+                  value={servico}
+                  onChange={e => { setServico(e.target.value); setServicoDropdownOpen(true); }}
+                  onFocus={() => setServicoDropdownOpen(true)}
+                  className="text-base"
+                />
+                {servicoDropdownOpen && servico.trim() && (
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-md max-h-48 overflow-y-auto">
+                    {filteredServicos.length > 0 ? filteredServicos.map(s => (
+                      <button
+                        key={s.id}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors"
+                        onClick={() => { setServico(s.description); setServicoDropdownOpen(false); }}
+                      >
+                        {s.description}
+                      </button>
+                    )) : (
+                      <div className="px-3 py-2 text-sm text-muted-foreground">
+                        Usando "{servico}" como serviço avulso
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 

@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useRecibos } from '@/contexts/RecibosContext';
 import Combobox from '@/components/recibos/Combobox';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ const emptyLines = (): LinhaRecibo[] =>
   Array.from({ length: 10 }, () => ({ serviceCode: '', description: '', quantity: 0, unitPrice: 0, total: 0 }));
 
 const EmissaoReciboPage = () => {
+  const location = useLocation();
   const { clientes, solicitantes, obras, servicos, clientServices, recibos, addRecibo, empresaInfo, loading } = useRecibos();
   const [clienteId, setClienteId] = useState('');
   const [clienteAvulso, setClienteAvulso] = useState('');
@@ -31,6 +33,27 @@ const EmissaoReciboPage = () => {
   const [saved, setSaved] = useState(false);
   const [lastRecibo, setLastRecibo] = useState<typeof recibos[0] | null>(null);
   const [isPago, setIsPago] = useState(false);
+
+  // Auto-fill client from demandas navigation
+  useEffect(() => {
+    const state = location.state as { clienteNome?: string; clienteId?: string | null; isAvulso?: boolean } | null;
+    if (!state?.clienteNome) return;
+    if (state.clienteId && !state.isAvulso) {
+      // Registered client
+      setClienteId(state.clienteId);
+      setClienteSearch(state.clienteNome);
+      setClienteAvulso('');
+      setIsPago(false);
+    } else {
+      // Walk-in client
+      setClienteId('');
+      setClienteAvulso(state.clienteNome);
+      setClienteSearch(state.clienteNome);
+      setIsPago(true);
+    }
+    // Clear state to avoid re-applying on re-renders
+    window.history.replaceState({}, document.title);
+  }, [location.state]);
 
   const filteredClienteOptions = useMemo(() => {
     if (!clienteSearch.trim()) return clientes;

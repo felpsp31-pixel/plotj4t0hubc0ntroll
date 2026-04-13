@@ -100,6 +100,8 @@ const DemandasPage = () => {
   const [responsaveis, setResponsaveis] = useState<Responsavel[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [servicos, setServicos] = useState<Servico[]>([]);
+  const [obrasAll, setObrasAll] = useState<{ id: string; name: string; cliente_id: string }[]>([]);
+  const [solicitantesAll, setSolicitantesAll] = useState<{ id: string; name: string; cliente_id: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -119,6 +121,8 @@ const DemandasPage = () => {
   const [status, setStatus] = useState('pendente');
   const [prioridade, setPrioridade] = useState('media');
   const [canal, setCanal] = useState('');
+  const [demandaObraId, setDemandaObraId] = useState('');
+  const [demandaSolicitanteId, setDemandaSolicitanteId] = useState('');
 
   // Mini-modal state
   const [newResponsavelOpen, setNewResponsavelOpen] = useState(false);
@@ -263,16 +267,20 @@ const DemandasPage = () => {
     const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
     await supabase.from('demandas').delete().eq('status', 'concluido').lt('concluido_at', cutoff);
 
-    const [dRes, rRes, cRes, sRes] = await Promise.all([
+    const [dRes, rRes, cRes, sRes, oRes, solRes] = await Promise.all([
       supabase.from('demandas').select('*').order('created_at', { ascending: false }),
       supabase.from('responsaveis').select('*').order('name'),
       supabase.from('clientes').select('*').order('name'),
       supabase.from('servicos').select('id, description').order('description'),
+      supabase.from('obras').select('id, name, cliente_id').order('name'),
+      supabase.from('solicitantes').select('id, name, cliente_id').order('name'),
     ]);
     if (dRes.data) setDemandas(dRes.data);
     if (rRes.data) setResponsaveis(rRes.data);
     if (cRes.data) setClientes(cRes.data);
     if (sRes.data) setServicos(sRes.data);
+    if (oRes.data) setObrasAll(oRes.data);
+    if (solRes.data) setSolicitantesAll(solRes.data);
     setLoading(false);
   };
 
@@ -293,6 +301,8 @@ const DemandasPage = () => {
     setStatus('pendente');
     setPrioridade('media');
     setCanal('');
+    setDemandaObraId('');
+    setDemandaSolicitanteId('');
   };
 
   const openAdd = () => { resetForm(); setDialogOpen(true); };
@@ -328,12 +338,16 @@ const DemandasPage = () => {
     setTelefone(c.phone);
     setEmail(c.email);
     setClientDropdownOpen(false);
+    setDemandaObraId('');
+    setDemandaSolicitanteId('');
   };
 
   const handleClienteAvulso = () => {
     setSelectedClienteId(null);
     setClienteNome(clienteSearch);
     setClientDropdownOpen(false);
+    setDemandaObraId('');
+    setDemandaSolicitanteId('');
   };
 
   const handleSave = async () => {
@@ -747,7 +761,34 @@ const DemandasPage = () => {
               <div><Label>Email</Label><Input value={email} onChange={e => setEmail(e.target.value)} className="text-base" /></div>
             </div>
 
-            {/* Serviço - select or type */}
+            {/* Obra e Solicitante - só para clientes cadastrados */}
+            {selectedClienteId && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Obra</Label>
+                  <Select value={demandaObraId} onValueChange={setDemandaObraId}>
+                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                    <SelectContent>
+                      {obrasAll.filter(o => o.cliente_id === selectedClienteId).map(o => (
+                        <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Solicitante</Label>
+                  <Select value={demandaSolicitanteId} onValueChange={setDemandaSolicitanteId}>
+                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                    <SelectContent>
+                      {solicitantesAll.filter(s => s.cliente_id === selectedClienteId).map(s => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-1">
               <Label>Serviço</Label>
               <div className="relative">

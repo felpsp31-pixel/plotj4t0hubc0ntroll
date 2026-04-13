@@ -253,16 +253,6 @@ const DemandasPage = () => {
     fetchAll();
   };
 
-  const addServico = async () => {
-    if (!newServicoName.trim()) return;
-    const { error } = await supabase.from('servicos').insert({ description: newServicoName.trim() });
-    if (error) { toast.error('Erro ao adicionar serviço'); return; }
-    toast.success('Serviço adicionado');
-    setNewServicoName('');
-    setNewServicoOpen(false);
-    const { data } = await supabase.from('servicos').select('id, description').order('description');
-    if (data) setServicos(data);
-  };
 
   const addResponsavel = async () => {
     if (!newResponsavelName.trim()) return;

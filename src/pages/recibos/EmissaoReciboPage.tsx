@@ -26,6 +26,7 @@ const EmissaoReciboPage = () => {
   const [lines, setLines] = useState<LinhaRecibo[]>(emptyLines());
   const [saved, setSaved] = useState(false);
   const [lastRecibo, setLastRecibo] = useState<typeof recibos[0] | null>(null);
+  const [isPago, setIsPago] = useState(false);
 
   const filteredSolicitantes = useMemo(() => solicitantes.filter(s => s.clienteId === clienteId), [solicitantes, clienteId]);
   const filteredObras = useMemo(() => obras.filter(o => o.clienteId === clienteId), [obras, clienteId]);

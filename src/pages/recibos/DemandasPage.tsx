@@ -599,6 +599,40 @@ const DemandasPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Confirm Complete Dialog */}
+      <AlertDialog open={confirmCompleteOpen} onOpenChange={setConfirmCompleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Concluir tarefa?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deseja marcar esta demanda como concluída?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => { setConfirmCompleteOpen(false); setConfirmCompleteId(null); }}>Não</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmComplete}>Sim</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Emitir Recibo overlay */}
+      <Dialog open={showReciboButton} onOpenChange={setShowReciboButton}>
+        <DialogContent className="sm:max-w-sm text-center">
+          <DialogHeader>
+            <DialogTitle>Demanda concluída!</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground mb-4">Deseja emitir um recibo para esta demanda?</p>
+          <div className="flex flex-col gap-2">
+            <Button className="w-full gap-2" onClick={() => { setShowReciboButton(false); navigate('/recibos/emissao'); }}>
+              <FileText className="h-4 w-4" /> Emitir Recibo
+            </Button>
+            <Button variant="outline" className="w-full" onClick={() => setShowReciboButton(false)}>
+              Fechar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
       </div>
     </div>
   );

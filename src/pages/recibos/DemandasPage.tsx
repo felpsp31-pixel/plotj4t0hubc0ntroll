@@ -370,7 +370,6 @@ const DemandasPage = () => {
     } else {
       const { error } = await supabase.from('demandas').insert(payload);
       if (error) { toast.error('Erro ao salvar'); return; }
-      toast.success('Demanda adicionada');
     }
     setDialogOpen(false);
     fetchAll();

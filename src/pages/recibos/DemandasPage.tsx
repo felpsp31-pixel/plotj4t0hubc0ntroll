@@ -440,7 +440,7 @@ const DemandasPage = () => {
     toast.success('Demanda concluída!');
     setConfirmCompleteOpen(false);
     setConfirmCompleteId(null);
-    setCompletedDemandaCliente(demanda?.cliente_nome || null);
+    if (demanda) setCompletedDemandaData({ ...demanda });
     setShowReciboButton(true);
     fetchAll();
   };

@@ -6,7 +6,17 @@ import { supabase } from '@/integrations/supabase/client';
 import bcrypt from 'bcryptjs';
 
 const RecibosAuthGuard = ({ children }: { children: ReactNode }) => {
-  const [authed, setAuthed] = useState(() => sessionStorage.getItem('recibos_auth') === 'true');
+  const [authed, setAuthed] = useState(() => {
+    const token = sessionStorage.getItem('recibos_auth') ?? '';
+    try {
+      const decoded = atob(token);
+      const [module, ts] = decoded.split(':');
+      const age = Date.now() - Number(ts);
+      return module === 'recibos' && age < 8 * 60 * 60 * 1000;
+    } catch {
+      return false;
+    }
+  });
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -46,7 +56,8 @@ const RecibosAuthGuard = ({ children }: { children: ReactNode }) => {
       }
 
       if (valid) {
-        sessionStorage.setItem('recibos_auth', 'true');
+        const token = btoa(`recibos:${Date.now()}:${Math.random().toString(36).slice(2)}`);
+        sessionStorage.setItem('recibos_auth', token);
         setAuthed(true);
       } else {
         setError(true);

@@ -74,7 +74,8 @@ const LoginPage = () => {
     try {
       const ok = await login(normalizedPassword);
       if (ok) {
-        sessionStorage.setItem('system_auth', 'true');
+        const token = btoa(`system:${Date.now()}:${Math.random().toString(36).slice(2)}`);
+        sessionStorage.setItem('system_auth', token);
         navigate('/');
       } else {
         setError(true);

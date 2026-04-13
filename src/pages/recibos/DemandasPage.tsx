@@ -271,6 +271,36 @@ const DemandasPage = () => {
 
   const getResponsavelName = (id: string | null) => responsaveis.find(r => r.id === id)?.name || '—';
 
+  const getDeadlineAlert = (prazo: string | null, status: string) => {
+    if (!prazo || status === 'concluido') return null;
+    const now = new Date();
+    const deadline = new Date(prazo);
+    const diffMs = deadline.getTime() - now.getTime();
+    if (diffMs < 0) return 'overdue';
+    if (diffMs <= 60 * 60 * 1000) return 'warning';
+    return null;
+  };
+
+  const getRowClass = (d: Demanda) => {
+    const alert = getDeadlineAlert(d.prazo, d.status);
+    if (alert === 'overdue') return 'bg-red-500/10 border-l-4 border-l-red-500';
+    if (alert === 'warning') return 'bg-yellow-500/10 border-l-4 border-l-yellow-500';
+    return '';
+  };
+
+  const handleConfirmComplete = async () => {
+    if (!confirmCompleteId) return;
+    const demanda = demandas.find(d => d.id === confirmCompleteId);
+    const { error } = await supabase.from('demandas').update({ status: 'concluido' }).eq('id', confirmCompleteId);
+    if (error) { toast.error('Erro ao concluir'); return; }
+    toast.success('Demanda concluída!');
+    setConfirmCompleteOpen(false);
+    setConfirmCompleteId(null);
+    setCompletedDemandaCliente(demanda?.cliente_nome || null);
+    setShowReciboButton(true);
+    fetchAll();
+  };
+
   return (
     <div className="h-screen flex flex-col bg-background p-4">
       <div className="flex items-center justify-between mb-4">

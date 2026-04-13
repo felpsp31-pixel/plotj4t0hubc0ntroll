@@ -75,6 +75,39 @@ const EmissaoReciboPage = () => {
     });
   }, [obraId, obras, saved]);
 
+  // Check exemption threshold when lines change
+  useEffect(() => {
+    if (saved || !obraId) return;
+    const obra = obras.find(o => o.id === obraId);
+    if (!obra?.hasDelivery || !obra.exemptionValue || obra.exemptionValue <= 0) return;
+    
+    const subtotalWithoutDelivery = lines.filter(l => l.serviceCode !== 'ENTREGA').reduce((s, l) => s + l.total, 0);
+    const hasDeliveryLine = lines.some(l => l.serviceCode === 'ENTREGA');
+    
+    if (subtotalWithoutDelivery >= obra.exemptionValue && hasDeliveryLine) {
+      // Remove delivery line
+      setLines(prev => {
+        const without = prev.filter(l => l.serviceCode !== 'ENTREGA');
+        while (without.length < 10) without.push({ serviceCode: '', description: '', quantity: 0, unitPrice: 0, total: 0 });
+        return without;
+      });
+    } else if (subtotalWithoutDelivery < obra.exemptionValue && !hasDeliveryLine && obra.deliveryValue > 0) {
+      // Re-add delivery line
+      setLines(prev => {
+        const without = prev.filter(l => l.serviceCode !== 'ENTREGA');
+        const lastFilledIdx = without.reduce((last, l, i) => l.serviceCode ? i : last, -1);
+        const deliveryLine: LinhaRecibo = {
+          serviceCode: 'ENTREGA', description: 'Entrega', quantity: 1,
+          unitPrice: obra.deliveryValue, total: obra.deliveryValue,
+        };
+        const result = [...without];
+        result.splice(lastFilledIdx + 1, 0, deliveryLine);
+        while (result.length < 10) result.push({ serviceCode: '', description: '', quantity: 0, unitPrice: 0, total: 0 });
+        return result;
+      });
+    }
+  }, [lines.filter(l => l.serviceCode !== 'ENTREGA').reduce((s, l) => s + l.total, 0), obraId, obras, saved]);
+
   const total = lines.reduce((s, l) => s + l.total, 0);
 
   const nextNumber = useMemo(() => {

@@ -301,6 +301,8 @@ const DemandasPage = () => {
     setStatus('pendente');
     setPrioridade('media');
     setCanal('');
+    setDemandaObraId('');
+    setDemandaSolicitanteId('');
   };
 
   const openAdd = () => { resetForm(); setDialogOpen(true); };
@@ -336,12 +338,16 @@ const DemandasPage = () => {
     setTelefone(c.phone);
     setEmail(c.email);
     setClientDropdownOpen(false);
+    setDemandaObraId('');
+    setDemandaSolicitanteId('');
   };
 
   const handleClienteAvulso = () => {
     setSelectedClienteId(null);
     setClienteNome(clienteSearch);
     setClientDropdownOpen(false);
+    setDemandaObraId('');
+    setDemandaSolicitanteId('');
   };
 
   const handleSave = async () => {

@@ -370,7 +370,6 @@ const DemandasPage = () => {
     } else {
       const { error } = await supabase.from('demandas').insert(payload);
       if (error) { toast.error('Erro ao salvar'); return; }
-      toast.success('Demanda adicionada');
     }
     setDialogOpen(false);
     fetchAll();
@@ -757,6 +756,7 @@ const DemandasPage = () => {
                   value={servico}
                   onChange={e => { setServico(e.target.value); setServicoDropdownOpen(true); }}
                   onFocus={() => setServicoDropdownOpen(true)}
+                  onBlur={() => setTimeout(() => setServicoDropdownOpen(false), 150)}
                   className="text-base"
                 />
                 {servicoDropdownOpen && servico.trim() && (

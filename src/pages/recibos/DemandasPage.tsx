@@ -35,6 +35,8 @@ interface Demanda {
   canal: string;
   created_at: string;
   concluido_at: string | null;
+  obra_id: string | null;
+  solicitante_id: string | null;
 }
 
 interface Responsavel {

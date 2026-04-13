@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { LogOut, Receipt, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import ImportNotaFiscalDialog from '@/components/ImportNotaFiscalDialog';
 import { useRecibos } from '@/contexts/RecibosContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -36,6 +37,25 @@ const Dashboard = () => {
   const [supplierDialogOpen, setSupplierDialogOpen] = useState(false);
   const [supplierForm, setSupplierForm] = useState({ name: '', document: '', phone: '', email: '' });
 
+  const [casualClients, setCasualClients] = useState<Entity[]>([]);
+
+  useEffect(() => {
+    const fetchCasual = async () => {
+      const { data } = await supabase.from('clientes_avulsos' as any).select('*').order('created_at', { ascending: false });
+      if (data) {
+        setCasualClients((data as any[]).map(c => ({
+          id: c.id,
+          name: c.name,
+          type: 'casual' as const,
+          phone: c.phone || undefined,
+          email: c.email || undefined,
+          retainsISS: false,
+        })));
+      }
+    };
+    fetchCasual();
+  }, []);
+
   const allEntities = useMemo<Entity[]>(() => {
     const merged = [...suppliers];
     const existingDocs = new Set(suppliers.map(e => e.document).filter(Boolean));
@@ -52,8 +72,10 @@ const Dashboard = () => {
         });
       }
     }
+    // Add casual clients
+    merged.push(...casualClients);
     return merged;
-  }, [suppliers, clientes]);
+  }, [suppliers, clientes, casualClients]);
 
   const { invoices, handleMarkPaid, handleDelete, handleUpdate, handleAdd } = useFinancialInvoices();
 

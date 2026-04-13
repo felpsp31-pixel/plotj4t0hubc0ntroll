@@ -107,8 +107,8 @@ const DemandasPage = () => {
   const [canal, setCanal] = useState('');
 
   // Mini-modal state
-  const [newServicoOpen, setNewServicoOpen] = useState(false);
-  const [newServicoName, setNewServicoName] = useState('');
+  const [newResponsavelOpen, setNewResponsavelOpen] = useState(false);
+  const [newResponsavelName, setNewResponsavelName] = useState('');
   const [newResponsavelOpen, setNewResponsavelOpen] = useState(false);
   const [newResponsavelName, setNewResponsavelName] = useState('');
 

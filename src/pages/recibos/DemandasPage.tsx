@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, CalendarIcon, Search, Trash2, Edit, ArrowLeft, CheckCircle2, AlertTriangle, FileText, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, CalendarIcon, Search, Trash2, Edit, ArrowLeft, CheckCircle2, AlertTriangle, FileText, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -68,13 +68,6 @@ const statusLabels: Record<string, string> = {
   concluido: 'Concluído',
 };
 
-const statusOrder: Record<string, number> = {
-  em_atraso: 0,
-  pendente: 1,
-  em_andamento: 2,
-  concluido: 3,
-};
-
 const prioridadeOrder: Record<string, number> = {
   urgente: 0,
   alta: 1,
@@ -97,6 +90,8 @@ const prioridadeLabels: Record<string, string> = {
 };
 
 const canalOptions = ['WhatsApp', 'Email', 'Telefone', 'Presencial'];
+
+const ITEMS_PER_PAGE = 10;
 
 const DemandasPage = () => {
   const navigate = useNavigate();
@@ -143,6 +138,10 @@ const DemandasPage = () => {
   const [showReciboButton, setShowReciboButton] = useState(false);
   const [completedDemandaCliente, setCompletedDemandaCliente] = useState<string | null>(null);
 
+  // Pagination
+  const [activePageIndex, setActivePageIndex] = useState(0);
+  const [completedPageIndex, setCompletedPageIndex] = useState(0);
+
   const filteredClientes = useMemo(() => {
     if (!clienteSearch.trim()) return clientes;
     return clientes.filter(c => c.name.toLowerCase().includes(clienteSearch.toLowerCase()));
@@ -173,16 +172,12 @@ const DemandasPage = () => {
     return d.status;
   };
 
-  const sortedDemandas = useMemo(() => {
-    const withStatus = demandas.map(d => ({ ...d, _effectiveStatus: getEffectiveStatus(d) }));
-    
-    return withStatus.sort((a, b) => {
-      // First sort by status order (concluido always last)
-      const sa = statusOrder[a._effectiveStatus] ?? 2;
-      const sb = statusOrder[b._effectiveStatus] ?? 2;
-      if (sa !== sb) return sa - sb;
+  const activeDemandas = useMemo(() => {
+    const active = demandas
+      .map(d => ({ ...d, _effectiveStatus: getEffectiveStatus(d) }))
+      .filter(d => d._effectiveStatus !== 'concluido');
 
-      // Then by sort field if set
+    return active.sort((a, b) => {
       if (sortField === 'prazo') {
         const pa = a.prazo ? new Date(a.prazo).getTime() : Infinity;
         const pb = b.prazo ? new Date(b.prazo).getTime() : Infinity;
@@ -193,10 +188,33 @@ const DemandasPage = () => {
         const pb = prioridadeOrder[b.prioridade] ?? 2;
         return sortAsc ? pb - pa : pa - pb;
       }
-
       return 0;
     });
   }, [demandas, sortField, sortAsc]);
+
+  const completedDemandas = useMemo(() => {
+    return demandas
+      .map(d => ({ ...d, _effectiveStatus: getEffectiveStatus(d) }))
+      .filter(d => d._effectiveStatus === 'concluido')
+      .sort((a, b) => {
+        const ca = a.concluido_at ? new Date(a.concluido_at).getTime() : 0;
+        const cb = b.concluido_at ? new Date(b.concluido_at).getTime() : 0;
+        return cb - ca;
+      });
+  }, [demandas]);
+
+  // Paginated slices
+  const activeTotal = activeDemandas.length;
+  const activeTotalPages = Math.max(1, Math.ceil(activeTotal / ITEMS_PER_PAGE));
+  const activeSlice = activeDemandas.slice(activePageIndex * ITEMS_PER_PAGE, (activePageIndex + 1) * ITEMS_PER_PAGE);
+
+  const completedTotal = completedDemandas.length;
+  const completedTotalPages = Math.max(1, Math.ceil(completedTotal / ITEMS_PER_PAGE));
+  const completedSlice = completedDemandas.slice(completedPageIndex * ITEMS_PER_PAGE, (completedPageIndex + 1) * ITEMS_PER_PAGE);
+
+  // Reset page when data changes
+  useEffect(() => { setActivePageIndex(0); }, [activeTotal]);
+  useEffect(() => { setCompletedPageIndex(0); }, [completedTotal]);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -325,7 +343,6 @@ const DemandasPage = () => {
     fetchAll();
   };
 
-
   const addResponsavel = async () => {
     if (!newResponsavelName.trim()) return;
     const { error } = await supabase.from('responsaveis').insert({ name: newResponsavelName.trim() });
@@ -369,6 +386,21 @@ const DemandasPage = () => {
     fetchAll();
   };
 
+  const PaginationControls = ({ page, totalPages, onPrev, onNext }: { page: number; totalPages: number; onPrev: () => void; onNext: () => void }) => {
+    if (totalPages <= 1) return null;
+    return (
+      <div className="flex items-center justify-center gap-3 py-2">
+        <Button variant="ghost" size="icon" disabled={page === 0} onClick={onPrev} className="h-8 w-8">
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="text-xs text-muted-foreground">{page + 1} / {totalPages}</span>
+        <Button variant="ghost" size="icon" disabled={page >= totalPages - 1} onClick={onNext} className="h-8 w-8">
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  };
+
   return (
     <div className="h-screen flex flex-col bg-background p-4">
       <div className="flex items-center justify-between mb-4">
@@ -380,9 +412,15 @@ const DemandasPage = () => {
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle expanded={false} />
-          <Button onClick={openAdd} className="gap-2 min-h-[44px]">
-            <Plus className="h-4 w-4" /> Adicionar Demanda
-          </Button>
+          {isMobile ? (
+            <Button onClick={openAdd} size="icon" className="min-h-[40px] min-w-[40px]">
+              <Plus className="h-5 w-5" />
+            </Button>
+          ) : (
+            <Button onClick={openAdd} className="gap-2 min-h-[44px]">
+              <Plus className="h-4 w-4" /> Adicionar Demanda
+            </Button>
+          )}
         </div>
       </div>
 
@@ -393,50 +431,49 @@ const DemandasPage = () => {
           <p className="text-muted-foreground text-sm p-4">Carregando...</p>
         ) : demandas.length === 0 ? (
           <p className="text-muted-foreground text-sm p-4">Nenhuma demanda cadastrada.</p>
-        ) : (() => {
-          const activeDemandas = sortedDemandas.filter(d => d._effectiveStatus !== 'concluido');
-          const completedDemandas = sortedDemandas.filter(d => d._effectiveStatus === 'concluido');
-          return (
-            <div className="space-y-6">
-              {/* Active demands */}
-              {isMobile ? (
-                <div className="space-y-3">
-                  {activeDemandas.map(d => {
-                    const es = d._effectiveStatus;
-                    return (
-                    <div key={d.id} className={cn("border border-border rounded-xl p-3 space-y-2 bg-card", getRowClass(d))}>
-                      <div className="flex justify-between items-start">
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => { setConfirmCompleteId(d.id); setConfirmCompleteOpen(true); }} className="text-muted-foreground hover:text-green-600 transition-colors">
-                            <CheckCircle2 className="h-5 w-5" />
-                          </button>
-                          <div>
-                            <p className="font-medium text-foreground">{d.cliente_nome}</p>
-                            <p className="text-xs text-muted-foreground">{d.servico}</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-1 flex-wrap">
-                          <Badge className={cn('text-xs', statusColors[es])}>{statusLabels[es] || es}</Badge>
-                          <Badge className={cn('text-xs', prioridadeColors[d.prioridade])}>{prioridadeLabels[d.prioridade] || d.prioridade}</Badge>
+        ) : (
+          <div className="space-y-6">
+            {/* Active demands */}
+            {isMobile ? (
+              <div className="space-y-3">
+                {activeSlice.map(d => {
+                  const es = d._effectiveStatus;
+                  return (
+                  <div key={d.id} className={cn("border border-border rounded-xl p-3 space-y-2 bg-card", getRowClass(d))}>
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => { setConfirmCompleteId(d.id); setConfirmCompleteOpen(true); }} className="text-muted-foreground hover:text-green-600 transition-colors">
+                          <CheckCircle2 className="h-5 w-5" />
+                        </button>
+                        <div>
+                          <p className="font-medium text-foreground">{d.cliente_nome}</p>
+                          <p className="text-xs text-muted-foreground">{d.servico}</p>
                         </div>
                       </div>
-                      <div className="text-xs text-muted-foreground space-y-0.5">
-                        {d.descricao && <p>📝 {d.descricao}</p>}
-                        {d.telefone && <p>📞 {d.telefone}</p>}
-                        {d.email && <p>✉️ {d.email}</p>}
-                        {d.prazo && <p>📅 {format(new Date(d.prazo), 'dd/MM/yyyy HH:mm')}</p>}
-                        <p>👤 {getResponsavelName(d.responsavel_id)}</p>
-                        {d.canal && <p>📢 {d.canal}</p>}
-                      </div>
-                      <div className="flex gap-1 pt-1">
-                        <Button variant="ghost" size="sm" onClick={() => openEdit(d)}><Edit className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(d.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      <div className="flex gap-1 flex-wrap">
+                        <Badge className={cn('text-xs', statusColors[es])}>{statusLabels[es] || es}</Badge>
+                        <Badge className={cn('text-xs', prioridadeColors[d.prioridade])}>{prioridadeLabels[d.prioridade] || d.prioridade}</Badge>
                       </div>
                     </div>
-                    );
-                  })}
-                </div>
-              ) : (
+                    <div className="text-xs text-muted-foreground space-y-0.5">
+                      {d.descricao && <p>📝 {d.descricao}</p>}
+                      {d.telefone && <p>📞 {d.telefone}</p>}
+                      {d.email && <p>✉️ {d.email}</p>}
+                      {d.prazo && <p>📅 {format(new Date(d.prazo), 'dd/MM/yyyy HH:mm')}</p>}
+                      <p>👤 {getResponsavelName(d.responsavel_id)}</p>
+                      {d.canal && <p>📢 {d.canal}</p>}
+                    </div>
+                    <div className="flex gap-1 pt-1">
+                      <Button variant="ghost" size="sm" onClick={() => openEdit(d)}><Edit className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(d.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    </div>
+                  </div>
+                  );
+                })}
+                <PaginationControls page={activePageIndex} totalPages={activeTotalPages} onPrev={() => setActivePageIndex(p => p - 1)} onNext={() => setActivePageIndex(p => p + 1)} />
+              </div>
+            ) : (
+              <div>
                 <div className="rounded-xl border border-border overflow-hidden">
                   <Table>
                     <TableHeader>
@@ -462,7 +499,7 @@ const DemandasPage = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {activeDemandas.map(d => {
+                      {activeSlice.map(d => {
                         const es = d._effectiveStatus;
                         const alert = getDeadlineAlert(d.prazo, d.status);
                         return (
@@ -505,43 +542,51 @@ const DemandasPage = () => {
                     </TableBody>
                   </Table>
                 </div>
-              )}
+                <PaginationControls page={activePageIndex} totalPages={activeTotalPages} onPrev={() => setActivePageIndex(p => p - 1)} onNext={() => setActivePageIndex(p => p + 1)} />
+              </div>
+            )}
 
-              {/* Completed demands section */}
-              {completedDemandas.length > 0 && (
-                <div>
-                  <h2 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-600" /> Concluídas ({completedDemandas.length})
-                  </h2>
-                  {isMobile ? (
-                    <div className="space-y-2">
-                      {completedDemandas.map(d => (
-                        <div key={d.id} className="border border-border rounded-xl p-3 bg-card opacity-60 space-y-1">
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                              <CheckCircle2 className="h-4 w-4 text-green-600" />
-                              <span className="font-medium text-foreground text-sm">{d.cliente_nome}</span>
-                            </div>
-                            <Button variant="ghost" size="sm" onClick={() => handleDelete(d.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+            {/* Completed demands section */}
+            {completedDemandas.length > 0 && (
+              <div>
+                <h2 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" /> Concluídas ({completedDemandas.length})
+                </h2>
+                {isMobile ? (
+                  <div className="space-y-2">
+                    {completedSlice.map(d => (
+                      <div key={d.id} className="border border-border rounded-xl p-3 bg-card opacity-60 space-y-1">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                            <span className="font-medium text-foreground text-sm">{d.cliente_nome}</span>
                           </div>
-                          <p className="text-xs text-muted-foreground">{d.servico}</p>
-                          {d.concluido_at && <p className="text-xs text-muted-foreground">Concluída em {format(new Date(d.concluido_at), 'dd/MM/yyyy HH:mm')}</p>}
+                          <Button variant="ghost" size="sm" onClick={() => handleDelete(d.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
+                        <p className="text-xs text-muted-foreground">{d.servico}</p>
+                        {d.descricao && <p className="text-xs text-muted-foreground">📝 {d.descricao}</p>}
+                        <p className="text-xs text-muted-foreground">👤 {getResponsavelName(d.responsavel_id)}</p>
+                        {d.concluido_at && <p className="text-xs text-muted-foreground">Concluída em {format(new Date(d.concluido_at), 'dd/MM/yyyy HH:mm')}</p>}
+                      </div>
+                    ))}
+                    <PaginationControls page={completedPageIndex} totalPages={completedTotalPages} onPrev={() => setCompletedPageIndex(p => p - 1)} onNext={() => setCompletedPageIndex(p => p + 1)} />
+                  </div>
+                ) : (
+                  <div>
                     <div className="rounded-xl border border-border overflow-hidden opacity-60">
                       <Table>
                         <TableHeader>
                           <TableRow>
                             <TableHead className="border-r border-border">Cliente</TableHead>
                             <TableHead className="border-r border-border">Serviço</TableHead>
+                            <TableHead className="border-r border-border">Descrição</TableHead>
+                            <TableHead className="border-r border-border">Responsável</TableHead>
                             <TableHead className="border-r border-border">Concluída em</TableHead>
                             <TableHead className="w-20">Ações</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {completedDemandas.map(d => (
+                          {completedSlice.map(d => (
                             <TableRow key={d.id}>
                               <TableCell className="border-r border-border">
                                 <div className="flex items-center gap-2">
@@ -550,6 +595,8 @@ const DemandasPage = () => {
                                 </div>
                               </TableCell>
                               <TableCell className="border-r border-border">{d.servico}</TableCell>
+                              <TableCell className="border-r border-border text-xs">{d.descricao || '—'}</TableCell>
+                              <TableCell className="border-r border-border">{getResponsavelName(d.responsavel_id)}</TableCell>
                               <TableCell className="border-r border-border">{d.concluido_at ? format(new Date(d.concluido_at), 'dd/MM/yyyy HH:mm') : '—'}</TableCell>
                               <TableCell>
                                 <Button variant="ghost" size="icon" onClick={() => handleDelete(d.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
@@ -559,13 +606,14 @@ const DemandasPage = () => {
                         </TableBody>
                       </Table>
                     </div>
-                  )}
-                  <p className="text-xs text-muted-foreground mt-1">Demandas concluídas são excluídas automaticamente após 48 horas.</p>
-                </div>
-              )}
-            </div>
-          );
-        })()}
+                    <PaginationControls page={completedPageIndex} totalPages={completedTotalPages} onPrev={() => setCompletedPageIndex(p => p - 1)} onNext={() => setCompletedPageIndex(p => p + 1)} />
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground mt-1">Demandas concluídas são excluídas automaticamente após 48 horas.</p>
+              </div>
+            )}
+          </div>
+        )}
       </ScrollArea>
 
       {/* Add/Edit Dialog */}

@@ -223,6 +223,7 @@ const DemandasPage = () => {
     setTelefone('');
     setEmail('');
     setServico('');
+    setDescricao('');
     setPrazo(undefined);
     setPrazoHora('12:00');
     setResponsavelId('');

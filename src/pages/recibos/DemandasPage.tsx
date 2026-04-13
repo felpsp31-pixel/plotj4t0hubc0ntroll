@@ -29,6 +29,8 @@ interface Demanda {
   prazo: string | null;
   responsavel_id: string | null;
   status: string;
+  prioridade: string;
+  canal: string;
   created_at: string;
 }
 
@@ -61,6 +63,22 @@ const statusLabels: Record<string, string> = {
   concluido: 'Concluído',
 };
 
+const prioridadeColors: Record<string, string> = {
+  baixa: 'bg-green-500/15 text-green-700 dark:text-green-400',
+  media: 'bg-yellow-500/15 text-yellow-700 dark:text-yellow-400',
+  alta: 'bg-orange-500/15 text-orange-700 dark:text-orange-400',
+  urgente: 'bg-red-500/15 text-red-700 dark:text-red-400',
+};
+
+const prioridadeLabels: Record<string, string> = {
+  baixa: 'Baixa',
+  media: 'Média',
+  alta: 'Alta',
+  urgente: 'Urgente',
+};
+
+const canalOptions = ['WhatsApp', 'Email', 'Telefone', 'Presencial'];
+
 const DemandasPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -81,8 +99,11 @@ const DemandasPage = () => {
   const [email, setEmail] = useState('');
   const [servico, setServico] = useState('');
   const [prazo, setPrazo] = useState<Date | undefined>();
+  const [prazoHora, setPrazoHora] = useState('12:00');
   const [responsavelId, setResponsavelId] = useState('');
   const [status, setStatus] = useState('pendente');
+  const [prioridade, setPrioridade] = useState('media');
+  const [canal, setCanal] = useState('');
 
   // Mini-modal state
   const [newServicoOpen, setNewServicoOpen] = useState(false);
@@ -124,8 +145,11 @@ const DemandasPage = () => {
     setEmail('');
     setServico('');
     setPrazo(undefined);
+    setPrazoHora('12:00');
     setResponsavelId('');
     setStatus('pendente');
+    setPrioridade('media');
+    setCanal('');
   };
 
   const openAdd = () => { resetForm(); setDialogOpen(true); };
@@ -138,9 +162,18 @@ const DemandasPage = () => {
     setTelefone(d.telefone);
     setEmail(d.email);
     setServico(d.servico);
-    setPrazo(d.prazo ? new Date(d.prazo + 'T00:00:00') : undefined);
+    if (d.prazo) {
+      const dt = new Date(d.prazo);
+      setPrazo(dt);
+      setPrazoHora(format(dt, 'HH:mm'));
+    } else {
+      setPrazo(undefined);
+      setPrazoHora('12:00');
+    }
     setResponsavelId(d.responsavel_id || '');
     setStatus(d.status);
+    setPrioridade(d.prioridade || 'media');
+    setCanal(d.canal || '');
     setDialogOpen(true);
   };
 
@@ -164,15 +197,25 @@ const DemandasPage = () => {
     if (!nome.trim()) { toast.error('Informe o cliente'); return; }
     if (!servico) { toast.error('Selecione o serviço'); return; }
 
+    let prazoISO: string | null = null;
+    if (prazo) {
+      const [hh, mm] = prazoHora.split(':').map(Number);
+      const dt = new Date(prazo);
+      dt.setHours(hh, mm, 0, 0);
+      prazoISO = dt.toISOString();
+    }
+
     const payload = {
       cliente_id: selectedClienteId,
       cliente_nome: nome,
       telefone,
       email,
       servico,
-      prazo: prazo ? format(prazo, 'yyyy-MM-dd') : null,
+      prazo: prazoISO,
       responsavel_id: responsavelId || null,
       status,
+      prioridade,
+      canal,
     };
 
     if (editingId) {

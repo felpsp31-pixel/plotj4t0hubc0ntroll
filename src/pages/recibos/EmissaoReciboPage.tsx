@@ -22,12 +22,20 @@ const emptyLines = (): LinhaRecibo[] =>
 const EmissaoReciboPage = () => {
   const { clientes, solicitantes, obras, servicos, clientServices, recibos, addRecibo, empresaInfo, loading } = useRecibos();
   const [clienteId, setClienteId] = useState('');
+  const [clienteAvulso, setClienteAvulso] = useState('');
+  const [clienteSearch, setClienteSearch] = useState('');
+  const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
   const [solicitanteId, setSolicitanteId] = useState('');
   const [obraId, setObraId] = useState('');
   const [lines, setLines] = useState<LinhaRecibo[]>(emptyLines());
   const [saved, setSaved] = useState(false);
   const [lastRecibo, setLastRecibo] = useState<typeof recibos[0] | null>(null);
   const [isPago, setIsPago] = useState(false);
+
+  const filteredClienteOptions = useMemo(() => {
+    if (!clienteSearch.trim()) return clientes;
+    return clientes.filter(c => c.name.toLowerCase().includes(clienteSearch.toLowerCase()));
+  }, [clientes, clienteSearch]);
 
   const filteredSolicitantes = useMemo(() => solicitantes.filter(s => s.clienteId === clienteId), [solicitantes, clienteId]);
   const filteredObras = useMemo(() => obras.filter(o => o.clienteId === clienteId), [obras, clienteId]);

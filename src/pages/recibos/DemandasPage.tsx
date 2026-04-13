@@ -480,30 +480,34 @@ const DemandasPage = () => {
               <div><Label>Email</Label><Input value={email} onChange={e => setEmail(e.target.value)} className="text-base" /></div>
             </div>
 
-            {/* Serviço + add */}
+            {/* Serviço - select or type */}
             <div className="space-y-1">
               <Label>Serviço</Label>
-              <div className="flex gap-2">
-                <Select value={servico} onValueChange={setServico}>
-                  <SelectTrigger className="flex-1"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                  <SelectContent>
-                    {servicos.map(s => (
-                      <SelectItem key={s.id} value={s.description}>{s.description}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Dialog open={newServicoOpen} onOpenChange={setNewServicoOpen}>
-                  <Button variant="outline" size="icon" className="shrink-0" onClick={() => setNewServicoOpen(true)}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  <DialogContent className="sm:max-w-sm" onClick={e => e.stopPropagation()}>
-                    <DialogHeader><DialogTitle>Novo Serviço</DialogTitle></DialogHeader>
-                    <div className="space-y-3">
-                      <Input placeholder="Nome do serviço" value={newServicoName} onChange={e => setNewServicoName(e.target.value)} className="text-base" />
-                      <Button className="w-full" onClick={addServico}>Salvar</Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+              <div className="relative">
+                <Input
+                  placeholder="Buscar serviço ou digitar avulso..."
+                  value={servico}
+                  onChange={e => { setServico(e.target.value); setServicoDropdownOpen(true); }}
+                  onFocus={() => setServicoDropdownOpen(true)}
+                  className="text-base"
+                />
+                {servicoDropdownOpen && servico.trim() && (
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-md max-h-48 overflow-y-auto">
+                    {filteredServicos.length > 0 ? filteredServicos.map(s => (
+                      <button
+                        key={s.id}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors"
+                        onClick={() => { setServico(s.description); setServicoDropdownOpen(false); }}
+                      >
+                        {s.description}
+                      </button>
+                    )) : (
+                      <div className="px-3 py-2 text-sm text-muted-foreground">
+                        Usando "{servico}" como serviço avulso
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 

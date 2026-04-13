@@ -109,11 +109,12 @@ const DemandasPage = () => {
   // Mini-modal state
   const [newResponsavelOpen, setNewResponsavelOpen] = useState(false);
   const [newResponsavelName, setNewResponsavelName] = useState('');
-  const [newResponsavelOpen, setNewResponsavelOpen] = useState(false);
-  const [newResponsavelName, setNewResponsavelName] = useState('');
 
   // Client search
   const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
+
+  // Serviço search
+  const [servicoDropdownOpen, setServicoDropdownOpen] = useState(false);
 
   // Confirm complete dialog
   const [confirmCompleteOpen, setConfirmCompleteOpen] = useState(false);
@@ -127,6 +128,11 @@ const DemandasPage = () => {
     if (!clienteSearch.trim()) return clientes;
     return clientes.filter(c => c.name.toLowerCase().includes(clienteSearch.toLowerCase()));
   }, [clientes, clienteSearch]);
+
+  const filteredServicos = useMemo(() => {
+    if (!servico.trim()) return servicos;
+    return servicos.filter(s => s.description.toLowerCase().includes(servico.toLowerCase()));
+  }, [servicos, servico]);
 
   const fetchAll = async () => {
     setLoading(true);

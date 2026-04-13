@@ -85,36 +85,42 @@ export type Database = {
       }
       demandas: {
         Row: {
+          canal: string
           cliente_id: string | null
           cliente_nome: string
           created_at: string
           email: string
           id: string
           prazo: string | null
+          prioridade: string
           responsavel_id: string | null
           servico: string
           status: string
           telefone: string
         }
         Insert: {
+          canal?: string
           cliente_id?: string | null
           cliente_nome: string
           created_at?: string
           email?: string
           id?: string
           prazo?: string | null
+          prioridade?: string
           responsavel_id?: string | null
           servico?: string
           status?: string
           telefone?: string
         }
         Update: {
+          canal?: string
           cliente_id?: string | null
           cliente_nome?: string
           created_at?: string
           email?: string
           id?: string
           prazo?: string | null
+          prioridade?: string
           responsavel_id?: string | null
           servico?: string
           status?: string

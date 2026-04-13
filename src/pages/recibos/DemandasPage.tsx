@@ -384,13 +384,13 @@ const DemandasPage = () => {
           <p className="text-muted-foreground text-sm p-4">Nenhuma demanda cadastrada.</p>
         ) : isMobile ? (
           <div className="space-y-3">
-            {demandas.map(d => {
-              const alert = getDeadlineAlert(d.prazo, d.status);
+            {sortedDemandas.map(d => {
+              const es = d._effectiveStatus;
               return (
-              <div key={d.id} className={cn("border border-border rounded-lg p-3 space-y-2 bg-card", getRowClass(d))}>
+              <div key={d.id} className={cn("border border-border rounded-lg p-3 space-y-2 bg-card", getRowClass(d), es === 'concluido' && 'opacity-60')}>
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-2">
-                    {d.status !== 'concluido' && (
+                    {es !== 'concluido' && (
                       <button onClick={() => { setConfirmCompleteId(d.id); setConfirmCompleteOpen(true); }} className="text-muted-foreground hover:text-green-600 transition-colors">
                         <CheckCircle2 className="h-5 w-5" />
                       </button>
@@ -401,8 +401,7 @@ const DemandasPage = () => {
                     </div>
                   </div>
                   <div className="flex gap-1 flex-wrap">
-                    {alert && <AlertTriangle className={cn("h-4 w-4", alert === 'overdue' ? 'text-red-500' : 'text-yellow-500')} />}
-                    <Badge className={cn('text-xs', statusColors[d.status])}>{statusLabels[d.status] || d.status}</Badge>
+                    <Badge className={cn('text-xs', statusColors[es])}>{statusLabels[es] || es}</Badge>
                     <Badge className={cn('text-xs', prioridadeColors[d.prioridade])}>{prioridadeLabels[d.prioridade] || d.prioridade}</Badge>
                   </div>
                 </div>
@@ -422,54 +421,65 @@ const DemandasPage = () => {
             })}
           </div>
         ) : (
-          <Table>
+          <Table className="border border-border">
             <TableHeader>
-              <TableRow>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Telefone</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Serviço</TableHead>
-                <TableHead>Prazo</TableHead>
-                <TableHead>Responsável</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Prioridade</TableHead>
-                <TableHead>Canal</TableHead>
+              <TableRow className="border-b border-border">
+                <TableHead className="border-r border-border">Cliente</TableHead>
+                <TableHead className="border-r border-border">Telefone</TableHead>
+                <TableHead className="border-r border-border">Email</TableHead>
+                <TableHead className="border-r border-border">Serviço</TableHead>
+                <TableHead className="border-r border-border cursor-pointer select-none" onClick={() => toggleSort('prazo')}>
+                  <div className="flex items-center gap-1">
+                    Prazo
+                    {sortField === 'prazo' ? (sortAsc ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />) : <ArrowUp className="h-3.5 w-3.5 text-muted-foreground/40" />}
+                  </div>
+                </TableHead>
+                <TableHead className="border-r border-border">Responsável</TableHead>
+                <TableHead className="border-r border-border">Status</TableHead>
+                <TableHead className="border-r border-border cursor-pointer select-none" onClick={() => toggleSort('prioridade')}>
+                  <div className="flex items-center gap-1">
+                    Prioridade
+                    {sortField === 'prioridade' ? (sortAsc ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />) : <ArrowUp className="h-3.5 w-3.5 text-muted-foreground/40" />}
+                  </div>
+                </TableHead>
+                <TableHead className="border-r border-border">Canal</TableHead>
                 <TableHead className="w-20">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {demandas.map(d => {
+              {sortedDemandas.map(d => {
+                const es = d._effectiveStatus;
                 const alert = getDeadlineAlert(d.prazo, d.status);
                 return (
-                <TableRow key={d.id} className={getRowClass(d)}>
-                  <TableCell className="font-medium">
+                <TableRow key={d.id} className={cn("border-b border-border", getRowClass(d), es === 'concluido' && 'opacity-60')}>
+                  <TableCell className="font-medium border-r border-border">
                     <div className="flex items-center gap-2">
-                      {d.status !== 'concluido' && (
+                      {es !== 'concluido' && (
                         <button onClick={() => { setConfirmCompleteId(d.id); setConfirmCompleteOpen(true); }} className="text-muted-foreground hover:text-green-600 transition-colors" title="Concluir tarefa">
                           <CheckCircle2 className="h-5 w-5" />
                         </button>
                       )}
-                      {d.status === 'concluido' && <CheckCircle2 className="h-5 w-5 text-green-600" />}
+                      {es === 'concluido' && <CheckCircle2 className="h-5 w-5 text-green-600" />}
                       {d.cliente_nome}
                     </div>
                   </TableCell>
-                  <TableCell>{d.telefone || '—'}</TableCell>
-                  <TableCell>{d.email || '—'}</TableCell>
-                  <TableCell>{d.servico}</TableCell>
-                  <TableCell>
+                  <TableCell className="border-r border-border">{d.telefone || '—'}</TableCell>
+                  <TableCell className="border-r border-border">{d.email || '—'}</TableCell>
+                  <TableCell className="border-r border-border">{d.servico}</TableCell>
+                  <TableCell className="border-r border-border">
                     <div className="flex items-center gap-1">
                       {alert && <AlertTriangle className={cn("h-4 w-4 shrink-0", alert === 'overdue' ? 'text-red-500' : 'text-yellow-500')} />}
                       {d.prazo ? format(new Date(d.prazo), 'dd/MM/yyyy HH:mm') : '—'}
                     </div>
                   </TableCell>
-                  <TableCell>{getResponsavelName(d.responsavel_id)}</TableCell>
-                  <TableCell>
-                    <Badge className={cn('text-xs', statusColors[d.status])}>{statusLabels[d.status] || d.status}</Badge>
+                  <TableCell className="border-r border-border">{getResponsavelName(d.responsavel_id)}</TableCell>
+                  <TableCell className="border-r border-border">
+                    <Badge className={cn('text-xs', statusColors[es])}>{statusLabels[es] || es}</Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="border-r border-border">
                     <Badge className={cn('text-xs', prioridadeColors[d.prioridade])}>{prioridadeLabels[d.prioridade] || d.prioridade}</Badge>
                   </TableCell>
-                  <TableCell>{d.canal || '—'}</TableCell>
+                  <TableCell className="border-r border-border">{d.canal || '—'}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => openEdit(d)}><Edit className="h-4 w-4" /></Button>

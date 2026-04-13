@@ -652,7 +652,17 @@ const DemandasPage = () => {
               </div>
             </div>
 
-            {/* Responsável + add */}
+            {/* Descrição */}
+            <div className="space-y-1">
+              <Label>Descrição</Label>
+              <Input
+                placeholder="Descrição da demanda (opcional)"
+                value={descricao}
+                onChange={e => setDescricao(e.target.value)}
+                className="text-base"
+              />
+            </div>
+
             <div className="space-y-1">
               <Label>Responsável</Label>
               <div className="flex gap-2">

@@ -36,22 +36,21 @@ const EmissaoReciboPage = () => {
 
   // Auto-fill client from demandas navigation
   useEffect(() => {
-    const state = location.state as { clienteNome?: string; clienteId?: string | null; isAvulso?: boolean } | null;
+    const state = location.state as { clienteNome?: string; clienteId?: string | null; isAvulso?: boolean; obraId?: string | null; solicitanteId?: string | null } | null;
     if (!state?.clienteNome) return;
     if (state.clienteId && !state.isAvulso) {
-      // Registered client
       setClienteId(state.clienteId);
       setClienteSearch(state.clienteNome);
       setClienteAvulso('');
       setIsPago(false);
+      if (state.obraId) setObraId(state.obraId);
+      if (state.solicitanteId) setSolicitanteId(state.solicitanteId);
     } else {
-      // Walk-in client
       setClienteId('');
       setClienteAvulso(state.clienteNome);
       setClienteSearch(state.clienteNome);
       setIsPago(true);
     }
-    // Clear state to avoid re-applying on re-renders
     window.history.replaceState({}, document.title);
   }, [location.state]);
 

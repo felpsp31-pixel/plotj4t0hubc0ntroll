@@ -45,9 +45,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const signOut = useCallback(() => {
+  const signOut = useCallback(async () => {
     localStorage.removeItem(SESSION_KEY);
     setAuthenticated(false);
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      await supabase.auth.signOut();
+    } catch { /* ignore */ }
   }, []);
 
   const resetTimer = useCallback(() => {
@@ -107,6 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (valid) {
+        await supabase.auth.signInAnonymously();
         setSession();
         setAuthenticated(true);
         return true;

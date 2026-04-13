@@ -8,7 +8,7 @@ const isDbId = (id: string) =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id);
 
 export function useFinancialInvoices() {
-  const [invoices, setInvoices] = useState<Invoice[]>(MOCK_INVOICES);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchInvoices = useCallback(async () => {

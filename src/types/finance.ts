@@ -20,7 +20,7 @@ export interface Invoice {
 export interface Entity {
   id: string;
   name: string;
-  type: 'supplier' | 'client';
+  type: 'supplier' | 'client' | 'casual';
   phone?: string;
   email?: string;
   document?: string;

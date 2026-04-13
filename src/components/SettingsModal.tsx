@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import bcrypt from 'bcryptjs';
 
 interface SettingsModalProps {
   open: boolean;
@@ -27,11 +26,11 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
       return;
     }
     setLoading(true);
-    const hashed = await bcrypt.hash(newPassword, 10);
-    const { error } = await supabase
-      .from('app_settings')
-      .update({ value: hashed })
-      .eq('key', 'access_password');
+    // Use edge function to hash and store password server-side
+    const { error } = await supabase.functions.invoke('validate-password', {
+      body: { password: newPassword, type: 'access_password', action: 'update' },
+    });
+    setLoading(false);
     setLoading(false);
 
     if (error) {

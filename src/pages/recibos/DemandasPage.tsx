@@ -27,12 +27,14 @@ interface Demanda {
   telefone: string;
   email: string;
   servico: string;
+  descricao: string;
   prazo: string | null;
   responsavel_id: string | null;
   status: string;
   prioridade: string;
   canal: string;
   created_at: string;
+  concluido_at: string | null;
 }
 
 interface Responsavel {

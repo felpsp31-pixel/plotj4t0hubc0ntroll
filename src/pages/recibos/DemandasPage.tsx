@@ -115,6 +115,14 @@ const DemandasPage = () => {
   // Client search
   const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
 
+  // Confirm complete dialog
+  const [confirmCompleteOpen, setConfirmCompleteOpen] = useState(false);
+  const [confirmCompleteId, setConfirmCompleteId] = useState<string | null>(null);
+
+  // Post-completion recibo dialog
+  const [showReciboButton, setShowReciboButton] = useState(false);
+  const [completedDemandaCliente, setCompletedDemandaCliente] = useState<string | null>(null);
+
   const filteredClientes = useMemo(() => {
     if (!clienteSearch.trim()) return clientes;
     return clientes.filter(c => c.name.toLowerCase().includes(clienteSearch.toLowerCase()));

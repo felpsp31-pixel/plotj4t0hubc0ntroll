@@ -83,6 +83,30 @@ export type Database = {
         }
         Relationships: []
       }
+      clientes_avulsos: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string
+          id?: string
+          name: string
+          phone?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+        }
+        Relationships: []
+      }
       demandas: {
         Row: {
           canal: string
@@ -321,6 +345,7 @@ export type Database = {
       }
       recibos: {
         Row: {
+          cliente_avulso: string | null
           cliente_id: string
           created_at: string
           date: string
@@ -332,6 +357,7 @@ export type Database = {
           total: number
         }
         Insert: {
+          cliente_avulso?: string | null
           cliente_id: string
           created_at?: string
           date?: string
@@ -343,6 +369,7 @@ export type Database = {
           total?: number
         }
         Update: {
+          cliente_avulso?: string | null
           cliente_id?: string
           created_at?: string
           date?: string

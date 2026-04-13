@@ -381,13 +381,30 @@ const DemandasPage = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {demandas.map(d => (
-                <TableRow key={d.id}>
-                  <TableCell className="font-medium">{d.cliente_nome}</TableCell>
+              {demandas.map(d => {
+                const alert = getDeadlineAlert(d.prazo, d.status);
+                return (
+                <TableRow key={d.id} className={getRowClass(d)}>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      {d.status !== 'concluido' && (
+                        <button onClick={() => { setConfirmCompleteId(d.id); setConfirmCompleteOpen(true); }} className="text-muted-foreground hover:text-green-600 transition-colors" title="Concluir tarefa">
+                          <CheckCircle2 className="h-5 w-5" />
+                        </button>
+                      )}
+                      {d.status === 'concluido' && <CheckCircle2 className="h-5 w-5 text-green-600" />}
+                      {d.cliente_nome}
+                    </div>
+                  </TableCell>
                   <TableCell>{d.telefone || '—'}</TableCell>
                   <TableCell>{d.email || '—'}</TableCell>
                   <TableCell>{d.servico}</TableCell>
-                  <TableCell>{d.prazo ? format(new Date(d.prazo), 'dd/MM/yyyy HH:mm') : '—'}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      {alert && <AlertTriangle className={cn("h-4 w-4 shrink-0", alert === 'overdue' ? 'text-red-500' : 'text-yellow-500')} />}
+                      {d.prazo ? format(new Date(d.prazo), 'dd/MM/yyyy HH:mm') : '—'}
+                    </div>
+                  </TableCell>
                   <TableCell>{getResponsavelName(d.responsavel_id)}</TableCell>
                   <TableCell>
                     <Badge className={cn('text-xs', statusColors[d.status])}>{statusLabels[d.status] || d.status}</Badge>
@@ -403,6 +420,7 @@ const DemandasPage = () => {
                     </div>
                   </TableCell>
                 </TableRow>
+                );
               ))}
             </TableBody>
           </Table>

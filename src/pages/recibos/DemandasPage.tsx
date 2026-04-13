@@ -421,7 +421,7 @@ const DemandasPage = () => {
                   </TableCell>
                 </TableRow>
                 );
-              ))}
+              })}
             </TableBody>
           </Table>
         )}

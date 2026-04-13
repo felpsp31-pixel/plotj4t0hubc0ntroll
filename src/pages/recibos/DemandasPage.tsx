@@ -295,13 +295,17 @@ const DemandasPage = () => {
                     <p className="font-medium text-foreground">{d.cliente_nome}</p>
                     <p className="text-xs text-muted-foreground">{d.servico}</p>
                   </div>
-                  <Badge className={cn('text-xs', statusColors[d.status])}>{statusLabels[d.status] || d.status}</Badge>
+                  <div className="flex gap-1 flex-wrap">
+                    <Badge className={cn('text-xs', statusColors[d.status])}>{statusLabels[d.status] || d.status}</Badge>
+                    <Badge className={cn('text-xs', prioridadeColors[d.prioridade])}>{prioridadeLabels[d.prioridade] || d.prioridade}</Badge>
+                  </div>
                 </div>
                 <div className="text-xs text-muted-foreground space-y-0.5">
                   {d.telefone && <p>📞 {d.telefone}</p>}
                   {d.email && <p>✉️ {d.email}</p>}
-                  {d.prazo && <p>📅 {format(new Date(d.prazo + 'T00:00:00'), 'dd/MM/yyyy')}</p>}
+                  {d.prazo && <p>📅 {format(new Date(d.prazo), 'dd/MM/yyyy HH:mm')}</p>}
                   <p>👤 {getResponsavelName(d.responsavel_id)}</p>
+                  {d.canal && <p>📢 {d.canal}</p>}
                 </div>
                 <div className="flex gap-1 pt-1">
                   <Button variant="ghost" size="sm" onClick={() => openEdit(d)}><Edit className="h-4 w-4" /></Button>
@@ -321,6 +325,8 @@ const DemandasPage = () => {
                 <TableHead>Prazo</TableHead>
                 <TableHead>Responsável</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Prioridade</TableHead>
+                <TableHead>Canal</TableHead>
                 <TableHead className="w-20">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -331,11 +337,15 @@ const DemandasPage = () => {
                   <TableCell>{d.telefone || '—'}</TableCell>
                   <TableCell>{d.email || '—'}</TableCell>
                   <TableCell>{d.servico}</TableCell>
-                  <TableCell>{d.prazo ? format(new Date(d.prazo + 'T00:00:00'), 'dd/MM/yyyy') : '—'}</TableCell>
+                  <TableCell>{d.prazo ? format(new Date(d.prazo), 'dd/MM/yyyy HH:mm') : '—'}</TableCell>
                   <TableCell>{getResponsavelName(d.responsavel_id)}</TableCell>
                   <TableCell>
                     <Badge className={cn('text-xs', statusColors[d.status])}>{statusLabels[d.status] || d.status}</Badge>
                   </TableCell>
+                  <TableCell>
+                    <Badge className={cn('text-xs', prioridadeColors[d.prioridade])}>{prioridadeLabels[d.prioridade] || d.prioridade}</Badge>
+                  </TableCell>
+                  <TableCell>{d.canal || '—'}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="icon" onClick={() => openEdit(d)}><Edit className="h-4 w-4" /></Button>

@@ -445,7 +445,8 @@ const DemandasPage = () => {
     setConfirmCompleteOpen(false);
     setConfirmCompleteId(null);
     if (demanda) setCompletedDemandaData({ ...demanda });
-    setShowReciboButton(true);
+    setSelectedSaida(null);
+    setShowSaidaDialog(true);
     fetchAll();
   };
 

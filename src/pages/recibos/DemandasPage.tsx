@@ -1078,7 +1078,11 @@ const DemandasPage = () => {
             <Button
               className="w-full"
               disabled={!selectedSaida}
-              onClick={() => {
+              onClick={async () => {
+                if (completedDemandaData?.id && selectedSaida) {
+                  await supabase.from('demandas').update({ tipo_saida: selectedSaida }).eq('id', completedDemandaData.id);
+                  fetchAll();
+                }
                 setShowSaidaDialog(false);
                 setShowReciboButton(true);
               }}

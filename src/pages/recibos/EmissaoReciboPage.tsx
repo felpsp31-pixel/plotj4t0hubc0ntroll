@@ -173,21 +173,28 @@ const EmissaoReciboPage = () => {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!clienteId && !clienteAvulso.trim()) { toast.error('Selecione ou digite um cliente.'); return; }
     const validLines = lines.filter(l => l.serviceCode && l.quantity > 0);
     if (validLines.length === 0) { toast.error('Adicione ao menos um serviço.'); return; }
+    const total = validLines.reduce((s, l) => s + l.total, 0);
     const recibo = addRecibo({
       date: new Date().toISOString().slice(0, 10),
       clienteId: clienteId || '',
       clienteAvulso: clienteId ? undefined : clienteAvulso.trim(),
       solicitanteId, obraId,
       lines: validLines,
-      total: validLines.reduce((s, l) => s + l.total, 0),
+      total,
     });
     setLastRecibo(recibo);
     setSaved(true);
     toast.success(`Recibo Nº ${recibo.number} emitido com sucesso!`);
+
+    // Update demanda with recibo value if linked
+    if (demandaIdRef.current) {
+      await supabase.from('demandas').update({ valor_recibo: total } as any).eq('id', demandaIdRef.current);
+      demandaIdRef.current = null;
+    }
   };
 
   const handleNew = () => {

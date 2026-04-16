@@ -680,24 +680,28 @@ const DemandasPage = () => {
               </div>
             )}
 
-            {/* Completed demands section */}
-            {completedDemandas.length > 0 && (
+            {/* Concluídas (aguardando retirada) */}
+            {completedNotRetirada.length > 0 && (
               <div>
                 <h2 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" /> Concluídas ({completedDemandas.length})
+                  <CheckCircle2 className="h-4 w-4 text-green-600" /> Concluídas ({completedNotRetirada.length})
                 </h2>
                 {isMobile ? (
                   <div className="space-y-2">
                     {completedSlice.map(d => (
-                      <div key={d.id} className="border border-border rounded-xl p-3 bg-card opacity-60 space-y-1">
+                      <div key={d.id} className="border border-border rounded-xl p-3 bg-card space-y-1">
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-2">
                             <CheckCircle2 className="h-4 w-4 text-green-600" />
                             <span className="font-medium text-foreground text-sm">{d.cliente_nome}</span>
                           </div>
-                          <Button variant="ghost" size="sm" onClick={() => handleDelete(d.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="sm" onClick={() => handleMarkRetirado(d.id)} title="Marcar como retirado"><PackageCheck className="h-4 w-4 text-primary" /></Button>
+                            <Button variant="ghost" size="sm" onClick={() => handleDelete(d.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                          </div>
                         </div>
                         <p className="text-xs text-muted-foreground">{d.servico}</p>
+                        {d.tipo_saida && <Badge className="text-xs bg-primary/15 text-primary">{d.tipo_saida}</Badge>}
                         {d.descricao && <p className="text-xs text-muted-foreground">📝 {d.descricao}</p>}
                         <p className="text-xs text-muted-foreground">👤 {getResponsavelName(d.responsavel_id)}</p>
                         {d.concluido_at && <p className="text-xs text-muted-foreground">Concluída em {format(new Date(d.concluido_at), 'dd/MM/yyyy HH:mm')}</p>}
@@ -707,16 +711,16 @@ const DemandasPage = () => {
                   </div>
                 ) : (
                   <div>
-                    <div className="rounded-xl border border-border overflow-hidden opacity-60">
+                    <div className="rounded-xl border border-border overflow-hidden">
                       <Table>
                         <TableHeader>
                           <TableRow>
                             <TableHead className="border-r border-border">Cliente</TableHead>
                             <TableHead className="border-r border-border">Serviço</TableHead>
-                            <TableHead className="border-r border-border">Descrição</TableHead>
+                            <TableHead className="border-r border-border">Saída</TableHead>
                             <TableHead className="border-r border-border">Responsável</TableHead>
                             <TableHead className="border-r border-border">Concluída em</TableHead>
-                            <TableHead className="w-20">Ações</TableHead>
+                            <TableHead className="w-24">Ações</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -729,11 +733,16 @@ const DemandasPage = () => {
                                 </div>
                               </TableCell>
                               <TableCell className="border-r border-border">{d.servico}</TableCell>
-                              <TableCell className="border-r border-border text-xs">{d.descricao || '—'}</TableCell>
+                              <TableCell className="border-r border-border">
+                                {d.tipo_saida ? <Badge className="text-xs bg-primary/15 text-primary">{d.tipo_saida}</Badge> : '—'}
+                              </TableCell>
                               <TableCell className="border-r border-border">{getResponsavelName(d.responsavel_id)}</TableCell>
                               <TableCell className="border-r border-border">{d.concluido_at ? format(new Date(d.concluido_at), 'dd/MM/yyyy HH:mm') : '—'}</TableCell>
                               <TableCell>
-                                <Button variant="ghost" size="icon" onClick={() => handleDelete(d.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                <div className="flex gap-1">
+                                  <Button variant="ghost" size="icon" onClick={() => handleMarkRetirado(d.id)} title="Marcar como retirado"><PackageCheck className="h-4 w-4 text-primary" /></Button>
+                                  <Button variant="ghost" size="icon" onClick={() => handleDelete(d.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                </div>
                               </TableCell>
                             </TableRow>
                           ))}
@@ -743,7 +752,72 @@ const DemandasPage = () => {
                     <PaginationControls page={completedPageIndex} totalPages={completedTotalPages} onPrev={() => setCompletedPageIndex(p => p - 1)} onNext={() => setCompletedPageIndex(p => p + 1)} />
                   </div>
                 )}
-                <p className="text-xs text-muted-foreground mt-1">Demandas concluídas são excluídas automaticamente após 48 horas.</p>
+              </div>
+            )}
+
+            {/* Concluídas e Retiradas */}
+            {completedRetirada.length > 0 && (
+              <div>
+                <h2 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
+                  <PackageCheck className="h-4 w-4 text-primary" /> Concluídas e Retiradas ({completedRetirada.length})
+                </h2>
+                {isMobile ? (
+                  <div className="space-y-2">
+                    {retiradaSlice.map(d => (
+                      <div key={d.id} className="border border-border rounded-xl p-3 bg-card opacity-50 space-y-1">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <PackageCheck className="h-4 w-4 text-primary" />
+                            <span className="font-medium text-foreground text-sm">{d.cliente_nome}</span>
+                          </div>
+                          <Button variant="ghost" size="sm" onClick={() => handleDelete(d.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{d.servico}</p>
+                        {d.tipo_saida && <Badge className="text-xs bg-primary/15 text-primary">{d.tipo_saida}</Badge>}
+                        {d.retirado_at && <p className="text-xs text-muted-foreground">Retirada em {format(new Date(d.retirado_at), 'dd/MM/yyyy HH:mm')}</p>}
+                      </div>
+                    ))}
+                    <PaginationControls page={retiradaPageIndex} totalPages={retiradaTotalPages} onPrev={() => setRetiradaPageIndex(p => p - 1)} onNext={() => setRetiradaPageIndex(p => p + 1)} />
+                  </div>
+                ) : (
+                  <div>
+                    <div className="rounded-xl border border-border overflow-hidden opacity-50">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="border-r border-border">Cliente</TableHead>
+                            <TableHead className="border-r border-border">Serviço</TableHead>
+                            <TableHead className="border-r border-border">Saída</TableHead>
+                            <TableHead className="border-r border-border">Retirada em</TableHead>
+                            <TableHead className="w-20">Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {retiradaSlice.map(d => (
+                            <TableRow key={d.id}>
+                              <TableCell className="border-r border-border">
+                                <div className="flex items-center gap-2">
+                                  <PackageCheck className="h-4 w-4 text-primary" />
+                                  {d.cliente_nome}
+                                </div>
+                              </TableCell>
+                              <TableCell className="border-r border-border">{d.servico}</TableCell>
+                              <TableCell className="border-r border-border">
+                                {d.tipo_saida ? <Badge className="text-xs bg-primary/15 text-primary">{d.tipo_saida}</Badge> : '—'}
+                              </TableCell>
+                              <TableCell className="border-r border-border">{d.retirado_at ? format(new Date(d.retirado_at), 'dd/MM/yyyy HH:mm') : '—'}</TableCell>
+                              <TableCell>
+                                <Button variant="ghost" size="icon" onClick={() => handleDelete(d.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    <PaginationControls page={retiradaPageIndex} totalPages={retiradaTotalPages} onPrev={() => setRetiradaPageIndex(p => p - 1)} onNext={() => setRetiradaPageIndex(p => p + 1)} />
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground mt-1">Demandas concluídas e retiradas são excluídas automaticamente após 48 horas.</p>
               </div>
             )}
           </div>

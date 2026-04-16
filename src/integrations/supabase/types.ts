@@ -128,6 +128,7 @@ export type Database = {
           status: string
           telefone: string
           tipo_saida: string | null
+          valor_recibo: number | null
         }
         Insert: {
           canal?: string
@@ -149,6 +150,7 @@ export type Database = {
           status?: string
           telefone?: string
           tipo_saida?: string | null
+          valor_recibo?: number | null
         }
         Update: {
           canal?: string
@@ -170,6 +172,7 @@ export type Database = {
           status?: string
           telefone?: string
           tipo_saida?: string | null
+          valor_recibo?: number | null
         }
         Relationships: [
           {

@@ -121,10 +121,13 @@ export type Database = {
           prazo: string | null
           prioridade: string
           responsavel_id: string | null
+          retirado: boolean
+          retirado_at: string | null
           servico: string
           solicitante_id: string | null
           status: string
           telefone: string
+          tipo_saida: string | null
         }
         Insert: {
           canal?: string
@@ -139,10 +142,13 @@ export type Database = {
           prazo?: string | null
           prioridade?: string
           responsavel_id?: string | null
+          retirado?: boolean
+          retirado_at?: string | null
           servico?: string
           solicitante_id?: string | null
           status?: string
           telefone?: string
+          tipo_saida?: string | null
         }
         Update: {
           canal?: string
@@ -157,10 +163,13 @@ export type Database = {
           prazo?: string | null
           prioridade?: string
           responsavel_id?: string | null
+          retirado?: boolean
+          retirado_at?: string | null
           servico?: string
           solicitante_id?: string | null
           status?: string
           telefone?: string
+          tipo_saida?: string | null
         }
         Relationships: [
           {

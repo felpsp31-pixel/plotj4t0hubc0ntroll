@@ -1,5 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { useRecibos } from '@/contexts/RecibosContext';
 import Combobox from '@/components/recibos/Combobox';
 import { Button } from '@/components/ui/button';
@@ -33,11 +34,13 @@ const EmissaoReciboPage = () => {
   const [saved, setSaved] = useState(false);
   const [lastRecibo, setLastRecibo] = useState<typeof recibos[0] | null>(null);
   const [isPago, setIsPago] = useState(false);
+  const demandaIdRef = useRef<string | null>(null);
 
   // Auto-fill client from demandas navigation
   useEffect(() => {
-    const state = location.state as { clienteNome?: string; clienteId?: string | null; isAvulso?: boolean; obraId?: string | null; solicitanteId?: string | null } | null;
+    const state = location.state as { clienteNome?: string; clienteId?: string | null; isAvulso?: boolean; obraId?: string | null; solicitanteId?: string | null; demandaId?: string | null } | null;
     if (!state?.clienteNome) return;
+    if (state.demandaId) demandaIdRef.current = state.demandaId;
     if (state.clienteId && !state.isAvulso) {
       setClienteId(state.clienteId);
       setClienteSearch(state.clienteNome);
@@ -170,21 +173,28 @@ const EmissaoReciboPage = () => {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!clienteId && !clienteAvulso.trim()) { toast.error('Selecione ou digite um cliente.'); return; }
     const validLines = lines.filter(l => l.serviceCode && l.quantity > 0);
     if (validLines.length === 0) { toast.error('Adicione ao menos um serviço.'); return; }
+    const total = validLines.reduce((s, l) => s + l.total, 0);
     const recibo = addRecibo({
       date: new Date().toISOString().slice(0, 10),
       clienteId: clienteId || '',
       clienteAvulso: clienteId ? undefined : clienteAvulso.trim(),
       solicitanteId, obraId,
       lines: validLines,
-      total: validLines.reduce((s, l) => s + l.total, 0),
+      total,
     });
     setLastRecibo(recibo);
     setSaved(true);
     toast.success(`Recibo Nº ${recibo.number} emitido com sucesso!`);
+
+    // Update demanda with recibo value if linked
+    if (demandaIdRef.current) {
+      await supabase.from('demandas').update({ valor_recibo: total } as any).eq('id', demandaIdRef.current);
+      demandaIdRef.current = null;
+    }
   };
 
   const handleNew = () => {

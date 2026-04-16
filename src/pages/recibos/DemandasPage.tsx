@@ -706,7 +706,7 @@ const DemandasPage = () => {
             {completedNotRetirada.length > 0 && (
               <div>
                 <h2 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" /> Concluídas ({completedNotRetirada.length})
+                  <CheckCircle2 className="h-4 w-4 text-muted-foreground" /> Concluídas ({completedNotRetirada.length})
                 </h2>
                 {isMobile ? (
                   <div className="space-y-2">
@@ -714,7 +714,7 @@ const DemandasPage = () => {
                       <div key={d.id} className="border border-border rounded-xl p-3 bg-card space-y-1">
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-2">
-                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
                             <span className="font-medium text-foreground text-sm">{d.cliente_nome}</span>
                           </div>
                           <div className="flex gap-1">
@@ -723,7 +723,10 @@ const DemandasPage = () => {
                           </div>
                         </div>
                         <p className="text-xs text-muted-foreground">{d.servico}</p>
-                        {d.tipo_saida && <Badge className="text-xs bg-primary/15 text-primary">{d.tipo_saida}</Badge>}
+                        <div className="flex flex-wrap gap-1">
+                          {d.tipo_saida && <Badge className="text-xs bg-primary/15 text-primary">{d.tipo_saida}</Badge>}
+                          {d.valor_recibo != null && <Badge className="text-xs bg-green-500/15 text-green-700 dark:text-green-400">R$ {d.valor_recibo.toFixed(2)}</Badge>}
+                        </div>
                         {d.descricao && <p className="text-xs text-muted-foreground">📝 {d.descricao}</p>}
                         <p className="text-xs text-muted-foreground">👤 {getResponsavelName(d.responsavel_id)}</p>
                         {d.concluido_at && <p className="text-xs text-muted-foreground">Concluída em {format(new Date(d.concluido_at), 'dd/MM/yyyy HH:mm')}</p>}
@@ -740,6 +743,7 @@ const DemandasPage = () => {
                             <TableHead className="border-r border-border">Cliente</TableHead>
                             <TableHead className="border-r border-border">Serviço</TableHead>
                             <TableHead className="border-r border-border">Saída</TableHead>
+                            <TableHead className="border-r border-border">Valor Recibo</TableHead>
                             <TableHead className="border-r border-border">Responsável</TableHead>
                             <TableHead className="border-r border-border">Concluída em</TableHead>
                             <TableHead className="w-24">Ações</TableHead>
@@ -750,13 +754,16 @@ const DemandasPage = () => {
                             <TableRow key={d.id}>
                               <TableCell className="border-r border-border">
                                 <div className="flex items-center gap-2">
-                                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                  <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
                                   {d.cliente_nome}
                                 </div>
                               </TableCell>
                               <TableCell className="border-r border-border">{d.servico}</TableCell>
                               <TableCell className="border-r border-border">
                                 {d.tipo_saida ? <Badge className="text-xs bg-primary/15 text-primary">{d.tipo_saida}</Badge> : '—'}
+                              </TableCell>
+                              <TableCell className="border-r border-border">
+                                {d.valor_recibo != null ? `R$ ${d.valor_recibo.toFixed(2)}` : '—'}
                               </TableCell>
                               <TableCell className="border-r border-border">{getResponsavelName(d.responsavel_id)}</TableCell>
                               <TableCell className="border-r border-border">{d.concluido_at ? format(new Date(d.concluido_at), 'dd/MM/yyyy HH:mm') : '—'}</TableCell>

@@ -40,6 +40,7 @@ interface Demanda {
   tipo_saida: string | null;
   retirado: boolean;
   retirado_at: string | null;
+  valor_recibo: number | null;
 }
 
 interface Responsavel {
@@ -162,24 +163,31 @@ const DemandasPage = () => {
   const [filterCliente, setFilterCliente] = useState('');
   const [appliedFilterResp, setAppliedFilterResp] = useState('');
   const [appliedFilterCliente, setAppliedFilterCliente] = useState('');
-  const filtersActive = !!(appliedFilterResp || appliedFilterCliente);
+  const [filterSaida, setFilterSaida] = useState('');
+  const [appliedFilterSaida, setAppliedFilterSaida] = useState('');
+  const filtersActive = !!(appliedFilterResp || appliedFilterCliente || appliedFilterSaida);
 
   const applyFilters = () => {
     setAppliedFilterResp(filterResponsavel);
     setAppliedFilterCliente(filterCliente);
+    setAppliedFilterSaida(filterSaida);
     setFilterOpen(false);
     setActivePageIndex(0);
     setCompletedPageIndex(0);
+    setRetiradaPageIndex(0);
   };
 
   const clearFilters = () => {
     setFilterResponsavel('');
     setFilterCliente('');
+    setFilterSaida('');
     setAppliedFilterResp('');
     setAppliedFilterCliente('');
+    setAppliedFilterSaida('');
     setFilterOpen(false);
     setActivePageIndex(0);
     setCompletedPageIndex(0);
+    setRetiradaPageIndex(0);
   };
 
   const filteredClientes = useMemo(() => {

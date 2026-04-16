@@ -788,7 +788,7 @@ const DemandasPage = () => {
             {completedRetirada.length > 0 && (
               <div>
                 <h2 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
-                  <PackageCheck className="h-4 w-4 text-primary" /> Concluídas e Retiradas ({completedRetirada.length})
+                  <PackageCheck className="h-4 w-4 text-green-600" /> Concluídas e Retiradas ({completedRetirada.length})
                 </h2>
                 {isMobile ? (
                   <div className="space-y-2">
@@ -796,13 +796,16 @@ const DemandasPage = () => {
                       <div key={d.id} className="border border-border rounded-xl p-3 bg-card opacity-50 space-y-1">
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-2">
-                            <PackageCheck className="h-4 w-4 text-primary" />
+                            <PackageCheck className="h-4 w-4 text-green-600" />
                             <span className="font-medium text-foreground text-sm">{d.cliente_nome}</span>
                           </div>
                           <Button variant="ghost" size="sm" onClick={() => handleDelete(d.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                         </div>
                         <p className="text-xs text-muted-foreground">{d.servico}</p>
-                        {d.tipo_saida && <Badge className="text-xs bg-primary/15 text-primary">{d.tipo_saida}</Badge>}
+                        <div className="flex flex-wrap gap-1">
+                          {d.tipo_saida && <Badge className="text-xs bg-primary/15 text-primary">{d.tipo_saida}</Badge>}
+                          {d.valor_recibo != null && <Badge className="text-xs bg-green-500/15 text-green-700 dark:text-green-400">R$ {d.valor_recibo.toFixed(2)}</Badge>}
+                        </div>
                         {d.retirado_at && <p className="text-xs text-muted-foreground">Retirada em {format(new Date(d.retirado_at), 'dd/MM/yyyy HH:mm')}</p>}
                       </div>
                     ))}
@@ -817,6 +820,7 @@ const DemandasPage = () => {
                             <TableHead className="border-r border-border">Cliente</TableHead>
                             <TableHead className="border-r border-border">Serviço</TableHead>
                             <TableHead className="border-r border-border">Saída</TableHead>
+                            <TableHead className="border-r border-border">Valor Recibo</TableHead>
                             <TableHead className="border-r border-border">Retirada em</TableHead>
                             <TableHead className="w-20">Ações</TableHead>
                           </TableRow>
@@ -826,13 +830,16 @@ const DemandasPage = () => {
                             <TableRow key={d.id}>
                               <TableCell className="border-r border-border">
                                 <div className="flex items-center gap-2">
-                                  <PackageCheck className="h-4 w-4 text-primary" />
+                                  <PackageCheck className="h-4 w-4 text-green-600" />
                                   {d.cliente_nome}
                                 </div>
                               </TableCell>
                               <TableCell className="border-r border-border">{d.servico}</TableCell>
                               <TableCell className="border-r border-border">
                                 {d.tipo_saida ? <Badge className="text-xs bg-primary/15 text-primary">{d.tipo_saida}</Badge> : '—'}
+                              </TableCell>
+                              <TableCell className="border-r border-border">
+                                {d.valor_recibo != null ? `R$ ${d.valor_recibo.toFixed(2)}` : '—'}
                               </TableCell>
                               <TableCell className="border-r border-border">{d.retirado_at ? format(new Date(d.retirado_at), 'dd/MM/yyyy HH:mm') : '—'}</TableCell>
                               <TableCell>

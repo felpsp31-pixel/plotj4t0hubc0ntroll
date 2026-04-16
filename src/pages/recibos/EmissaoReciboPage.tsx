@@ -34,11 +34,13 @@ const EmissaoReciboPage = () => {
   const [saved, setSaved] = useState(false);
   const [lastRecibo, setLastRecibo] = useState<typeof recibos[0] | null>(null);
   const [isPago, setIsPago] = useState(false);
+  const demandaIdRef = useRef<string | null>(null);
 
   // Auto-fill client from demandas navigation
   useEffect(() => {
-    const state = location.state as { clienteNome?: string; clienteId?: string | null; isAvulso?: boolean; obraId?: string | null; solicitanteId?: string | null } | null;
+    const state = location.state as { clienteNome?: string; clienteId?: string | null; isAvulso?: boolean; obraId?: string | null; solicitanteId?: string | null; demandaId?: string | null } | null;
     if (!state?.clienteNome) return;
+    if (state.demandaId) demandaIdRef.current = state.demandaId;
     if (state.clienteId && !state.isAvulso) {
       setClienteId(state.clienteId);
       setClienteSearch(state.clienteNome);

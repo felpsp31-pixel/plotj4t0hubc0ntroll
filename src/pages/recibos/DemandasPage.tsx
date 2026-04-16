@@ -140,6 +140,10 @@ const DemandasPage = () => {
   const [confirmCompleteOpen, setConfirmCompleteOpen] = useState(false);
   const [confirmCompleteId, setConfirmCompleteId] = useState<string | null>(null);
 
+  // Post-completion saída dialog
+  const [showSaidaDialog, setShowSaidaDialog] = useState(false);
+  const [selectedSaida, setSelectedSaida] = useState<string | null>(null);
+
   // Post-completion recibo dialog
   const [showReciboButton, setShowReciboButton] = useState(false);
   const [completedDemandaData, setCompletedDemandaData] = useState<Demanda | null>(null);

@@ -245,13 +245,25 @@ const DemandasPage = () => {
     });
   }, [demandas, sortField, sortAsc, appliedFilterResp, appliedFilterCliente]);
 
-  const completedDemandas = useMemo(() => {
+  const completedNotRetirada = useMemo(() => {
     const completed = demandas
       .map(d => ({ ...d, _effectiveStatus: getEffectiveStatus(d) }))
-      .filter(d => d._effectiveStatus === 'concluido')
+      .filter(d => d._effectiveStatus === 'concluido' && !d.retirado)
       .sort((a, b) => {
         const ca = a.concluido_at ? new Date(a.concluido_at).getTime() : 0;
         const cb = b.concluido_at ? new Date(b.concluido_at).getTime() : 0;
+        return cb - ca;
+      });
+    return applyFilterToDemandas(completed);
+  }, [demandas, appliedFilterResp, appliedFilterCliente]);
+
+  const completedRetirada = useMemo(() => {
+    const completed = demandas
+      .map(d => ({ ...d, _effectiveStatus: getEffectiveStatus(d) }))
+      .filter(d => d._effectiveStatus === 'concluido' && d.retirado)
+      .sort((a, b) => {
+        const ca = a.retirado_at ? new Date(a.retirado_at).getTime() : 0;
+        const cb = b.retirado_at ? new Date(b.retirado_at).getTime() : 0;
         return cb - ca;
       });
     return applyFilterToDemandas(completed);

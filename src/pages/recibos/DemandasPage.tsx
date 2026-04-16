@@ -457,6 +457,13 @@ const DemandasPage = () => {
     return '';
   };
 
+  const handleMarkRetirado = async (id: string) => {
+    const { error } = await supabase.from('demandas').update({ retirado: true, retirado_at: new Date().toISOString() }).eq('id', id);
+    if (error) { toast.error('Erro ao marcar como retirado'); return; }
+    toast.success('Demanda marcada como retirada!');
+    fetchAll();
+  };
+
   const handleConfirmComplete = async () => {
     if (!confirmCompleteId) return;
     const demanda = demandas.find(d => d.id === confirmCompleteId);

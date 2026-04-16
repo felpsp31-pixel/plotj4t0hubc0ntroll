@@ -154,6 +154,7 @@ const DemandasPage = () => {
   // Pagination
   const [activePageIndex, setActivePageIndex] = useState(0);
   const [completedPageIndex, setCompletedPageIndex] = useState(0);
+  const [retiradaPageIndex, setRetiradaPageIndex] = useState(0);
 
   // Filters
   const [filterOpen, setFilterOpen] = useState(false);

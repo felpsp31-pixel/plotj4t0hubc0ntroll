@@ -510,6 +510,9 @@ const DemandasPage = () => {
               <Button size="sm" className="w-full" onClick={applyFilters}>Filtrar</Button>
             </PopoverContent>
           </Popover>
+          <Button variant="ghost" size="icon" className="min-h-[40px] min-w-[40px]" title="Pesquisar cliente">
+            <Search className="h-4 w-4" />
+          </Button>
           {isMobile ? (
             <Button onClick={openAdd} size="icon" className="min-h-[40px] min-w-[40px]">
               <Plus className="h-5 w-5" />

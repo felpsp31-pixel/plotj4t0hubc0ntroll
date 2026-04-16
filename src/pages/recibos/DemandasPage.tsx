@@ -228,6 +228,9 @@ const DemandasPage = () => {
     if (appliedFilterCliente) {
       filtered = filtered.filter(d => d.cliente_nome.toLowerCase().includes(appliedFilterCliente.toLowerCase()));
     }
+    if (appliedFilterSaida) {
+      filtered = filtered.filter(d => d.tipo_saida === appliedFilterSaida);
+    }
     return filtered;
   };
 

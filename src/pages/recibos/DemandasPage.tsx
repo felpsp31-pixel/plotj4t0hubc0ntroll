@@ -274,13 +274,18 @@ const DemandasPage = () => {
   const activeTotalPages = Math.max(1, Math.ceil(activeTotal / ITEMS_PER_PAGE));
   const activeSlice = activeDemandas.slice(activePageIndex * ITEMS_PER_PAGE, (activePageIndex + 1) * ITEMS_PER_PAGE);
 
-  const completedTotal = completedDemandas.length;
+  const completedTotal = completedNotRetirada.length;
   const completedTotalPages = Math.max(1, Math.ceil(completedTotal / ITEMS_PER_PAGE));
-  const completedSlice = completedDemandas.slice(completedPageIndex * ITEMS_PER_PAGE, (completedPageIndex + 1) * ITEMS_PER_PAGE);
+  const completedSlice = completedNotRetirada.slice(completedPageIndex * ITEMS_PER_PAGE, (completedPageIndex + 1) * ITEMS_PER_PAGE);
+
+  const retiradaTotal = completedRetirada.length;
+  const retiradaTotalPages = Math.max(1, Math.ceil(retiradaTotal / ITEMS_PER_PAGE));
+  const retiradaSlice = completedRetirada.slice(retiradaPageIndex * ITEMS_PER_PAGE, (retiradaPageIndex + 1) * ITEMS_PER_PAGE);
 
   // Reset page when data changes
   useEffect(() => { setActivePageIndex(0); }, [activeTotal]);
   useEffect(() => { setCompletedPageIndex(0); }, [completedTotal]);
+  useEffect(() => { setRetiradaPageIndex(0); }, [retiradaTotal]);
 
   const fetchAll = async () => {
     setLoading(true);

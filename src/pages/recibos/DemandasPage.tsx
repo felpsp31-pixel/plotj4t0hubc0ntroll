@@ -1146,6 +1146,7 @@ const DemandasPage = () => {
                 isAvulso: !clienteRegistrado,
                 obraId: completedDemandaData?.obra_id || null,
                 solicitanteId: completedDemandaData?.solicitante_id || null,
+                demandaId: completedDemandaData?.id || null,
               } });
             }}>
               <FileText className="h-4 w-4" /> Emitir Recibo

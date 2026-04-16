@@ -1,5 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { useRecibos } from '@/contexts/RecibosContext';
 import Combobox from '@/components/recibos/Combobox';
 import { Button } from '@/components/ui/button';

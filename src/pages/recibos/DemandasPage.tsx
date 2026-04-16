@@ -140,6 +140,10 @@ const DemandasPage = () => {
   const [confirmCompleteOpen, setConfirmCompleteOpen] = useState(false);
   const [confirmCompleteId, setConfirmCompleteId] = useState<string | null>(null);
 
+  // Post-completion saída dialog
+  const [showSaidaDialog, setShowSaidaDialog] = useState(false);
+  const [selectedSaida, setSelectedSaida] = useState<string | null>(null);
+
   // Post-completion recibo dialog
   const [showReciboButton, setShowReciboButton] = useState(false);
   const [completedDemandaData, setCompletedDemandaData] = useState<Demanda | null>(null);
@@ -441,7 +445,8 @@ const DemandasPage = () => {
     setConfirmCompleteOpen(false);
     setConfirmCompleteId(null);
     if (demanda) setCompletedDemandaData({ ...demanda });
-    setShowReciboButton(true);
+    setSelectedSaida(null);
+    setShowSaidaDialog(true);
     fetchAll();
   };
 
@@ -947,6 +952,40 @@ const DemandasPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Saída dialog */}
+      <Dialog open={showSaidaDialog} onOpenChange={setShowSaidaDialog}>
+        <DialogContent className="sm:max-w-sm text-center">
+          <DialogHeader>
+            <DialogTitle>Tipo de saída</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground mb-4">Selecione o tipo de saída desta demanda:</p>
+          <div className="flex flex-col gap-2">
+            {['Entrega', 'Retirada Grande', 'Retirada Pequena'].map(option => (
+              <Button
+                key={option}
+                variant={selectedSaida === option ? 'default' : 'outline'}
+                className="w-full"
+                onClick={() => setSelectedSaida(option)}
+              >
+                {option}
+              </Button>
+            ))}
+          </div>
+          <DialogFooter className="mt-4">
+            <Button
+              className="w-full"
+              disabled={!selectedSaida}
+              onClick={() => {
+                setShowSaidaDialog(false);
+                setShowReciboButton(true);
+              }}
+            >
+              Continuar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Emitir Recibo overlay */}
       <Dialog open={showReciboButton} onOpenChange={setShowReciboButton}>

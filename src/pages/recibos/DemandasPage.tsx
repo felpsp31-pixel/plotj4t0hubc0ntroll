@@ -37,6 +37,9 @@ interface Demanda {
   concluido_at: string | null;
   obra_id: string | null;
   solicitante_id: string | null;
+  tipo_saida: string | null;
+  retirado: boolean;
+  retirado_at: string | null;
 }
 
 interface Responsavel {

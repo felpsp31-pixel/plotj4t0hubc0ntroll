@@ -551,6 +551,17 @@ const DemandasPage = () => {
                   className="h-8 text-xs"
                 />
               </div>
+              <div>
+                <Label className="text-xs">Tipo de Saída</Label>
+                <Select value={filterSaida} onValueChange={setFilterSaida}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Todos" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Entrega">Entrega</SelectItem>
+                    <SelectItem value="Retirada Grande">Retirada Grande</SelectItem>
+                    <SelectItem value="Retirada Pequena">Retirada Pequena</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Button size="sm" className="w-full" onClick={applyFilters}>Filtrar</Button>
             </PopoverContent>
           </Popover>

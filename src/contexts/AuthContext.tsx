@@ -97,11 +97,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const normalizedPassword = password.trim();
       if (!normalizedPassword) return false;
 
-      const { data, error } = await supabase.functions.invoke('validate-password', {
-        body: { password: normalizedPassword, type: 'access_password' },
-      });
-
-      if (error || !data?.valid) return false;
+      // Cache hit: revalida sem chamar a edge function
+      const cached = await isPasswordCached('access_password', normalizedPassword);
+      if (!cached) {
+        const { data, error } = await supabase.functions.invoke('validate-password', {
+          body: { password: normalizedPassword, type: 'access_password' },
+        });
+        if (error || !data?.valid) return false;
+        await cachePassword('access_password', normalizedPassword);
+      }
 
       await supabase.auth.signInAnonymously();
       setSession();

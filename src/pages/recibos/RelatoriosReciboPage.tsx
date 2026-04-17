@@ -18,20 +18,33 @@ const formatDate = (date: string) => {
 };
 
 const RelatoriosReciboPage = () => {
-  const { recibos, clientes, empresaInfo, deleteRecibo, loading } = useRecibos();
+  const { recibos, clientes, obras, empresaInfo, deleteRecibo, loading } = useRecibos();
   const [clienteFilter, setClienteFilter] = useState('');
+  const [obraFilter, setObraFilter] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [sort, setSort] = useState<SortKey>('date-desc');
 
+  // Quando o cliente muda, reseta a obra (evita filtro inválido entre clientes)
+  const handleClienteChange = (value: string) => {
+    setClienteFilter(value);
+    setObraFilter('');
+  };
+
+  const obrasDisponiveis = useMemo(() => {
+    if (!clienteFilter) return obras;
+    return obras.filter(o => o.clienteId === clienteFilter);
+  }, [obras, clienteFilter]);
+
   const filtered = useMemo(() => {
     return recibos.filter(r => {
       if (clienteFilter && r.clienteId !== clienteFilter) return false;
+      if (obraFilter && r.obraId !== obraFilter) return false;
       if (startDate && r.date < startDate) return false;
       if (endDate && r.date > endDate) return false;
       return true;
     });
-  }, [recibos, clienteFilter, startDate, endDate]);
+  }, [recibos, clienteFilter, obraFilter, startDate, endDate]);
 
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
@@ -54,10 +67,11 @@ const RelatoriosReciboPage = () => {
   const totalPeriodo = filtered.reduce((s, r) => s + r.total, 0);
 
   const exportCsv = () => {
-    const header = 'Nº,Data,Cliente,Valor\n';
+    const header = 'Nº,Data,Cliente,Obra,Valor\n';
     const rows = sorted.map(r => {
       const nome = clientes.find(c => c.id === r.clienteId)?.name ?? '';
-      return `${r.number},${formatDate(r.date)},"${nome}",${r.total.toFixed(2)}`;
+      const obraNome = obras.find(o => o.id === r.obraId)?.name ?? '';
+      return `${r.number},${formatDate(r.date)},"${nome}","${obraNome}",${r.total.toFixed(2)}`;
     }).join('\n');
     const blob = new Blob([header + rows], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -76,11 +90,12 @@ const RelatoriosReciboPage = () => {
     doc.text(`${empresaInfo.name} — Relatório de Recibos`, 14, 20);
     autoTable(doc, {
       startY: 30,
-      head: [['Nº', 'Data', 'Cliente', 'Valor']],
+      head: [['Nº', 'Data', 'Cliente', 'Obra', 'Valor']],
       body: sorted.map(r => [
         r.number,
         formatDate(r.date),
         clientes.find(c => c.id === r.clienteId)?.name ?? '',
+        obras.find(o => o.id === r.obraId)?.name ?? '',
         r.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
       ]),
     });
@@ -101,8 +116,17 @@ const RelatoriosReciboPage = () => {
             <Combobox
               options={[{ value: '', label: 'Todos' }, ...clientes.map(c => ({ value: c.id, label: c.name }))]}
               value={clienteFilter}
-              onValueChange={setClienteFilter}
+              onValueChange={handleClienteChange}
               placeholder="Todos os clientes"
+            />
+          </div>
+          <div className="w-full sm:w-56">
+            <label className="text-sm font-medium text-foreground">Obra</label>
+            <Combobox
+              options={[{ value: '', label: 'Todas' }, ...obrasDisponiveis.map(o => ({ value: o.id, label: o.name }))]}
+              value={obraFilter}
+              onValueChange={setObraFilter}
+              placeholder={clienteFilter ? 'Todas as obras' : 'Todas as obras'}
             />
           </div>
           <div className="w-full sm:w-auto">
@@ -132,7 +156,7 @@ const RelatoriosReciboPage = () => {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow><TableHead>Nº</TableHead><TableHead>Data</TableHead><TableHead>Cliente</TableHead><TableHead>Valor</TableHead><TableHead className="w-10"></TableHead></TableRow>
+              <TableRow><TableHead>Nº</TableHead><TableHead>Data</TableHead><TableHead>Cliente</TableHead><TableHead>Obra</TableHead><TableHead>Valor</TableHead><TableHead className="w-10"></TableHead></TableRow>
             </TableHeader>
             <TableBody>
               {sorted.map(r => (
@@ -140,6 +164,7 @@ const RelatoriosReciboPage = () => {
                   <TableCell className="text-foreground">{r.number}</TableCell>
                   <TableCell className="text-foreground">{formatDate(r.date)}</TableCell>
                   <TableCell className="text-foreground">{clientes.find(c => c.id === r.clienteId)?.name ?? '—'}</TableCell>
+                  <TableCell className="text-foreground">{obras.find(o => o.id === r.obraId)?.name ?? '—'}</TableCell>
                   <TableCell className="text-foreground">{r.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</TableCell>
                   <TableCell>
                     <AlertDialog>
@@ -163,7 +188,7 @@ const RelatoriosReciboPage = () => {
                 </TableRow>
               ))}
               {sorted.length === 0 && (
-                <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Nenhum recibo encontrado</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Nenhum recibo encontrado</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

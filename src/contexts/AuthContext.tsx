@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useRef, useCallback, type ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { isPasswordCached, cachePassword, clearPasswordCache } from '@/lib/passwordCache';
 
 const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours
 const SESSION_KEY = 'app_session';
@@ -47,6 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = useCallback(async () => {
     localStorage.removeItem(SESSION_KEY);
+    clearPasswordCache();
     setAuthenticated(false);
     try {
       await supabase.auth.signOut();
@@ -95,11 +97,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const normalizedPassword = password.trim();
       if (!normalizedPassword) return false;
 
-      const { data, error } = await supabase.functions.invoke('validate-password', {
-        body: { password: normalizedPassword, type: 'access_password' },
-      });
-
-      if (error || !data?.valid) return false;
+      // Cache hit: revalida sem chamar a edge function
+      const cached = await isPasswordCached('access_password', normalizedPassword);
+      if (!cached) {
+        const { data, error } = await supabase.functions.invoke('validate-password', {
+          body: { password: normalizedPassword, type: 'access_password' },
+        });
+        if (error || !data?.valid) return false;
+        await cachePassword('access_password', normalizedPassword);
+      }
 
       await supabase.auth.signInAnonymously();
       setSession();

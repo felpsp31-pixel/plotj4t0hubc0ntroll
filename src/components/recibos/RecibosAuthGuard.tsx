@@ -21,6 +21,10 @@ const RecibosAuthGuard = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (!authed) prewarmValidatePassword();
+  }, [authed]);
+
   if (authed) return <>{children}</>;
 
   const handleSubmit = async (e: React.FormEvent) => {

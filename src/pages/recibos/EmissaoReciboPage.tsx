@@ -8,8 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import type { LinhaRecibo } from '@/types/recibos';
 
 const formatDate = (date: string) => {
@@ -202,9 +200,13 @@ const EmissaoReciboPage = () => {
     setLines(emptyLines()); setSaved(false); setLastRecibo(null); setIsPago(false);
   };
 
-  const generatePdf = () => {
+  const generatePdf = async () => {
     const r = lastRecibo;
     if (!r) return;
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF();
     const cliente = clientes.find(c => c.id === r.clienteId);
     const solicitante = solicitantes.find(s => s.id === r.solicitanteId);
@@ -260,13 +262,13 @@ const EmissaoReciboPage = () => {
     return doc;
   };
 
-  const handleExportPdf = () => {
-    const doc = generatePdf();
+  const handleExportPdf = async () => {
+    const doc = await generatePdf();
     if (doc) doc.save(`recibo_${lastRecibo!.number}.pdf`);
   };
 
-  const handlePrint = () => {
-    const doc = generatePdf();
+  const handlePrint = async () => {
+    const doc = await generatePdf();
     if (doc) {
       const blob = doc.output('blob');
       const url = URL.createObjectURL(blob);

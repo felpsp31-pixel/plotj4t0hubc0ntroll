@@ -4,8 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { FileText, Users, Download } from 'lucide-react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 const formatDate = (date: string) => {
   if (!date) return '—';
@@ -18,7 +16,11 @@ const DashboardReciboPage = () => {
 
   const last10 = [...recibos].sort((a, b) => Number(b.number) - Number(a.number)).slice(0, 10);
 
-  const downloadPdf = (r: typeof recibos[0]) => {
+  const downloadPdf = async (r: typeof recibos[0]) => {
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF();
     const cliente = clientes.find(c => c.id === r.clienteId);
     const solicitante = solicitantes.find(s => s.id === r.solicitanteId);

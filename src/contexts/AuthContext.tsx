@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, useRef, useCallback, ty
 import { supabase } from '@/integrations/supabase/client';
 import { isPasswordCached, cachePassword, clearPasswordCache } from '@/lib/passwordCache';
 
-const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours
+const SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24h (1 dia)
 const SESSION_KEY = 'app_session';
 
 interface AuthContextType {
@@ -55,12 +55,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch { /* ignore */ }
   }, []);
 
-  const resetTimer = useCallback(() => {
+  const scheduleExpiry = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    if (authenticated) {
-      setSession(); // refresh expiry
-      timeoutRef.current = setTimeout(signOut, SESSION_TIMEOUT);
-    }
+    if (!authenticated) return;
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) return;
+      const { expiresAt } = JSON.parse(raw);
+      const remaining = Number(expiresAt) - Date.now();
+      if (remaining <= 0) {
+        signOut();
+      } else {
+        timeoutRef.current = setTimeout(signOut, remaining);
+      }
+    } catch { /* ignore */ }
   }, [authenticated, signOut]);
 
   useEffect(() => {
@@ -83,14 +91,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (!authenticated) return;
-    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
-    events.forEach((e) => window.addEventListener(e, resetTimer));
-    resetTimer();
+    scheduleExpiry();
     return () => {
-      events.forEach((e) => window.removeEventListener(e, resetTimer));
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
-  }, [authenticated, resetTimer]);
+  }, [authenticated, scheduleExpiry]);
 
   const login = useCallback(async (password: string): Promise<boolean> => {
     try {

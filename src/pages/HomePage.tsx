@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { isPasswordCached, cachePassword } from '@/lib/passwordCache';
 import ThemeToggle from '@/components/ThemeToggle';
 
 const HomePage = () => {

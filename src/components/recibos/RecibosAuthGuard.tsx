@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { prewarmValidatePassword } from '@/lib/prewarm';
+import { isPasswordCached, cachePassword } from '@/lib/passwordCache';
 
 const RecibosAuthGuard = ({ children }: { children: ReactNode }) => {
   const [authed, setAuthed] = useState(() => {

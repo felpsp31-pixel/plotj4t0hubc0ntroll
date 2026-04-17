@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useRef, useCallback, type ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { isPasswordCached, cachePassword, clearPasswordCache } from '@/lib/passwordCache';
 
 const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours
 const SESSION_KEY = 'app_session';

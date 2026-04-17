@@ -35,17 +35,21 @@ const RecibosAuthGuard = ({ children }: { children: ReactNode }) => {
 
     setLoading(true);
     try {
-      const { data, error: fnError } = await supabase.functions.invoke('validate-password', {
-        body: { password: trimmed, type: 'reports_password' },
-      });
-
-      if (fnError || !data?.valid) {
-        setError(true);
-      } else {
-        const token = btoa(`recibos:${Date.now()}:${Math.random().toString(36).slice(2)}`);
-        sessionStorage.setItem('recibos_auth', token);
-        setAuthed(true);
+      const cached = await isPasswordCached('reports_password', trimmed);
+      if (!cached) {
+        const { data, error: fnError } = await supabase.functions.invoke('validate-password', {
+          body: { password: trimmed, type: 'reports_password' },
+        });
+        if (fnError || !data?.valid) {
+          setError(true);
+          return;
+        }
+        await cachePassword('reports_password', trimmed);
       }
+
+      const token = btoa(`recibos:${Date.now()}:${Math.random().toString(36).slice(2)}`);
+      sessionStorage.setItem('recibos_auth', token);
+      setAuthed(true);
     } catch {
       setError(true);
     } finally {

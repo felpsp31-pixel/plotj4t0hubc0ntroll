@@ -1,8 +1,9 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { Lock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+import { prewarmValidatePassword } from '@/lib/prewarm';
 
 const RecibosAuthGuard = ({ children }: { children: ReactNode }) => {
   const [authed, setAuthed] = useState(() => {
@@ -19,6 +20,10 @@ const RecibosAuthGuard = ({ children }: { children: ReactNode }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!authed) prewarmValidatePassword();
+  }, [authed]);
 
   if (authed) return <>{children}</>;
 

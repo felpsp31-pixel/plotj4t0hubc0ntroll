@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { prewarmValidatePassword } from '@/lib/prewarm';
 import { FileText, Lock, LogOut, ClipboardList } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,10 @@ const HomePage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    prewarmValidatePassword();
+  }, []);
 
   const handleFinanceiroAuth = async (e: React.FormEvent) => {
     e.preventDefault();

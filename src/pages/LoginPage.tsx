@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { prewarmValidatePassword } from '@/lib/prewarm';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -23,6 +24,10 @@ const LoginPage = () => {
     const diff = Math.ceil((until - Date.now()) / 1000);
     return diff > 0 ? diff : 0;
   });
+
+  useEffect(() => {
+    prewarmValidatePassword();
+  }, []);
 
   useEffect(() => {
     if (!blocked) return;

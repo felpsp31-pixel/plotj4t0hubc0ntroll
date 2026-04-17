@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -8,20 +9,30 @@ import { RecibosProvider } from "@/contexts/RecibosContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SystemGuard from "@/components/SystemGuard";
 import FinanceiroGuard from "@/components/FinanceiroGuard";
-import FinanceiroLayout from "@/components/FinanceiroLayout";
-import RecibosLayout from "@/components/recibos/RecibosLayout";
+
+// Eager-load light pages (login + home) for instant first paint
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
-import Dashboard from "./pages/Dashboard";
-import NotFound from "./pages/NotFound";
-import EmissaoReciboPage from "./pages/recibos/EmissaoReciboPage";
-import ClientesReciboPage from "./pages/recibos/ClientesReciboPage";
-import ServicosReciboPage from "./pages/recibos/ServicosReciboPage";
-import DashboardReciboPage from "./pages/recibos/DashboardReciboPage";
-import RelatoriosReciboPage from "./pages/recibos/RelatoriosReciboPage";
-import DemandasPage from "./pages/recibos/DemandasPage";
+
+// Lazy-load heavy pages and layouts (jspdf, recharts, kanban, etc.)
+const FinanceiroLayout = lazy(() => import("@/components/FinanceiroLayout"));
+const RecibosLayout = lazy(() => import("@/components/recibos/RecibosLayout"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const EmissaoReciboPage = lazy(() => import("./pages/recibos/EmissaoReciboPage"));
+const ClientesReciboPage = lazy(() => import("./pages/recibos/ClientesReciboPage"));
+const ServicosReciboPage = lazy(() => import("./pages/recibos/ServicosReciboPage"));
+const DashboardReciboPage = lazy(() => import("./pages/recibos/DashboardReciboPage"));
+const RelatoriosReciboPage = lazy(() => import("./pages/recibos/RelatoriosReciboPage"));
+const DemandasPage = lazy(() => import("./pages/recibos/DemandasPage"));
 
 const queryClient = new QueryClient();
+
+const PageFallback = () => (
+  <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -31,35 +42,37 @@ const App = () => (
       <AuthProvider>
         <RecibosProvider>
           <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
+            <Suspense fallback={<PageFallback />}>
+              <Routes>
+                <Route path="/login" element={<LoginPage />} />
 
-              {/* All routes below require system auth */}
-              <Route element={<SystemGuard />}>
-                <Route path="/" element={<HomePage />} />
+                {/* All routes below require system auth */}
+                <Route element={<SystemGuard />}>
+                  <Route path="/" element={<HomePage />} />
 
-                {/* Recibos module */}
-                <Route path="/recibos" element={<RecibosLayout />}>
-                  <Route index element={<EmissaoReciboPage />} />
-                  <Route path="clientes" element={<ClientesReciboPage />} />
-                  <Route path="servicos" element={<ServicosReciboPage />} />
-                  <Route path="dashboard" element={<DashboardReciboPage />} />
-                  <Route path="relatorios" element={<RelatoriosReciboPage />} />
-                </Route>
-
-                {/* Demandas module */}
-                <Route path="/demandas" element={<DemandasPage />} />
-
-                {/* Financial module */}
-                <Route path="/financeiro" element={<FinanceiroGuard />}>
-                  <Route element={<FinanceiroLayout />}>
-                    <Route index element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                  {/* Recibos module */}
+                  <Route path="/recibos" element={<RecibosLayout />}>
+                    <Route index element={<EmissaoReciboPage />} />
+                    <Route path="clientes" element={<ClientesReciboPage />} />
+                    <Route path="servicos" element={<ServicosReciboPage />} />
+                    <Route path="dashboard" element={<DashboardReciboPage />} />
+                    <Route path="relatorios" element={<RelatoriosReciboPage />} />
                   </Route>
-                </Route>
 
-                <Route path="*" element={<NotFound />} />
-              </Route>
-            </Routes>
+                  {/* Demandas module */}
+                  <Route path="/demandas" element={<DemandasPage />} />
+
+                  {/* Financial module */}
+                  <Route path="/financeiro" element={<FinanceiroGuard />}>
+                    <Route element={<FinanceiroLayout />}>
+                      <Route index element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                    </Route>
+                  </Route>
+
+                  <Route path="*" element={<NotFound />} />
+                </Route>
+              </Routes>
+            </Suspense>
           </BrowserRouter>
         </RecibosProvider>
       </AuthProvider>

@@ -2,9 +2,6 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CalendarIcon, Download, FileSpreadsheet } from 'lucide-react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -51,7 +48,11 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
     });
   };
 
-  const generatePdf = () => {
+  const generatePdf = async () => {
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF();
     let yPos = 20;
 
@@ -140,7 +141,8 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
     setOpen(false);
   };
 
-  const generateExcel = () => {
+  const generateExcel = async () => {
+    const XLSX = await import('xlsx');
     const wb = XLSX.utils.book_new();
 
     const addSheet = (type: 'client' | 'supplier', sheetName: string) => {
@@ -174,9 +176,9 @@ const ExportResumoButton = ({ entities, invoices }: ExportResumoButtonProps) => 
     setOpen(false);
   };
 
-  const handleExport = (exportFormat: ExportFormat) => {
-    if (exportFormat === 'pdf') generatePdf();
-    else generateExcel();
+  const handleExport = async (exportFormat: ExportFormat) => {
+    if (exportFormat === 'pdf') await generatePdf();
+    else await generateExcel();
   };
 
   return (

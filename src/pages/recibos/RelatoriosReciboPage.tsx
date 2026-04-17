@@ -8,8 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 type SortKey = 'date-desc' | 'date-asc' | 'value-desc' | 'value-asc';
 
@@ -68,7 +66,11 @@ const RelatoriosReciboPage = () => {
     URL.revokeObjectURL(url);
   };
 
-  const exportPdf = () => {
+  const exportPdf = async () => {
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF();
     doc.setFontSize(14);
     doc.text(`${empresaInfo.name} — Relatório de Recibos`, 14, 20);

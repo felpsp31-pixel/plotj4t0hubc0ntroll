@@ -48,6 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = useCallback(async () => {
     localStorage.removeItem(SESSION_KEY);
+    clearPasswordCache();
     setAuthenticated(false);
     try {
       await supabase.auth.signOut();

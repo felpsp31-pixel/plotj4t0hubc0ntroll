@@ -264,6 +264,37 @@ const Dashboard = () => {
             {sidebarCollapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
           </button>
           <div className="flex-1" />
+          <Dialog open={generateOpen} onOpenChange={setGenerateOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1">
+                <CalendarClock className="h-4 w-4" />
+                <span className="hidden sm:inline">Gerar lançamentos do mês</span>
+                <span className="sm:hidden">Gerar mês</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle>Gerar lançamentos do mês</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-2">
+                <div>
+                  <Label>Mês de referência</Label>
+                  <Input
+                    type="month"
+                    value={generateMonth}
+                    onChange={e => setGenerateMonth(e.target.value)}
+                    className="text-base mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Cria um lançamento por cliente no Financeiro com a soma dos recibos do mês selecionado. Clientes que já possuírem fatura para este mês são ignorados.
+                  </p>
+                </div>
+                <Button className="w-full min-h-[44px]" onClick={handleGenerateMonth} disabled={generating}>
+                  {generating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Gerando…</> : 'Gerar lançamentos'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
           {sidebarTab === 'suppliers' && (
             <Dialog open={supplierDialogOpen} onOpenChange={setSupplierDialogOpen}>
               <DialogTrigger asChild>

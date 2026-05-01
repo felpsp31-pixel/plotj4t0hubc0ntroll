@@ -1,63 +1,34 @@
+# Adicionar logo da empresa ao PDF do recibo
 
+## Contexto
+- A logo é configurada nas configurações (`RecibosLayout.tsx`) e armazenada como **data URL base64** no campo `empresaInfo.logo` (tabela `empresa_info`).
+- Hoje o PDF gerado em `src/pages/recibos/EmissaoReciboPage.tsx` (`generatePdf`) escreve apenas o texto do cabeçalho (nome, CNPJ, endereço, telefone) — a logo é ignorada.
 
-# Plano: Modo claro/escuro + Serviços específicos por cliente
+## Mudança
+Editar **somente** `src/pages/recibos/EmissaoReciboPage.tsx`, função `generatePdf`:
 
-## Parte 1 — Alternância entre modo claro e escuro
+1. Se `empresaInfo.logo` existir (string não vazia, começa com `data:image/`):
+   - Detectar o formato a partir do prefixo do data URL (`PNG`, `JPEG`, `WEBP`).
+   - Adicionar a imagem no topo direito do PDF via `doc.addImage(empresaInfo.logo, format, x, y, w, h)`.
+   - Tamanho fixo proporcional: caixa de ~35x20mm posicionada em `x=160, y=12` (canto superior direito da página A4 retrato), usando `object-fit: contain` lógico (passar largura/altura máximas e deixar jsPDF preservar proporção via cálculo manual a partir de uma `Image()` carregada).
+2. Se não houver logo, manter exatamente o layout atual (sem espaço vazio).
+3. O cabeçalho de texto (nome, CNPJ, endereço) permanece à esquerda nas mesmas coordenadas — a logo fica ao lado, não desloca o restante.
 
-O projeto ja usa `next-themes` e `darkMode: "class"` no Tailwind. Tem variáveis CSS para `.dark` definidas no `index.css`. Falta apenas o `ThemeProvider` e um botão de alternância.
+## Detalhes técnicos
+- Carregar dimensões reais da imagem com:
+  ```ts
+  const img = new Image();
+  img.src = empresaInfo.logo;
+  await new Promise(res => { img.onload = res; });
+  const maxW = 40, maxH = 22;
+  const ratio = Math.min(maxW / img.width, maxH / img.height);
+  const w = img.width * ratio, h = img.height * ratio;
+  doc.addImage(empresaInfo.logo, fmt, 200 - w - 14, 12, w, h);
+  ```
+- `fmt` derivado do prefixo: `data:image/png` → `'PNG'`, `jpeg|jpg` → `'JPEG'`, `webp` → `'WEBP'`.
+- Wrap em `try/catch` para que falha de logo nunca impeça a geração do PDF.
+- Aplica-se tanto a `handleExportPdf` quanto a `handlePrint` (ambos usam `generatePdf`).
 
-### Alterações
-
-**1. `src/main.tsx`** — Envolver o `<App />` com `ThemeProvider` do `next-themes` (attribute="class", defaultTheme="dark", storageKey="theme").
-
-**2. `src/index.css`** — Adicionar variáveis para o modo claro (`:root` atual é escuro). Mover as variáveis atuais do `:root` para `.dark` e criar variáveis claras no `:root`.
-
-**3. Botão de alternância** — Adicionar um botão Sun/Moon nos dois layouts:
-- `src/components/recibos/RecibosLayout.tsx` — No rodapé da sidebar, ao lado de "Configurações"
-- `src/components/FinanceiroLayout.tsx` — No header ou sidebar equivalente
-- `src/pages/HomePage.tsx` — Canto superior
-
-## Parte 2 — Serviços específicos por cliente
-
-Cada cliente poderá ter serviços com valores personalizados que só aparecem ao emitir recibos para aquele cliente.
-
-### Alterações
-
-**1. Migração no banco** — Criar tabela `client_services`:
-- `id uuid PK default gen_random_uuid()`
-- `cliente_id uuid NOT NULL` (referência lógica a `clientes`)
-- `code text NOT NULL`
-- `description text NOT NULL`
-- `unit_price numeric NOT NULL DEFAULT 0`
-- RLS: ALL para anon/authenticated
-
-**2. Tipo e contexto**:
-- `src/types/recibos.ts` — Adicionar tipo `ClientService` com `id, clienteId, code, description, unitPrice`
-- `src/contexts/RecibosContext.tsx` — Adicionar estado `clientServices`, fetch na inicialização, funções `addClientService`, `updateClientService`, `deleteClientService`
-
-**3. UI de cadastro** (`src/pages/recibos/ClientesReciboPage.tsx`):
-- Adicionar nova aba "Serviços do Cliente" no `Tabs` existente
-- Formulário com Combobox de cliente + código + descrição + valor unitário
-- Tabela listando serviços filtrados pelo cliente selecionado
-- CRUD completo (adicionar, editar, excluir)
-
-**4. Emissão do recibo** (`src/pages/recibos/EmissaoReciboPage.tsx`):
-- Quando um cliente é selecionado, o Combobox de serviços nas linhas deve mostrar **tanto** os serviços globais **quanto** os serviços específicos daquele cliente
-- Serviços do cliente aparecem com indicação visual (ex: prefixo ou cor diferente)
-- O valor unitário usado é o do serviço específico do cliente (não o global)
-
-## Resumo de arquivos
-
-| Arquivo | Ação |
-|---|---|
-| `src/main.tsx` | Adicionar ThemeProvider |
-| `src/index.css` | Reorganizar variáveis CSS (claro no :root, escuro em .dark) |
-| `src/components/recibos/RecibosLayout.tsx` | Botão Sun/Moon |
-| `src/components/FinanceiroLayout.tsx` | Botão Sun/Moon |
-| `src/pages/HomePage.tsx` | Botão Sun/Moon |
-| `supabase/migrations/` | Criar tabela `client_services` |
-| `src/types/recibos.ts` | Tipo `ClientService` |
-| `src/contexts/RecibosContext.tsx` | CRUD de `clientServices` |
-| `src/pages/recibos/ClientesReciboPage.tsx` | Nova aba "Serviços do Cliente" |
-| `src/pages/recibos/EmissaoReciboPage.tsx` | Mesclar serviços globais + do cliente no Combobox |
-
+## Fora de escopo
+- Não alterar o upload/armazenamento da logo.
+- Não alterar visual da tela (preview HTML do recibo).

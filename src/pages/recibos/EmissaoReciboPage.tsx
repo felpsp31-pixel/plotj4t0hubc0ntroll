@@ -212,6 +212,29 @@ const EmissaoReciboPage = () => {
     const solicitante = solicitantes.find(s => s.id === r.solicitanteId);
     const obra = obras.find(o => o.id === r.obraId);
 
+    // Logo no canto superior direito (se configurada)
+    if (empresaInfo.logo && empresaInfo.logo.startsWith('data:image/')) {
+      try {
+        const mimeMatch = empresaInfo.logo.match(/^data:image\/([a-zA-Z]+)/);
+        const ext = (mimeMatch?.[1] || 'png').toLowerCase();
+        const fmt = ext === 'jpg' || ext === 'jpeg' ? 'JPEG' : ext === 'webp' ? 'WEBP' : 'PNG';
+        const img = new Image();
+        img.src = empresaInfo.logo;
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error('logo load failed'));
+        });
+        const maxW = 40, maxH = 22;
+        const ratio = Math.min(maxW / img.width, maxH / img.height);
+        const w = img.width * ratio;
+        const h = img.height * ratio;
+        const pageW = doc.internal.pageSize.getWidth();
+        doc.addImage(empresaInfo.logo, fmt, pageW - w - 14, 12, w, h);
+      } catch (e) {
+        console.warn('Falha ao adicionar logo ao PDF:', e);
+      }
+    }
+
     doc.setFontSize(16);
     doc.text(empresaInfo.name, 14, 20);
     doc.setFontSize(9);

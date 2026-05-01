@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { LogOut, Receipt, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { LogOut, Receipt, PanelLeftClose, PanelLeftOpen, CalendarClock, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import ImportNotaFiscalDialog from '@/components/ImportNotaFiscalDialog';
 import { useRecibos } from '@/contexts/RecibosContext';
@@ -36,6 +36,16 @@ const Dashboard = () => {
 
   const [supplierDialogOpen, setSupplierDialogOpen] = useState(false);
   const [supplierForm, setSupplierForm] = useState({ name: '', document: '', phone: '', email: '' });
+
+  // "Gerar lançamentos do mês" dialog
+  const defaultMonth = (() => {
+    const d = new Date();
+    const prev = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+    return `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`;
+  })();
+  const [generateOpen, setGenerateOpen] = useState(false);
+  const [generateMonth, setGenerateMonth] = useState(defaultMonth);
+  const [generating, setGenerating] = useState(false);
 
   const [casualClients, setCasualClients] = useState<Entity[]>([]);
 
@@ -77,7 +87,7 @@ const Dashboard = () => {
     return merged;
   }, [suppliers, clientes, casualClients]);
 
-  const { invoices, handleMarkPaid, handleDelete, handleUpdate, handleAdd } = useFinancialInvoices();
+  const { invoices, handleMarkPaid, handleDelete, handleUpdate, handleAdd, refetch } = useFinancialInvoices();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState(300);
@@ -111,6 +121,35 @@ const Dashboard = () => {
       setSupplierForm({ name: '', document: '', phone: '', email: '' });
       setSupplierDialogOpen(false);
       toast.success('Fornecedor cadastrado com sucesso!');
+    }
+  };
+
+  const handleGenerateMonth = async () => {
+    if (!/^\d{4}-\d{2}$/.test(generateMonth)) {
+      toast.error('Selecione um mês válido.');
+      return;
+    }
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-monthly-invoices', {
+        body: { month: generateMonth },
+      });
+      if (error) throw error;
+      const inseridos = (data?.inseridos ?? 0) + (data?.legacyInseridos ?? 0);
+      const ja = data?.jaExistiam ?? 0;
+      if (inseridos > 0) {
+        toast.success(`${inseridos} lançamento(s) gerado(s) para ${data?.referenceMonth ?? generateMonth}.`);
+      } else if (ja > 0) {
+        toast.info(`Nenhum novo lançamento — ${ja} cliente(s) já possuíam fatura para este mês.`);
+      } else {
+        toast.info('Nenhum recibo encontrado para este mês.');
+      }
+      await refetch();
+      setGenerateOpen(false);
+    } catch (e: any) {
+      toast.error(`Falha ao gerar lançamentos: ${e?.message ?? 'erro desconhecido'}`);
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -225,6 +264,37 @@ const Dashboard = () => {
             {sidebarCollapsed ? <PanelLeftOpen className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
           </button>
           <div className="flex-1" />
+          <Dialog open={generateOpen} onOpenChange={setGenerateOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1">
+                <CalendarClock className="h-4 w-4" />
+                <span className="hidden sm:inline">Gerar lançamentos do mês</span>
+                <span className="sm:hidden">Gerar mês</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle>Gerar lançamentos do mês</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-2">
+                <div>
+                  <Label>Mês de referência</Label>
+                  <Input
+                    type="month"
+                    value={generateMonth}
+                    onChange={e => setGenerateMonth(e.target.value)}
+                    className="text-base mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Cria um lançamento por cliente no Financeiro com a soma dos recibos do mês selecionado. Clientes que já possuírem fatura para este mês são ignorados.
+                  </p>
+                </div>
+                <Button className="w-full min-h-[44px]" onClick={handleGenerateMonth} disabled={generating}>
+                  {generating ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Gerando…</> : 'Gerar lançamentos'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
           {sidebarTab === 'suppliers' && (
             <Dialog open={supplierDialogOpen} onOpenChange={setSupplierDialogOpen}>
               <DialogTrigger asChild>

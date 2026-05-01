@@ -1,13 +1,23 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRecibos } from '@/contexts/RecibosContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import Combobox from '@/components/recibos/Combobox';
-import { Plus, Pencil, Trash2, Check, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Check, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
+
+const PAGE_SIZE = 10;
 
 const DeleteButton = ({ onConfirm }: { onConfirm: () => void }) => (
   <AlertDialog>
@@ -27,6 +37,15 @@ const DeleteButton = ({ onConfirm }: { onConfirm: () => void }) => (
   </AlertDialog>
 );
 
+// Calcula o próximo código sequencial baseado nos códigos numéricos existentes
+const computeNextCode = (codes: string[]): string => {
+  const numericCodes = codes
+    .map(c => parseInt(String(c).replace(/\D/g, ''), 10))
+    .filter(n => !isNaN(n));
+  const max = numericCodes.length > 0 ? Math.max(...numericCodes) : 0;
+  return String(max + 1);
+};
+
 const ServicosReciboPage = () => {
   const {
     servicos, addServico, updateServico, deleteServico,
@@ -38,19 +57,59 @@ const ServicosReciboPage = () => {
   const [form, setForm] = useState({ code: '', description: '', unitPrice: '' });
   const [editId, setEditId] = useState<string | null>(null);
   const [editData, setEditData] = useState({ code: '', description: '', unitPrice: '' });
+  const [globalPage, setGlobalPage] = useState(1);
 
   // Client services state
   const [csFilterClienteId, setCsFilterClienteId] = useState('');
   const [csForm, setCsForm] = useState({ clienteId: '', code: '', description: '', unitPrice: 0 });
   const [csEdit, setCsEdit] = useState<string | null>(null);
   const [csEditData, setCsEditData] = useState({ code: '', description: '', unitPrice: 0 });
+  const [clientPage, setClientPage] = useState(1);
 
   const clienteOptions = clientes.map(c => ({ value: c.id, label: c.name }));
+
+  // Auto-incremento do código global
+  const nextGlobalCode = useMemo(() => computeNextCode(servicos.map(s => s.code)), [servicos]);
+  useEffect(() => {
+    setForm(p => (p.code === '' ? { ...p, code: nextGlobalCode } : p));
+  }, [nextGlobalCode]);
+
+  // Auto-incremento do código por cliente (considera todos os serviços do cliente + globais)
+  const nextClientCode = useMemo(() => {
+    if (!csForm.clienteId) return '';
+    const codesDoCliente = clientServices
+      .filter(cs => cs.clienteId === csForm.clienteId)
+      .map(cs => cs.code);
+    const allCodes = [...servicos.map(s => s.code), ...codesDoCliente];
+    return computeNextCode(allCodes);
+  }, [csForm.clienteId, clientServices, servicos]);
+  useEffect(() => {
+    setCsForm(p => ({ ...p, code: nextClientCode }));
+  }, [nextClientCode]);
 
   const filteredClientServices = useMemo(() =>
     csFilterClienteId ? clientServices.filter(cs => cs.clienteId === csFilterClienteId) : clientServices,
     [clientServices, csFilterClienteId]
   );
+
+  // Paginação - serviços globais
+  const globalTotalPages = Math.max(1, Math.ceil(servicos.length / PAGE_SIZE));
+  const currentGlobalPage = Math.min(globalPage, globalTotalPages);
+  const paginatedServicos = useMemo(() => {
+    const start = (currentGlobalPage - 1) * PAGE_SIZE;
+    return servicos.slice(start, start + PAGE_SIZE);
+  }, [servicos, currentGlobalPage]);
+
+  // Paginação - serviços por cliente
+  const clientTotalPages = Math.max(1, Math.ceil(filteredClientServices.length / PAGE_SIZE));
+  const currentClientPage = Math.min(clientPage, clientTotalPages);
+  const paginatedClientServices = useMemo(() => {
+    const start = (currentClientPage - 1) * PAGE_SIZE;
+    return filteredClientServices.slice(start, start + PAGE_SIZE);
+  }, [filteredClientServices, currentClientPage]);
+
+  // Reseta para página 1 ao mudar filtro
+  useEffect(() => { setClientPage(1); }, [csFilterClienteId]);
 
   if (loading) {
     return (
@@ -60,10 +119,56 @@ const ServicosReciboPage = () => {
     );
   }
 
+  const PaginationControls = ({ page, totalPages, onChange }: { page: number; totalPages: number; onChange: (p: number) => void }) => {
+    if (totalPages <= 1) return null;
+    return (
+      <Pagination className="mt-2">
+        <PaginationContent>
+          <PaginationItem>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1"
+              disabled={page <= 1}
+              onClick={() => onChange(page - 1)}
+            >
+              <ChevronLeft className="h-4 w-4" /> Anterior
+            </Button>
+          </PaginationItem>
+          {Array.from({ length: totalPages }).map((_, i) => {
+            const p = i + 1;
+            return (
+              <PaginationItem key={p}>
+                <PaginationLink
+                  isActive={p === page}
+                  onClick={(e) => { e.preventDefault(); onChange(p); }}
+                  href="#"
+                >
+                  {p}
+                </PaginationLink>
+              </PaginationItem>
+            );
+          })}
+          <PaginationItem>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1"
+              disabled={page >= totalPages}
+              onClick={() => onChange(page + 1)}
+            >
+              Próxima <ChevronRight className="h-4 w-4" />
+            </Button>
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    );
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 h-full flex flex-col overflow-y-auto pr-1">
       <h1 className="text-2xl font-bold text-foreground">Serviços</h1>
-      <Tabs defaultValue="globais">
+      <Tabs defaultValue="globais" className="flex-1 flex flex-col">
         <TabsList>
           <TabsTrigger value="globais">Serviços Globais</TabsTrigger>
           <TabsTrigger value="cliente">Serviços por Cliente</TabsTrigger>
@@ -80,6 +185,7 @@ const ServicosReciboPage = () => {
               addServico({ code: form.code, description: form.description, unitPrice: Number(form.unitPrice) || 0 });
               setForm({ code: '', description: '', unitPrice: '' });
               toast.success('Serviço adicionado');
+              setGlobalPage(Math.ceil((servicos.length + 1) / PAGE_SIZE));
             }}>
               <Plus className="h-4 w-4 mr-1" /> Adicionar
             </Button>
@@ -90,7 +196,7 @@ const ServicosReciboPage = () => {
                 <TableRow><TableHead>Código</TableHead><TableHead>Descrição</TableHead><TableHead>Valor Unitário</TableHead><TableHead className="w-24" /></TableRow>
               </TableHeader>
               <TableBody>
-                {servicos.map(s => (
+                {paginatedServicos.map(s => (
                   <TableRow key={s.id}>
                     {editId === s.id ? (
                       <>
@@ -115,8 +221,17 @@ const ServicosReciboPage = () => {
                     )}
                   </TableRow>
                 ))}
+                {servicos.length === 0 && (
+                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">Nenhum serviço cadastrado</TableCell></TableRow>
+                )}
               </TableBody>
             </Table>
+          </div>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <span className="text-sm text-muted-foreground">
+              Mostrando {paginatedServicos.length} de {servicos.length} serviços
+            </span>
+            <PaginationControls page={currentGlobalPage} totalPages={globalTotalPages} onChange={setGlobalPage} />
           </div>
         </TabsContent>
 
@@ -162,7 +277,7 @@ const ServicosReciboPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredClientServices.map(cs => {
+                {paginatedClientServices.map(cs => {
                   const clienteName = clientes.find(c => c.id === cs.clienteId)?.name ?? '—';
                   return (
                     <TableRow key={cs.id}>
@@ -197,6 +312,12 @@ const ServicosReciboPage = () => {
                 )}
               </TableBody>
             </Table>
+          </div>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <span className="text-sm text-muted-foreground">
+              Mostrando {paginatedClientServices.length} de {filteredClientServices.length} serviços
+            </span>
+            <PaginationControls page={currentClientPage} totalPages={clientTotalPages} onChange={setClientPage} />
           </div>
         </TabsContent>
       </Tabs>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { LogOut, Receipt, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { LogOut, Receipt, PanelLeftClose, PanelLeftOpen, CalendarClock, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import ImportNotaFiscalDialog from '@/components/ImportNotaFiscalDialog';
 import { useRecibos } from '@/contexts/RecibosContext';

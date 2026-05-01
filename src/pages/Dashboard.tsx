@@ -284,7 +284,7 @@ const Dashboard = () => {
               </div>
             </div>
             <StatusSummaryCards invoices={entityInvoices} />
-            </replace_placeholder>
+            
             <div className="flex-1 min-h-0">
               <KanbanBoard invoices={entityInvoices} onMarkPaid={handleMarkPaid} onDelete={handleDelete} onUpdate={handleUpdate} />
             </div>

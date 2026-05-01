@@ -87,7 +87,7 @@ const Dashboard = () => {
     return merged;
   }, [suppliers, clientes, casualClients]);
 
-  const { invoices, handleMarkPaid, handleDelete, handleUpdate, handleAdd } = useFinancialInvoices();
+  const { invoices, handleMarkPaid, handleDelete, handleUpdate, handleAdd, refetch } = useFinancialInvoices();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sidebarWidth, setSidebarWidth] = useState(300);

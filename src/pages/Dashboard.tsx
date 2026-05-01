@@ -124,6 +124,35 @@ const Dashboard = () => {
     }
   };
 
+  const handleGenerateMonth = async () => {
+    if (!/^\d{4}-\d{2}$/.test(generateMonth)) {
+      toast.error('Selecione um mês válido.');
+      return;
+    }
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-monthly-invoices', {
+        body: { month: generateMonth },
+      });
+      if (error) throw error;
+      const inseridos = (data?.inseridos ?? 0) + (data?.legacyInseridos ?? 0);
+      const ja = data?.jaExistiam ?? 0;
+      if (inseridos > 0) {
+        toast.success(`${inseridos} lançamento(s) gerado(s) para ${data?.referenceMonth ?? generateMonth}.`);
+      } else if (ja > 0) {
+        toast.info(`Nenhum novo lançamento — ${ja} cliente(s) já possuíam fatura para este mês.`);
+      } else {
+        toast.info('Nenhum recibo encontrado para este mês.');
+      }
+      await refetch();
+      setGenerateOpen(false);
+    } catch (e: any) {
+      toast.error(`Falha ao gerar lançamentos: ${e?.message ?? 'erro desconhecido'}`);
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   useEffect(() => {
     if (invoices.length === 0) return;
     const today = new Date();

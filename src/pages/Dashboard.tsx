@@ -37,6 +37,16 @@ const Dashboard = () => {
   const [supplierDialogOpen, setSupplierDialogOpen] = useState(false);
   const [supplierForm, setSupplierForm] = useState({ name: '', document: '', phone: '', email: '' });
 
+  // "Gerar lançamentos do mês" dialog
+  const defaultMonth = (() => {
+    const d = new Date();
+    const prev = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+    return `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`;
+  })();
+  const [generateOpen, setGenerateOpen] = useState(false);
+  const [generateMonth, setGenerateMonth] = useState(defaultMonth);
+  const [generating, setGenerating] = useState(false);
+
   const [casualClients, setCasualClients] = useState<Entity[]>([]);
 
   useEffect(() => {

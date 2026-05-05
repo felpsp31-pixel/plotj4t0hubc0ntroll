@@ -211,6 +211,7 @@ const EmissaoReciboPage = () => {
   const handleNew = () => {
     setClienteId(''); setClienteAvulso(''); setClienteSearch(''); setSolicitanteId(''); setObraId('');
     setLines(emptyLines()); setSaved(false); setLastRecibo(null); setIsPago(false);
+    setHasDiscount(false); setDiscountInput(''); setDiscountType('percent');
   };
 
   const generatePdf = async () => {

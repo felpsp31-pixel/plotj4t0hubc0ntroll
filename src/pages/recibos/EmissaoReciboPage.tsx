@@ -185,7 +185,10 @@ const EmissaoReciboPage = () => {
     if (!clienteId && !clienteAvulso.trim()) { toast.error('Selecione ou digite um cliente.'); return; }
     const validLines = lines.filter(l => l.serviceCode && l.quantity > 0);
     if (validLines.length === 0) { toast.error('Adicione ao menos um serviço.'); return; }
-    const total = validLines.reduce((s, l) => s + l.total, 0);
+    const sub = validLines.reduce((s, l) => s + l.total, 0);
+    const v = parseFloat(discountInput.replace(',', '.')) || 0;
+    const desc = !hasDiscount ? 0 : discountType === 'percent' ? Math.min(sub, (sub * v) / 100) : Math.min(sub, v);
+    const total = Math.max(0, sub - desc);
     const recibo = addRecibo({
       date: new Date().toISOString().slice(0, 10),
       clienteId: clienteId || '',

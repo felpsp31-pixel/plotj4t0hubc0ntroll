@@ -73,15 +73,20 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
     const fetchAll = async () => {
       setLoading(true);
       try {
-        const [empRes, cliRes, solRes, obrRes, srvRes, recRes, csRes] = await Promise.all([
+        // Fast queries first — unlock the UI as soon as light data arrives.
+        const fastPromise = Promise.all([
           supabase.from('empresa_info').select('*').limit(1).maybeSingle(),
           supabase.from('clientes').select('*').order('created_at'),
           supabase.from('solicitantes').select('*'),
           supabase.from('obras').select('*'),
           supabase.from('servicos').select('*'),
-          supabase.from('recibos').select('*').order('created_at'),
           supabase.from('client_services' as any).select('*'),
         ]);
+
+        // Recibos can be large — fetch in parallel but don't block the UI on it.
+        const recibosPromise = supabase.from('recibos').select('*').order('created_at', { ascending: false });
+
+        const [empRes, cliRes, solRes, obrRes, srvRes, csRes] = await fastPromise;
 
         if (empRes.data) {
           setEmpresaInfoState({
@@ -114,21 +119,26 @@ export const RecibosProvider = ({ children }: { children: ReactNode }) => {
           description: r.description, unitPrice: Number(r.unit_price),
         })));
 
-        setRecibos((recRes.data || []).map((r: any) => ({
-          id: r.id, number: r.number, date: r.date,
-          clienteId: r.cliente_id, clienteAvulso: r.cliente_avulso || undefined,
-          solicitanteId: r.solicitante_id || '',
-          obraId: r.obra_id || '',
-          lines: (r.lines as unknown as Recibo['lines']) || [],
-          total: Number(r.total),
-        })));
+        // Release the loading state as soon as light data is available.
+        setLoading(false);
+
+        // Resolve recibos in background; UI updates when ready.
+        recibosPromise.then(recRes => {
+          setRecibos((recRes.data || []).map((r: any) => ({
+            id: r.id, number: r.number, date: r.date,
+            clienteId: r.cliente_id, clienteAvulso: r.cliente_avulso || undefined,
+            solicitanteId: r.solicitante_id || '',
+            obraId: r.obra_id || '',
+            lines: (r.lines as unknown as Recibo['lines']) || [],
+            total: Number(r.total),
+          })));
+        });
 
         if ((cliRes.data || []).length === 0) {
-          await migrateFromLocalStorage();
+          migrateFromLocalStorage();
         }
       } catch (err) {
         console.error('Error loading data:', err);
-      } finally {
         setLoading(false);
       }
     };

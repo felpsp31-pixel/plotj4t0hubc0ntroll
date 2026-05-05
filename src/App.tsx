@@ -26,7 +26,37 @@ const DashboardReciboPage = lazy(() => import("./pages/recibos/DashboardReciboPa
 const RelatoriosReciboPage = lazy(() => import("./pages/recibos/RelatoriosReciboPage"));
 const DemandasPage = lazy(() => import("./pages/recibos/DemandasPage"));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      gcTime: 5 * 60_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+// Prefetch heavy routes in idle time so the first navigation feels instant.
+if (typeof window !== "undefined") {
+  const idle = (cb: () => void) =>
+    "requestIdleCallback" in window
+      ? (window as any).requestIdleCallback(cb, { timeout: 2000 })
+      : setTimeout(cb, 1500);
+  idle(() => {
+    import("@/components/recibos/RecibosLayout");
+    import("./pages/recibos/EmissaoReciboPage");
+    import("./pages/recibos/ClientesReciboPage");
+    import("./pages/recibos/ServicosReciboPage");
+    import("./pages/recibos/DemandasPage");
+  });
+  idle(() => {
+    import("@/components/FinanceiroLayout");
+    import("./pages/Dashboard");
+    import("./pages/recibos/DashboardReciboPage");
+    import("./pages/recibos/RelatoriosReciboPage");
+  });
+}
 
 const PageFallback = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">

@@ -32,6 +32,9 @@ const EmissaoReciboPage = () => {
   const [saved, setSaved] = useState(false);
   const [lastRecibo, setLastRecibo] = useState<typeof recibos[0] | null>(null);
   const [isPago, setIsPago] = useState(false);
+  const [hasDiscount, setHasDiscount] = useState(false);
+  const [discountType, setDiscountType] = useState<'percent' | 'value'>('percent');
+  const [discountInput, setDiscountInput] = useState<string>('');
   const demandaIdRef = useRef<string | null>(null);
 
   // Auto-fill client from demandas navigation
@@ -133,7 +136,14 @@ const EmissaoReciboPage = () => {
     }
   }, [subtotalWithoutDelivery, obraId, obras, saved]);
 
-  const total = lines.reduce((s, l) => s + l.total, 0);
+  const subtotal = lines.reduce((s, l) => s + l.total, 0);
+  const discountAmount = useMemo(() => {
+    if (!hasDiscount) return 0;
+    const v = parseFloat(discountInput.replace(',', '.')) || 0;
+    if (discountType === 'percent') return Math.min(subtotal, (subtotal * v) / 100);
+    return Math.min(subtotal, v);
+  }, [hasDiscount, discountInput, discountType, subtotal]);
+  const total = Math.max(0, subtotal - discountAmount);
 
   const nextNumber = useMemo(() => {
     const maxNum = recibos.reduce((max, rc) => {
@@ -175,7 +185,10 @@ const EmissaoReciboPage = () => {
     if (!clienteId && !clienteAvulso.trim()) { toast.error('Selecione ou digite um cliente.'); return; }
     const validLines = lines.filter(l => l.serviceCode && l.quantity > 0);
     if (validLines.length === 0) { toast.error('Adicione ao menos um serviço.'); return; }
-    const total = validLines.reduce((s, l) => s + l.total, 0);
+    const sub = validLines.reduce((s, l) => s + l.total, 0);
+    const v = parseFloat(discountInput.replace(',', '.')) || 0;
+    const desc = !hasDiscount ? 0 : discountType === 'percent' ? Math.min(sub, (sub * v) / 100) : Math.min(sub, v);
+    const total = Math.max(0, sub - desc);
     const recibo = addRecibo({
       date: new Date().toISOString().slice(0, 10),
       clienteId: clienteId || '',
@@ -198,6 +211,7 @@ const EmissaoReciboPage = () => {
   const handleNew = () => {
     setClienteId(''); setClienteAvulso(''); setClienteSearch(''); setSolicitanteId(''); setObraId('');
     setLines(emptyLines()); setSaved(false); setLastRecibo(null); setIsPago(false);
+    setHasDiscount(false); setDiscountInput(''); setDiscountType('percent');
   };
 
   const generatePdf = async () => {
@@ -265,8 +279,21 @@ const EmissaoReciboPage = () => {
     });
 
     const finalY = (doc as any).lastAutoTable?.finalY ?? 120;
+    let cursorY = finalY + 10;
+    const subPdf = r.lines.reduce((s, l) => s + l.total, 0);
+    if (subPdf > r.total + 0.001) {
+      const desc = subPdf - r.total;
+      doc.setFontSize(10);
+      doc.text(`Subtotal: ${subPdf.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 14, cursorY);
+      cursorY += 5;
+      const descLabel = hasDiscount && discountType === 'percent'
+        ? `Desconto (${(parseFloat(discountInput.replace(',', '.')) || 0)}%): -${desc.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`
+        : `Desconto: -${desc.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+      doc.text(descLabel, 14, cursorY);
+      cursorY += 7;
+    }
     doc.setFontSize(12);
-    doc.text(`Total: ${r.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 14, finalY + 10);
+    doc.text(`Total: ${r.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 14, cursorY);
 
     if (isPago) {
       // "PAGO" stamp in red
@@ -424,14 +451,48 @@ const EmissaoReciboPage = () => {
       </div>
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-1 gap-2">
-        <div className="flex items-center gap-4">
-          <p className="text-sm font-bold text-foreground">
-            Total: {total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-          </p>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-col">
+            {hasDiscount && discountAmount > 0 && (
+              <div className="text-xs text-muted-foreground">
+                Subtotal: {subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} · Desconto: -{discountAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              </div>
+            )}
+            <p className="text-sm font-bold text-foreground">
+              Total: {total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </p>
+          </div>
           <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
             <Checkbox checked={isPago} onCheckedChange={(v) => setIsPago(!!v)} disabled={saved} />
             Pago
           </label>
+          <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
+            <Checkbox checked={hasDiscount} onCheckedChange={(v) => setHasDiscount(!!v)} disabled={saved} />
+            Desconto
+          </label>
+          {hasDiscount && (
+            <div className="flex items-center gap-1">
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                value={discountInput}
+                onChange={e => setDiscountInput(e.target.value)}
+                disabled={saved}
+                placeholder="0"
+                className="h-7 w-24 text-base"
+              />
+              <select
+                value={discountType}
+                onChange={e => setDiscountType(e.target.value as 'percent' | 'value')}
+                disabled={saved}
+                className="h-7 rounded-md border border-input bg-background px-2 text-xs"
+              >
+                <option value="percent">%</option>
+                <option value="value">R$</option>
+              </select>
+            </div>
+          )}
         </div>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" className="min-h-[44px] sm:min-h-0" onClick={handleSave} disabled={saved}>Salvar Recibo</Button>

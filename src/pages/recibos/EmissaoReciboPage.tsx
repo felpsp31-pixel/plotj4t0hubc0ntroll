@@ -463,6 +463,53 @@ const EmissaoReciboPage = () => {
         <div className="flex flex-wrap gap-2">
           <Button size="sm" className="min-h-[44px] sm:min-h-0" onClick={handleSave} disabled={saved}>Salvar Recibo</Button>
           <Button size="sm" variant="outline" className="min-h-[44px] sm:min-h-0" onClick={handleNew}>Novo Recibo</Button>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-1 gap-2">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-col">
+            {hasDiscount && discountAmount > 0 && (
+              <div className="text-xs text-muted-foreground">
+                Subtotal: {subtotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} · Desconto: -{discountAmount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              </div>
+            )}
+            <p className="text-sm font-bold text-foreground">
+              Total: {total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            </p>
+          </div>
+          <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
+            <Checkbox checked={isPago} onCheckedChange={(v) => setIsPago(!!v)} disabled={saved} />
+            Pago
+          </label>
+          <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
+            <Checkbox checked={hasDiscount} onCheckedChange={(v) => setHasDiscount(!!v)} disabled={saved} />
+            Desconto
+          </label>
+          {hasDiscount && (
+            <div className="flex items-center gap-1">
+              <Input
+                type="number"
+                min={0}
+                step="0.01"
+                value={discountInput}
+                onChange={e => setDiscountInput(e.target.value)}
+                disabled={saved}
+                placeholder="0"
+                className="h-7 w-24 text-base"
+              />
+              <select
+                value={discountType}
+                onChange={e => setDiscountType(e.target.value as 'percent' | 'value')}
+                disabled={saved}
+                className="h-7 rounded-md border border-input bg-background px-2 text-xs"
+              >
+                <option value="percent">%</option>
+                <option value="value">R$</option>
+              </select>
+            </div>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" className="min-h-[44px] sm:min-h-0" onClick={handleSave} disabled={saved}>Salvar Recibo</Button>
+          <Button size="sm" variant="outline" className="min-h-[44px] sm:min-h-0" onClick={handleNew}>Novo Recibo</Button>
           {saved && <Button size="sm" variant="secondary" className="min-h-[44px] sm:min-h-0" onClick={handleExportPdf}>Exportar PDF</Button>}
           {saved && <Button size="sm" variant="secondary" className="min-h-[44px] sm:min-h-0" onClick={handlePrint}>Imprimir</Button>}
         </div>

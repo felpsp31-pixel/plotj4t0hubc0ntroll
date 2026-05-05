@@ -32,6 +32,9 @@ const EmissaoReciboPage = () => {
   const [saved, setSaved] = useState(false);
   const [lastRecibo, setLastRecibo] = useState<typeof recibos[0] | null>(null);
   const [isPago, setIsPago] = useState(false);
+  const [hasDiscount, setHasDiscount] = useState(false);
+  const [discountType, setDiscountType] = useState<'percent' | 'value'>('percent');
+  const [discountInput, setDiscountInput] = useState<string>('');
   const demandaIdRef = useRef<string | null>(null);
 
   // Auto-fill client from demandas navigation

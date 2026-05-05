@@ -451,19 +451,6 @@ const EmissaoReciboPage = () => {
       </div>
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-1 gap-2">
-        <div className="flex items-center gap-4">
-          <p className="text-sm font-bold text-foreground">
-            Total: {total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-          </p>
-          <label className="flex items-center gap-2 text-sm text-foreground cursor-pointer">
-            <Checkbox checked={isPago} onCheckedChange={(v) => setIsPago(!!v)} disabled={saved} />
-            Pago
-          </label>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button size="sm" className="min-h-[44px] sm:min-h-0" onClick={handleSave} disabled={saved}>Salvar Recibo</Button>
-          <Button size="sm" variant="outline" className="min-h-[44px] sm:min-h-0" onClick={handleNew}>Novo Recibo</Button>
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-1 gap-2">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex flex-col">
             {hasDiscount && discountAmount > 0 && (

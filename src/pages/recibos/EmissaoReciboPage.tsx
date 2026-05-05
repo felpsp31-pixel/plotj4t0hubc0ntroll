@@ -279,8 +279,21 @@ const EmissaoReciboPage = () => {
     });
 
     const finalY = (doc as any).lastAutoTable?.finalY ?? 120;
+    let cursorY = finalY + 10;
+    const subPdf = r.lines.reduce((s, l) => s + l.total, 0);
+    if (subPdf > r.total + 0.001) {
+      const desc = subPdf - r.total;
+      doc.setFontSize(10);
+      doc.text(`Subtotal: ${subPdf.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 14, cursorY);
+      cursorY += 5;
+      const descLabel = hasDiscount && discountType === 'percent'
+        ? `Desconto (${(parseFloat(discountInput.replace(',', '.')) || 0)}%): -${desc.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`
+        : `Desconto: -${desc.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`;
+      doc.text(descLabel, 14, cursorY);
+      cursorY += 7;
+    }
     doc.setFontSize(12);
-    doc.text(`Total: ${r.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 14, finalY + 10);
+    doc.text(`Total: ${r.total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 14, cursorY);
 
     if (isPago) {
       // "PAGO" stamp in red

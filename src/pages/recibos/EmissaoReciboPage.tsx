@@ -136,7 +136,14 @@ const EmissaoReciboPage = () => {
     }
   }, [subtotalWithoutDelivery, obraId, obras, saved]);
 
-  const total = lines.reduce((s, l) => s + l.total, 0);
+  const subtotal = lines.reduce((s, l) => s + l.total, 0);
+  const discountAmount = useMemo(() => {
+    if (!hasDiscount) return 0;
+    const v = parseFloat(discountInput.replace(',', '.')) || 0;
+    if (discountType === 'percent') return Math.min(subtotal, (subtotal * v) / 100);
+    return Math.min(subtotal, v);
+  }, [hasDiscount, discountInput, discountType, subtotal]);
+  const total = Math.max(0, subtotal - discountAmount);
 
   const nextNumber = useMemo(() => {
     const maxNum = recibos.reduce((max, rc) => {
